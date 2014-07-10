@@ -7,16 +7,16 @@ $(function() {
     cu = new CanvasUtil();
     cu.register_canvas($("#screen")[0]);
 
-    Player.set_controlled_player(new Player([200, 200], 0));
+    Agent.set_controlled_agent(new Agent([200, 200], 0));
 
     function display_loop() {
         cu.clear();
-        Player.controlled_player.draw();
+        Agent.controlled_agent.draw();
         setTimeout(display_loop, 50);
     }
 
     function control_loop() {
-        Player.controlled_player.control_tick();
+        Agent.controlled_agent.control_tick();
         setTimeout(control_loop, 50);
     }
 

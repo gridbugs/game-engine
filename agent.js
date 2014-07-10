@@ -1,24 +1,24 @@
-function Player(pos, facing) {
+function Agent(pos, facing) {
     this.facing = facing;
     this.pos = pos;
 }
-Player.set_controlled_player = function(player) {
-    Player.controlled_player = player;
-    Input.register_mousemove_callback("turn_player", function(mouse_pos) {
-        player.turn_to_face(mouse_pos);
+Agent.set_controlled_agent = function(agent) {
+    Agent.controlled_agent = agent;
+    Input.register_mousemove_callback("turn_agent", function(mouse_pos) {
+        agent.turn_to_face(mouse_pos);
     });
 }
-Player.prototype.turn_to_face = function(pt) {
+Agent.prototype.turn_to_face = function(pt) {
     this.facing = element_array_call(
                 swap_args2(numeric.atan2), 
                 numeric['-'](Input.mouse_pos, this.pos)
     )[0];
 }
-Player.prototype.draw = function() { 
+Agent.prototype.draw = function() { 
     cu.circle(this.pos, 10);
     cu.line_at_angle(this.pos, this.facing, 10);
 }
-Player.prototype.control_tick = function() {
+Agent.prototype.control_tick = function() {
     if (Input.is_down("w,")) {
         this.pos = numeric['+'](this.pos, numeric['*'](5, angle_to_unit_vector(this.facing)));
     }
