@@ -1,4 +1,5 @@
 var cu;
+var ai0;
 $(function() {
     Info.register("info");
     Info.run();
@@ -7,11 +8,15 @@ $(function() {
     cu = new CanvasUtil();
     cu.register_canvas($("#screen")[0]);
 
-    Agent.set_controlled_agent(new Agent([200, 200], 0));
+    var player = new Agent([200, 200], 0);
+    Agent.set_controlled_agent(player);
+
+    ai0 = new Agent([400, 200], 0);
 
     function display_loop() {
         cu.clear();
         Agent.controlled_agent.draw();
+        ai0.draw();
         setTimeout(display_loop, 50);
     }
 
