@@ -78,3 +78,14 @@ function swap_args2(f) {
     }
 }
 
+function arr_left_half(arr) {
+    return arr.slice(0, arr.length/2);
+}
+
+function arr_right_half(arr) {
+    return arr.slice(arr.length/2, arr.length);
+}
+
+function call_on_split_array(merge, f, arr) {
+    return merge(f(arr_left_half(arr)), f(arr_right_half(arr)));
+}
