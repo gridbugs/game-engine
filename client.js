@@ -30,7 +30,7 @@ $(function() {
     control_loop();
     */
 
-    var pts = [[100, 200], [100, 100], [300, 200], [150, 200], [300, 150], [250, 100], [225, 130], [170, 175], [230, 200], [125, 150]];
+    var pts = [[100, 200], [100, 100], [300, 200], [150, 200], [400, 150], [250, 100], [225, 130], [170, 175], [230, 200], [125, 150]];
     _.map(pts, function(pt){cu.draw_point(pt)});
 
 
@@ -49,8 +49,15 @@ function quickhull(pts) {
         function(pt) {return pt[0]}   // right most
     ]);
 
-    // find the point above the initial segment that is furthest away
-    var 
+    console.debug(initial_segment);
+
+    // find the point above and below the initial segment that is furthest away
+    var above_and_below_ext = arr_mosts(pts, [
+        function(pt) {return signed_segment_right_angle_distance(initial_segment, pt)},
+        function(pt) {return -signed_segment_right_angle_distance(initial_segment, pt)}
+    ]);
+
+    console.debug(above_and_below_ext);
 
 }
 
