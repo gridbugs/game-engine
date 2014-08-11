@@ -38,10 +38,19 @@ $(function() {
         cu.draw_segment(segment);
     });
 
+    quickhull(pts);
 
 });
 
 function quickhull(pts) {
+    // segment connection left-most to right-most points
+    var initial_segment = arr_mosts(pts, [
+        function(pt) {return -pt[0]}, // left most
+        function(pt) {return pt[0]}   // right most
+    ]);
+
+    // find the point above the initial segment that is furthest away
+    var 
 
 }
 
