@@ -1,22 +1,23 @@
+/* takes a function and an array and calls
+ * the function on the elements as individual
+ * arguments
+ */
 function element_call(fn, vec) {
-    switch (vec.length) {
-        case 0: return fn();
-        case 1: return fn(vec[0]);
-        case 2: return fn(vec[0], vec[1]);
-        case 3: return fn(vec[0], vec[2], vec[3]);
-        default: alert("not supported");
-    }
-
+    return fn.apply(null, vec);
 }
 
+function to_array(x) {
+    return [x];
+}
+
+/* takes a function and an array and calls
+ * the function on each element of the array
+ * as individual arguments, enclosing each argument
+ * in an array of length 1.
+ * This helps with some numeric.js functions.
+ */
 function element_array_call(fn, vec) {
-    switch (vec.length) {
-        case 0: return fn();
-        case 1: return fn([vec[0]]);
-        case 2: return fn([vec[0]], [vec[1]]);
-        case 3: return fn([vec[0]], [vec[2]], [vec[3]]);
-        default: alert("not supported");
-    }
+    return fn.apply(null, vec.map(to_array));
 }
 
 function default_value(value, def_value) {
@@ -88,4 +89,71 @@ function arr_right_half(arr) {
 
 function call_on_split_array(merge, f, arr) {
     return merge(f(arr_left_half(arr)), f(arr_right_half(arr)));
+}
+
+// creates an array populated with undefineds of a given length
+function create_undefined_array(length) {
+    return Array.apply(null, new Array(length));
+}
+
+// takes a value and returns a function that takes no arguments and returns that value
+function tofn(x) {
+    return function(){return x};
+}
+
+// creates an array populated with a given value of a given length
+function create_array_with_value(length, value) {
+    return create_undefined_array(length).map(tofn(value));
+}
+
+// identity function
+function id(x) {
+    return x;
+}
+
+/* returns the value x in arr that maximizes the value
+ * of fn(x). e.g. function(arr){return arr_most(arr, id)}
+ * is a function that returns the maximum value in an array
+ */
+function arr_most(arr, fn) {
+    var most = arr[0];
+    var best = fn(arr[0]);
+
+    var rest = arr.slice(1);
+    for (var i in rest) {
+        var val = fn(rest[i]);
+        if (val > best) {
+            best = val;
+            most = rest[i];
+        }
+    }
+
+    return most;
+}
+
+/* fns is an array of functions that map elements
+ * from arr to real numbers. This function returns
+ * an array of elements from arr corresponding to 
+ * the elements maximizing the fn value for each fn
+ * in fns.
+ */
+function arr_mosts(arr, fns) {
+    // initialize with first element of array
+    var mosts = fns.map(tofn(arr[0]));
+    var bests = fns.map(function(fn){return fn(arr[0])});
+
+    // for all the other elements
+    var rest = arr.slice(1);
+    for (var i in rest) {
+        var el = rest[i];
+        for (var j in mosts) {
+            var val = fns[j](el);
+            if (val > bests[j]) {
+                mosts[j] = el;
+                bests[j] = val;
+            }       
+        }
+    }
+
+    return mosts;
 }

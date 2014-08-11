@@ -41,6 +41,10 @@ $(function() {
 
 });
 
+function quickhull(pts) {
+
+}
+
 function sort_left_to_right(pts) {
     // sort the array of points in order of increasing x coord with y coord breaking ties
     var sorted_pts = pts.slice(0); // make a copy of the point list
