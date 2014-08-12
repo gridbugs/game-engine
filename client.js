@@ -1,9 +1,16 @@
+function canvas_fill_window() {
+    $("#screen")[0].width = $(window).width();
+    $("#screen")[0].height = $(window).height();
+}
+$(window).resize(canvas_fill_window);
+$(canvas_fill_window);
+
 var cu;
 var ai0;
 $(function() {
     Info.register("info");
     Info.run();
-    Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
+    Input.set_canvas_offset(0 ,0);
     Input.init();
     cu = new CanvasUtil();
     cu.register_canvas($("#screen")[0]);
@@ -13,10 +20,16 @@ $(function() {
 
     ai0 = new Agent([400, 200], 0);
 
+    var pts = [];
+    
     function display_loop() {
         cu.clear();
-        Agent.controlled_agent.draw();
-        ai0.draw();
+        //Agent.controlled_agent.draw();
+        //ai0.draw();
+        pts.map(function(pt){cu.draw_point(pt)});
+        if (pts.length >= 3) {
+            quickhull(pts).map(function(seg){cu.draw_segment(seg)});
+        }
         setTimeout(display_loop, 50);
     }
 
@@ -25,23 +38,29 @@ $(function() {
         setTimeout(control_loop, 50);
     }
 
-    /*
     display_loop();
+    /*
     control_loop();
     */
 
-    var pts = [[100, 200], [100, 100], [300, 200], [150, 200], [400, 150], [250, 100], [225, 130], [170, 175], [230, 200], [125, 150], [255, 25]];
-    _.map(pts, function(pt){cu.draw_point(pt)});
+
+    $(document).click(function() {
+        console.debug(Input.mouse_pos);
+        console.debug(Input.mouse_pos.slice());
+        pts.push(Input.mouse_pos.slice());
+    });
+
+//    _.map(pts, function(pt){cu.draw_point(pt)});
 
 /*
     _.map(triangulate(pts), function(segment) {
         cu.draw_segment(segment);
     });
-    */
 
     var ch = quickhull(pts);
     console.debug(ch);
     ch.map(function(seg){cu.draw_segment(seg)});
+    */
 });
 
 /* computes the partial convex hull for a given segment and

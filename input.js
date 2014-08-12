@@ -68,6 +68,7 @@ Input.init = function() {
         Input.mouse_pos[1] = Input.mouse_y;
         Info.set("mouse_pos", Input.mouse_pos);
 
+
         for (var callback in Input.mousemove_callbacks){ 
             Input.mousemove_callbacks[callback](Input.mouse_pos);
         }
