@@ -33,10 +33,11 @@ $(function() {
     var pts = [[100, 200], [100, 100], [300, 200], [150, 200], [400, 150], [250, 100], [225, 130], [170, 175], [230, 200], [125, 150]];
     _.map(pts, function(pt){cu.draw_point(pt)});
 
-
+/*
     _.map(triangulate(pts), function(segment) {
         cu.draw_segment(segment);
     });
+    */
 
     quickhull(pts);
 
@@ -59,6 +60,25 @@ function quickhull(pts) {
 
     console.debug(above_and_below_ext);
 
+    var above = above_and_below_ext[0];
+    var below = above_and_below_ext[1];
+
+    var above_dist = signed_segment_right_angle_distance(initial_segment, above);
+    var below_dist = signed_segment_right_angle_distance(initial_segment, below);
+
+    var convex_hull;
+
+    // deal with cases where the initial segment is the bottom or top of the point set
+    if (above_dist <= 0) {
+        convex_hull = [initial_segment, [initial_segment[1], below], [below, initial_segment[1]]]
+    } else if (below_dist >= 0) {
+        convex_hull = [segment_flip(initial_segment), [initial_segment[0], above], [above, initial_segment[1]]];
+    } else {
+        // usual case - use both vertical extremes
+        convex_hull = [[initial_segment[0], above], [above, initial_segment[1]], [initial_segment[1], below], [below, initial_segment[0]]];
+    }
+    console.debug(JSON.stringify(convex_hull));
+    convex_hull.map(function(s){cu.draw_segment(s)});
 }
 
 function sort_left_to_right(pts) {

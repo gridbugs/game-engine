@@ -57,3 +57,7 @@ function signed_segment_right_angle_distance(seg, pt) {
     // now use regular vector arithmetic
     return signed_vector_right_angle_distance(pt_relative, seg_direction);
 }
+
+function segment_flip(seg) {
+    return [seg[1], seg[0]];
+}
