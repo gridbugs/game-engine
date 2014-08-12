@@ -30,7 +30,7 @@ $(function() {
     control_loop();
     */
 
-    var pts = [[100, 200], [100, 100], [300, 200], [150, 200], [400, 150], [250, 100], [225, 130], [170, 175], [230, 200], [125, 150]];
+    var pts = [[100, 200], [100, 100], [300, 200], [150, 200], [400, 150], [250, 100], [225, 130], [170, 175], [230, 200], [125, 150], [255, 25]];
     _.map(pts, function(pt){cu.draw_point(pt)});
 
 /*
@@ -39,9 +39,46 @@ $(function() {
     });
     */
 
-    quickhull(pts);
-
+    var ch = quickhull(pts);
+    console.debug(ch);
+    ch.map(function(seg){cu.draw_segment(seg)});
 });
+
+/* computes the partial convex hull for a given segment and
+ * array of points where all points must be above the segment
+ * using the quickhull divide and conquer stategy.
+ * Returns an array of segments constituting the convex hull.
+ */
+function qh_seg(seg, pts) {
+
+    // if there are no more points the ch is complete
+    if (pts.length == 0) {
+        return [seg];
+    }
+
+    // this will hold the distance to each point
+    var distances = new Array(pts.length);
+
+    // find the furthest point from the segment
+    var next = arr_most(pts, function(pt) {
+        return signed_segment_right_angle_distance(seg, pt)
+    }, distances);
+
+    // the left and right sub-segments
+    var left = [seg[0], next];
+    var right = [next, seg[1]];
+
+    // points above the left and right sub-segments
+    var left_pts = pts.filter(function(pt) {
+        return signed_segment_right_angle_distance(left, pt) > 0
+    });
+    
+    var right_pts = pts.filter(function(pt) {
+        return signed_segment_right_angle_distance(right, pt) > 0
+    });
+
+    return qh_seg(left, left_pts).concat(qh_seg(right, right_pts));
+}
 
 function quickhull(pts) {
     // segment connection left-most to right-most points
@@ -50,35 +87,14 @@ function quickhull(pts) {
         function(pt) {return pt[0]}   // right most
     ]);
 
-    console.debug(initial_segment);
+    var above_pts = points_above_segment(initial_segment, pts);
+    var below_pts = points_below_segment(initial_segment, pts);
 
-    // find the point above and below the initial segment that is furthest away
-    var above_and_below_ext = arr_mosts(pts, [
-        function(pt) {return signed_segment_right_angle_distance(initial_segment, pt)},
-        function(pt) {return -signed_segment_right_angle_distance(initial_segment, pt)}
-    ]);
+    var above_hull = qh_seg(initial_segment, above_pts);
+    var below_hull = qh_seg(segment_flip(initial_segment), below_pts);
 
-    console.debug(above_and_below_ext);
+    return above_hull.concat(below_hull);
 
-    var above = above_and_below_ext[0];
-    var below = above_and_below_ext[1];
-
-    var above_dist = signed_segment_right_angle_distance(initial_segment, above);
-    var below_dist = signed_segment_right_angle_distance(initial_segment, below);
-
-    var convex_hull;
-
-    // deal with cases where the initial segment is the bottom or top of the point set
-    if (above_dist <= 0) {
-        convex_hull = [initial_segment, [initial_segment[1], below], [below, initial_segment[1]]]
-    } else if (below_dist >= 0) {
-        convex_hull = [segment_flip(initial_segment), [initial_segment[0], above], [above, initial_segment[1]]];
-    } else {
-        // usual case - use both vertical extremes
-        convex_hull = [[initial_segment[0], above], [above, initial_segment[1]], [initial_segment[1], below], [below, initial_segment[0]]];
-    }
-    console.debug(JSON.stringify(convex_hull));
-    convex_hull.map(function(s){cu.draw_segment(s)});
 }
 
 function sort_left_to_right(pts) {

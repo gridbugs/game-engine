@@ -115,13 +115,16 @@ function id(x) {
  * of fn(x). e.g. function(arr){return arr_most(arr, id)}
  * is a function that returns the maximum value in an array
  */
-function arr_most(arr, fn) {
+function arr_most(arr, fn, scores) {
     var most = arr[0];
     var best = fn(arr[0]);
 
     var rest = arr.slice(1);
     for (var i in rest) {
         var val = fn(rest[i]);
+        if (scores) {
+            scores[i] = val;
+        }
         if (val > best) {
             best = val;
             most = rest[i];
@@ -156,4 +159,14 @@ function arr_mosts(arr, fns) {
     }
 
     return mosts;
+}
+
+function arr_proxy_filter(arr_to_filter, arr_to_filter_by, filter_fn) {
+    var filtered = [];
+    for (var i in arr_to_filter_by) {
+        if (filter_fn(arr_to_filter_by[i])) {
+            filtered.push(arr_to_filter[i]);
+        }
+    }
+    return filtered;
 }

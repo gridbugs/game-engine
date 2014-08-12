@@ -61,3 +61,13 @@ function signed_segment_right_angle_distance(seg, pt) {
 function segment_flip(seg) {
     return [seg[1], seg[0]];
 }
+
+function points_above_segment(seg, pts) {
+    return pts.filter(function(pt) {
+        return signed_segment_right_angle_distance(seg, pt) > 0
+    });
+}
+
+function points_below_segment(seg, pts) {
+    return points_above_segment(segment_flip(seg), pts);
+}
