@@ -58,7 +58,7 @@ $(function() {
         }
 
         if (left.length > 2 && right.length > 2) {
-            var t = bottom_tangent(left, right);
+            var t = tangents_to_point_sets(left, right);
             cu.draw_segment(t, "black", 2);
         }
     });
@@ -75,7 +75,9 @@ $(function() {
     left.map(function(pt){cu.draw_point(pt, "red")});
     right.map(function(pt){cu.draw_point(pt, "blue")});
 
-    var bt = bottom_tangent(left, right);
+    var bt = tangents_to_point_sets(left, right);
+
+    bt.map(function(x){cu.draw_segment(x, "green", 4)});
 //    cu.draw_segment(bt);
 
 /*
@@ -146,53 +148,47 @@ function quickhull(pts) {
 /*
  * Returns a line segment which is the bottom-most tangent to the point sets.
  */
-function bottom_tangent(left, right) {
+function tangents_to_point_sets(left, right) {
+
+    var tangents = [];
+
     var left_hull = quickhull(left);
     var right_hull = quickhull(right);
-
-    /* the left and right orders start with the segment which starts and
-     * ends with the lowsest point respectively */
-    var left_order = arr_rotate_most(left_hull, function(seg) {
-        return -seg[0][1];
-    });
     
-    var right_order = arr_rotate_most(right_hull.reverse(), function(seg) {
-        return -seg[1][1];
-    });
+    var hull = quickhull(left.concat(right));
+
+    // find a segment in the combined hull also part of the left hull
+    var left_order = arr_rotate_until(hull, function(s){return segment_equals(s, left_hull[0])});
     
-    var left_idx = 0;
-    var right_idx = 0;
-    var tangent = [left_order[left_idx][0], right_order[right_idx][1]];
-    return tangent;
-    while (true) {
-        if (signed_segment_right_angle_distance(tangent, arr_ring(left_order, left_idx)[1]) >= 0) {
-            ++left_idx;
-            tangent = [arr_ring(left_order, left_idx)[0], right_order[right_idx][1]];
-            continue;
-        }
-        
-        if (signed_segment_right_angle_distance(tangent, arr_ring(left_order, left_idx - 1)[0]) >= 0) {
-            --left_order;
-            tangent = [arr_ring(left_order, left_idx)[0], right_order[right_idx][1]];
-            continue;
-        }
-        
-        if (signed_segment_right_angle_distance(tangent, arr_ring(right_order, right_idx)[0]) >= 0) {
-            ++right_idx;
-            tangent = [left_order[left_idx][0], arr_ring(right_order, right_idx)[1]];
-            continue;
-        }
+    if (left_order == null) {
+        left_order = arr_rotate_until(hull, function(s){return segment_equals(s, arr_ring(left_hull, -1))});
+    }       
 
-        if (signed_segment_right_angle_distance(tangent, arr_ring(right_order, right_idx - 1)[1]) >= 0) {
-            --right_idx;
-            tangent = [left_order[left_idx][0], arr_ring(right_order, right_idx)[1]];
-            continue;
-        }
-
-        break;
+    hull.map(function(s){cu.draw_segment(s, "black", 2)});
+    left_hull.map(function(s){cu.draw_segment(s, "blue", 4)});
+    if (left_order == null) {
+        console.debug(JSON.stringify(left_hull[0]));
+        console.debug(JSON.stringify(hull));
+        alert("bad");   
     }
 
-    return tangent;
+
+    var left_idx = 0;
+    while (segment_equals(arr_ring(left_order, left_idx), arr_ring(left_hull, left_idx))) {
+        cu.draw_segment(arr_ring(left_order, left_idx), "red", 6);
+        ++left_idx;
+    }
+    
+    tangents.push(arr_ring(left_order, left_idx));
+    left_idx = -1;
+    while (segment_equals(arr_ring(left_order, left_idx), arr_ring(left_hull, left_idx))) {
+        cu.draw_segment(arr_ring(left_order, left_idx), "green", 6);
+        ++left_idx;
+    }
+    tangents.push(arr_ring(left_order, left_idx));
+
+    return tangents;
+
 }
 
 

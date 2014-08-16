@@ -156,6 +156,18 @@ function arr_rotate_most(arr, fn) {
 
 }
 
+function arr_rotate_until(arr, fn) {
+    var idx;
+    for (var i in arr) {
+        if (fn(arr[i])) {
+            return arr_rotate(arr, i);
+        }
+    }
+    console.log("no match found");
+    console.debug(fn);
+    return null;
+}
+
 /* fns is an array of functions that map elements
  * from arr to real numbers. This function returns
  * an array of elements from arr corresponding to 
@@ -202,4 +214,13 @@ function arr_ring(arr, idx, value) {
     } else {
         arr[i] = value;
     }
+}
+
+function arr_find(arr, fn) {
+    for (var i in arr) {
+        if (fn(arr[i])) {
+            return arr[i];
+        }
+    }
+    return null;
 }
