@@ -29,7 +29,41 @@ $(function() {
     display_loop();
     control_loop();
     */
+//    var pts = [];
+    var midx = 200;
+    var left = [];
+    var right = [];
+    $(document).click(function() {
+        var pt = Input.get_mouse_pos();
+        
+        if (pt[0] > midx) {
+            right.push(pt);
+        } else {
+            left.push(pt);
+        }
+        
+        cu.clear();
 
+        cu.draw_segment([[midx, 0], [midx, 10]], "black", 1);
+
+        left.map(function(x) {cu.draw_point(x, "red")});
+        right.map(function(x) {cu.draw_point(x, "blue")});
+
+        if (left.length > 2) {
+            quickhull(left).map(function(seg) {cu.draw_segment(seg)});
+        }
+
+        if (right.length > 2) {
+            quickhull(right).map(function(seg) {cu.draw_segment(seg)});
+        }
+
+        if (left.length > 2 && right.length > 2) {
+            var t = bottom_tangent(left, right);
+            cu.draw_segment(t, "black", 2);
+        }
+    });
+
+    return;
     var pts = [[100, 50], [100, 100], [300, 150], [100, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
     //pts = pts.map(function(pt){return [pt[0], 300 -pt[1]]});
 
@@ -119,17 +153,17 @@ function bottom_tangent(left, right) {
     /* the left and right orders start with the segment which starts and
      * ends with the lowsest point respectively */
     var left_order = arr_rotate_most(left_hull, function(seg) {
-        return seg[0][1];
+        return -seg[0][1];
     });
     
     var right_order = arr_rotate_most(right_hull.reverse(), function(seg) {
-        return seg[1][1];
+        return -seg[1][1];
     });
     
     var left_idx = 0;
     var right_idx = 0;
     var tangent = [left_order[left_idx][0], right_order[right_idx][1]];
-    
+    return tangent;
     while (true) {
         if (signed_segment_right_angle_distance(tangent, arr_ring(left_order, left_idx)[1]) >= 0) {
             ++left_idx;
