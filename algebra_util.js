@@ -6,6 +6,14 @@ function vector_normal(v) {
     return [-v[1], v[0]];
 }
 
+function vector_equals(a, b) {
+    return a[0] == b[0] && a[1] == b[1];
+}
+
+function segment_equals(a, b) {
+    return vector_equals(a[0], b[0]) && vector_equals(a[1], b[1]);
+}
+
 /* the projection of a on b
  */
 function vector_project(a, b) {

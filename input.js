@@ -23,7 +23,7 @@ Input.is_down = function(keys) {
 }
 
 Input.get_mouse_pos = function() {
-    return Input.mouse_pos;
+    return Input.mouse_pos.slice(0);
 }
 
 Input.register_keydown_callback = function(name, keys, fn) {
