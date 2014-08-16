@@ -30,18 +30,30 @@ $(function() {
     control_loop();
     */
 
-    var pts = [[100, 200], [100, 100], [300, 200], [150, 200], [400, 150], [250, 100], [225, 130], [170, 175], [230, 200], [125, 150], [255, 25]];
-    _.map(pts, function(pt){cu.draw_point(pt)});
+    var pts = [[100, 50], [100, 100], [300, 150], [100, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
+    //pts = pts.map(function(pt){return [pt[0], 300 -pt[1]]});
+
+    var sorted = sort_left_to_right(pts);
+
+    var left = arr_left_half(sorted);
+    var right = arr_right_half(sorted);
+
+    left.map(function(pt){cu.draw_point(pt, "red")});
+    right.map(function(pt){cu.draw_point(pt, "blue")});
+
+    var bt = bottom_tangent(left, right);
+//    cu.draw_segment(bt);
 
 /*
     _.map(triangulate(pts), function(segment) {
         cu.draw_segment(segment);
     });
-    */
-
+*/
+/*
     var ch = quickhull(pts);
     console.debug(ch);
     ch.map(function(seg){cu.draw_segment(seg)});
+*/
 });
 
 /* computes the partial convex hull for a given segment and
@@ -96,6 +108,61 @@ function quickhull(pts) {
     return above_hull.concat(below_hull);
 
 }
+
+/*
+ * Returns a line segment which is the bottom-most tangent to the point sets.
+ */
+function bottom_tangent(left, right) {
+    var left_hull = quickhull(left);
+    var right_hull = quickhull(right);
+
+    /* the left and right orders start with the segment which starts and
+     * ends with the lowsest point respectively */
+    var left_order = arr_rotate_most(left_hull, function(seg) {
+        return seg[0][1];
+    });
+    
+    var right_order = arr_rotate_most(right_hull.reverse(), function(seg) {
+        return seg[1][1];
+    });
+    
+    var left_idx = 0;
+    var right_idx = 0;
+    var tangent = [left_order[left_idx][0], right_order[right_idx][1]];
+    
+    while (true) {
+        if (signed_segment_right_angle_distance(tangent, arr_ring(left_order, left_idx)[1]) >= 0) {
+            ++left_idx;
+            tangent = [arr_ring(left_order, left_idx)[0], right_order[right_idx][1]];
+            continue;
+        }
+        
+        if (signed_segment_right_angle_distance(tangent, arr_ring(left_order, left_idx - 1)[0]) >= 0) {
+            --left_order;
+            tangent = [arr_ring(left_order, left_idx)[0], right_order[right_idx][1]];
+            continue;
+        }
+        
+        if (signed_segment_right_angle_distance(tangent, arr_ring(right_order, right_idx)[0]) >= 0) {
+            ++right_idx;
+            tangent = [left_order[left_idx][0], arr_ring(right_order, right_idx)[1]];
+            continue;
+        }
+
+        if (signed_segment_right_angle_distance(tangent, arr_ring(right_order, right_idx - 1)[1]) >= 0) {
+            --right_idx;
+            tangent = [left_order[left_idx][0], arr_ring(right_order, right_idx)[1]];
+            continue;
+        }
+
+        break;
+    }
+
+    return tangent;
+}
+
+
+
 
 function sort_left_to_right(pts) {
     // sort the array of points in order of increasing x coord with y coord breaking ties
@@ -159,13 +226,6 @@ function triangulate_sorted(sorted_pts, depth) {
 
             return ret;
     }
-
-}
-
-/*
- * Returns a line segment which is the bottom-most tangent to the point sets.
- */
-function bottom_tangent(left, right) {
 
 }
 

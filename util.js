@@ -134,6 +134,28 @@ function arr_most(arr, fn, scores) {
     return most;
 }
 
+function arr_rotate(arr, idx) {
+    return arr.slice(idx).concat(arr.slice(0, idx));
+}
+
+function arr_rotate_most(arr, fn) {
+    var most = arr[0];
+    var best = fn(arr[0]);
+    var best_idx = 0;
+
+    var rest = arr.slice(1);
+    for (var i in rest) {
+        var val = fn(rest[i]);
+        if (val > best) {
+            best = val;
+            most = rest[i];
+            best_idx = parseInt(i) + 1;
+        }
+    }
+    return arr_rotate(arr, best_idx);
+
+}
+
 /* fns is an array of functions that map elements
  * from arr to real numbers. This function returns
  * an array of elements from arr corresponding to 
@@ -169,4 +191,15 @@ function arr_proxy_filter(arr_to_filter, arr_to_filter_by, filter_fn) {
         }
     }
     return filtered;
+}
+
+// treat an array like a ring buffer
+function arr_ring(arr, idx, value) {
+    var i = (idx % arr.length + arr.length) % arr.length;
+    if (value == undefined) {
+        console.debug(arr);
+        return arr[i];
+    } else {
+        arr[i] = value;
+    }
 }
