@@ -57,13 +57,12 @@ $(function() {
             quickhull(right).map(function(seg) {cu.draw_segment(seg)});
         }
 
-        if (left.length > 2 && right.length > 2) {
+        if (left.length > 0 && right.length > 0) {
             var t = tangents_to_point_sets(left, right);
-            cu.draw_segment(t, "black", 2);
+            cu.draw_segment(t[0], "black", 2);
         }
     });
-
-    return;
+/*
     var pts = [[100, 50], [100, 100], [300, 150], [100, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
     //pts = pts.map(function(pt){return [pt[0], 300 -pt[1]]});
 
@@ -71,13 +70,17 @@ $(function() {
 
     var left = arr_left_half(sorted);
     var right = arr_right_half(sorted);
+*/
 
+    var left = [[100, 100], [100, 200]];
+    var right = [[150, 100], [140, 150]];
     left.map(function(pt){cu.draw_point(pt, "red")});
     right.map(function(pt){cu.draw_point(pt, "blue")});
 
     var bt = tangents_to_point_sets(left, right);
 
-    bt.map(function(x){cu.draw_segment(x, "green", 4)});
+    cu.draw_segment(bt[0], "green", 1);
+    cu.draw_segment(bt[1], "orange", 1);
 //    cu.draw_segment(bt);
 
 /*
@@ -129,10 +132,13 @@ function qh_seg(seg, pts) {
 }
 
 function quickhull(pts) {
-    // segment connection left-most to right-most points
+    // segment connecting left-most to right-most points
     var initial_segment = arr_mosts(pts, [
         function(pt) {return -pt[0]}, // left most
         function(pt) {return pt[0]}   // right most
+    ], [
+        function(cur, best) {return cur[1] < cur[1]},
+        function(cur, best) {return cur[1] >= cur[1]}
     ]);
 
     var above_pts = points_above_segment(initial_segment, pts);
@@ -156,36 +162,20 @@ function tangents_to_point_sets(left, right) {
     var right_hull = quickhull(right);
     
     var hull = quickhull(left.concat(right));
-
-    // find a segment in the combined hull also part of the left hull
-    var left_order = arr_rotate_until(hull, function(s){return segment_equals(s, left_hull[0])});
     
-    if (left_order == null) {
-        left_order = arr_rotate_until(hull, function(s){return segment_equals(s, arr_ring(left_hull, -1))});
-    }       
-
-    hull.map(function(s){cu.draw_segment(s, "black", 2)});
-    left_hull.map(function(s){cu.draw_segment(s, "blue", 4)});
-    if (left_order == null) {
-        console.debug(JSON.stringify(left_hull[0]));
-        console.debug(JSON.stringify(hull));
-        alert("bad");   
-    }
-
+    cu.draw_segment(hull[0], "blue", 2);
 
     var left_idx = 0;
-    while (segment_equals(arr_ring(left_order, left_idx), arr_ring(left_hull, left_idx))) {
-        cu.draw_segment(arr_ring(left_order, left_idx), "red", 6);
+    while (segment_equals(arr_ring(hull, left_idx), arr_ring(left_hull, left_idx))) {
         ++left_idx;
     }
     
-    tangents.push(arr_ring(left_order, left_idx));
+    tangents.push(arr_ring(hull, left_idx));
     left_idx = -1;
-    while (segment_equals(arr_ring(left_order, left_idx), arr_ring(left_hull, left_idx))) {
-        cu.draw_segment(arr_ring(left_order, left_idx), "green", 6);
-        ++left_idx;
+    while (segment_equals(arr_ring(hull, left_idx), arr_ring(left_hull, left_idx))) {
+        --left_idx;
     }
-    tangents.push(arr_ring(left_order, left_idx));
+    tangents.push(arr_ring(hull, left_idx));
 
     return tangents;
 

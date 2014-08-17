@@ -174,7 +174,7 @@ function arr_rotate_until(arr, fn) {
  * the elements maximizing the fn value for each fn
  * in fns.
  */
-function arr_mosts(arr, fns) {
+function arr_mosts(arr, fns, tb) {
     // initialize with first element of array
     var mosts = fns.map(tofn(arr[0]));
     var bests = fns.map(function(fn){return fn(arr[0])});
@@ -188,7 +188,11 @@ function arr_mosts(arr, fns) {
             if (val > bests[j]) {
                 mosts[j] = el;
                 bests[j] = val;
-            }       
+            } else if (val == bests[j] && tb) {
+                if (tb[j](el, mosts[j])) {
+                    mosts[j] = el;
+                }
+            }
         }
     }
 

@@ -24,6 +24,10 @@ function vector_length(v) {
     return Math.sqrt(v[0]*v[0]+v[1]*v[1]);
 }
 
+function vector_distance(v, w) {
+    return vector_length(numeric['-'](v, w));
+}
+
 /* this shortest distance from a vector a to the line from the
  * origin through a vector b
  */
@@ -78,4 +82,37 @@ function points_above_segment(seg, pts) {
 
 function points_below_segment(seg, pts) {
     return points_above_segment(segment_flip(seg), pts);
+}
+
+function segment_mid_point(seg) {
+    return [(seg[0][0] + seg[1][0])/2, (seg[0][1] + seg[1][1])/2];
+}
+
+function circle_centre_from_circumference_points(a, b, c) {
+    var l0 = segment_perpendicular_bisector([a, b]);
+    var l1 = segment_perpendicular_bisector([b, c]);
+    return line_intersection(l0[0], l0[1], l1[0], l1[1]);
+}
+
+// returns a line in the form [point, direction]
+function segment_perpendicular_bisector(seg) {
+    var mid = segment_mid_point(seg);
+    var normal_v = vector_normal(numeric['-'](seg[1], seg[0]));
+    return [mid, normal_v];
+}
+
+function line_intersection(p, v, q, w) {
+    var r = numeric['-'](p, q);
+    var matrix = $M([[w[0], v[0]], [w[1], v[1]]]);
+    var inverse = matrix.inverse();
+    var multipliers = inverse.multiply($M([[r[0]], [r[1]]])).elements;
+    return numeric['+'](q, numeric['*'](multipliers[0][0], w));
+}
+
+// the angle between v and w going around the origin anticlockwise
+function vector_angle_anticlockwise(v, w) {
+    var v_angle = Math.atan2(v[1], v[0]);
+    var w_angle = Math.atan2(w[1], w[0]);
+    var difference = v_angle - w_angle;
+    return difference;
 }
