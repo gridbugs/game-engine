@@ -66,7 +66,7 @@ Input.init = function() {
         Input.mouse_y = e.pageY - Input.canvas_offset_y;
         Input.mouse_pos[0] = Input.mouse_x;
         Input.mouse_pos[1] = Input.mouse_y;
-        Info.set("mouse_pos", Input.mouse_pos);
+        Info.set("mouse_pos", JSON.stringify(Input.mouse_pos));
 
         for (var callback in Input.mousemove_callbacks){ 
             Input.mousemove_callbacks[callback](Input.mouse_pos);

@@ -1,118 +1,131 @@
-/* return the vector at a right angle to the given vector
- * of the same length. Always the original vector rotated
- * 90 degrees anticlolckwise about the origin.
+// add vector methods to Array
+
+// algebraic sum of 2 vectors
+extend(Array, 'v2_add', function(v){return [this[0]+v[0], this[1]+v[1]]});
+
+// algebraic sum of this and -v
+extend(Array, 'v2_sub', function(v){return [this[0]-v[0], this[1]-v[1]]});
+
+// length of this squared
+extend(Array, 'v2_len_squared', function() {return this[0]*this[0]+this[1]*this[1]});
+
+// length of this
+extend(Array, 'v2_len', function(){return Math.sqrt(this.v2_len_squared())});
+
+// true iff this is identical to v
+extend(Array, 'v2_equals', function(v){return this[0]==v[0] && this[1]==v[1]});
+
+// returns this rotated 90 degrees anticlockwise
+extend(Array, 'v2_norm', function() {return [-this[1], this[0]]});
+
+// distance between this and v
+extend(Array, 'v2_dist', function(v) {return this.v2_sub(v).v2_len()});
+
+// dot product of this and v
+extend(Array, 'v2_dot', function(v) {return this[0]*v[0] + this[1]*v[1]});
+
+// scalar multiple of this and s
+extend(Array, 'v2_smult', function(s) {return [this[0]*s, this[1]*s]});
+
+// projection of v on this
+extend(Array, 'v2_project', function(v) {
+    return this.v2_smult(this.v2_dot(v)/this.v2_len_squared());
+});
+
+/* shortest distance from this to v 
+ * (length of line segment from v at right angles to this to some point on this) */
+extend(Array, 'v2_shortest_dist_to', function(v) {
+    return v.v2_dist(this.v2_project(v));
+});
+
+extend(Array, 'v2_angle_between', function(v) {
+    return Math.atan2(this[1], this[0]) - Math.atan2(v[1], v[0]);
+});
+
+// angle through this->v->w
+extend(Array, 'v2_angle_through', function(v, w) {
+    var this_shift = this.v2_sub(v);
+    var w_shift = w.v2_sub(v);
+    return this_shift.v2_angle_between(w_shift);
+});
+
+/* return multiplier for the distance from v to a point on this
+ * such that positive distances are 'to the left'
  */
-function vector_normal(v) {
-    return [-v[1], v[0]];
-}
-
-function vector_equals(a, b) {
-    return a[0] == b[0] && a[1] == b[1];
-}
-
-function segment_equals(a, b) {
-    return vector_equals(a[0], b[0]) && vector_equals(a[1], b[1]);
-}
-
-/* the projection of a on b
- */
-function vector_project(a, b) {
-    return numeric['*'](numeric.dot(a, b) / numeric.dot(b, b), b);
-}
-
-function vector_length(v) {
-    return Math.sqrt(v[0]*v[0]+v[1]*v[1]);
-}
-
-function vector_distance(v, w) {
-    return vector_length(numeric['-'](v, w));
-}
-
-/* this shortest distance from a vector a to the line from the
- * origin through a vector b
- */
-function vector_right_angle_distance(a, b) {
-    return vector_length(numeric['-'](a, vector_project(a, b)));
-}
-
-/* if the direction of b is that of a rotated anticlockwise
- * by less than 180 degrees and greater than 0 degrees,
- * return 1 else return -1
- */
-function signed_multiplier(a, b) {
-    if (numeric.dot(vector_normal(a), b) > 0) {
+extend(Array, 'v2_relative_sign', function(v) {
+    if (this.v2_norm().v2_dot(v) > 0) {
         return 1;
     } else {
         return -1;
     }
-}
+});
 
-/* right angle distance where the positive direction is
- * 'to the left' or rotated anticlockwise less than 180
- */
-function signed_vector_right_angle_distance(a, b) {
-    // the vector from some point on origin->b to a at right angles to orign->b
-    var right_angle_vector = numeric['-'](a, vector_project(a, b));
-    var multiplier = signed_multiplier(b, right_angle_vector);
-    return vector_length(right_angle_vector)*multiplier;
-}
+extend(Array, 'v2_signed_shortest_dist_to', function(v) {
+    return this.v2_shortest_dist_to(v) * this.v2_relative_sign(v);
+});
 
-/* right angle distance to line on which segment lies to point.
- * Direction of segment is first point to second point for 
- * the purposes of signedness.
- */
-function signed_segment_right_angle_distance(seg, pt) {
-    // put the start point of the segment at the origin
-    var seg_direction = numeric['-'](seg[1], seg[0]);
-    var pt_relative = numeric['-'](pt, seg[0]);
+// add segment methods to Array
+extend(Array, 'seg_equals', function(s) {
+    return this[0].v2_equals(s[0]) && this[1].v2_equals(s[1]);
+});
 
-    // now use regular vector arithmetic
-    return signed_vector_right_angle_distance(pt_relative, seg_direction);
-}
+extend(Array, 'seg_to_dir_v2', function() {
+    return this[1].v2_sub(this[0]);
+});
 
-function segment_flip(seg) {
-    return [seg[1], seg[0]];
-}
+extend(Array, 'seg_signed_shortest_dist_to', function(v) {
+    return this.seg_to_dir_v2().v2_signed_shortest_dist_to(v.v2_sub(this[0]));
+});
 
-function points_above_segment(seg, pts) {
-    return pts.filter(function(pt) {
-        return signed_segment_right_angle_distance(seg, pt) > 0
+extend(Array, 'seg_flip', function() {return [this[1], this[0]]});
+
+extend(Array, 'seg_filter_above', function(vs) {
+    var _this = this;
+    return vs.filter(function(v) {
+        return _this.seg_signed_shortest_dist_to(v) > 0;
     });
+});
+
+extend(Array, 'seg_filter_below', function(vs) {
+    return this.seg_flip().seg_filter_above(vs);
+});
+
+extend(Array, 'seg_mid', function() {
+    return [(this[0][0] + this[1][0])/2, (this[0][1] + this[1][1])/2];
+});
+
+extend(Array, 'seg_norm_v', function() {
+    return this.seg_to_dir_v2().v2_norm();
+});
+
+extend(Array, 'seg_perpendicular_bisector_line', function() {
+    return [this.seg_mid(), this.seg_norm_v()];
+});
+
+
+// add line methods to Array
+// a line is a pair of vectors [p, v]
+// such that p is a point on the line and v is its direction
+// (ie. line = p + av for all real numbers 'a'
+
+extend(Array, 'line_intersection', function(l) {
+    var r = this[0].v2_sub(l[0]);
+    var matrix = [[l[1][0], this[1][0]], [l[1][1], this[1][1]]];
+    var inverse = numeric.inv(matrix);
+    var mult = numeric.dot(inverse, r);
+    return l[0].v2_add(l[1].v2_smult(mult[0]));
+});
+
+// returns the circle which passes through the three specified
+// points in the form [centre, radius]
+var circle_through = function(a, b, c) {
+    var l0 = [a, b].seg_perpendicular_bisector_line();
+    var l1 = [b, c].seg_perpendicular_bisector_line();
+    var centre = l0.line_intersection(l1);
+    var radius = centre.v2_dist(a);
+    return [centre, radius];
 }
 
-function points_below_segment(seg, pts) {
-    return points_above_segment(segment_flip(seg), pts);
-}
-
-function segment_mid_point(seg) {
-    return [(seg[0][0] + seg[1][0])/2, (seg[0][1] + seg[1][1])/2];
-}
-
-function circle_centre_from_circumference_points(a, b, c) {
-    var l0 = segment_perpendicular_bisector([a, b]);
-    var l1 = segment_perpendicular_bisector([b, c]);
-    return line_intersection(l0[0], l0[1], l1[0], l1[1]);
-}
-
-// returns a line in the form [point, direction]
-function segment_perpendicular_bisector(seg) {
-    var mid = segment_mid_point(seg);
-    var normal_v = vector_normal(numeric['-'](seg[1], seg[0]));
-    return [mid, normal_v];
-}
-
-function line_intersection(p, v, q, w) {
-    var r = numeric['-'](p, q);
-    var matrix = $M([[w[0], v[0]], [w[1], v[1]]]);
-    var inverse = matrix.inverse();
-    var multipliers = inverse.multiply($M([[r[0]], [r[1]]])).elements;
-    return numeric['+'](q, numeric['*'](multipliers[0][0], w));
-}
-
-// the angle between v and w going around the origin anticlockwise
-function vector_angle_anticlockwise(v, w) {
-    var v_angle = Math.atan2(v[1], v[0]);
-    var w_angle = Math.atan2(w[1], w[0]);
-    var difference = v_angle - w_angle;
-    return difference;
+var radians_to_degrees = function(r) {
+    return r * 180 / Math.PI;
 }

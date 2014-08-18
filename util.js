@@ -1,3 +1,11 @@
+function extend(cl, fn_name, fn) {
+    Object.defineProperty(cl.prototype, fn_name, {
+            value: fn,
+            enumerable: false,
+        }
+    );
+}
+
 /* takes a function and an array and calls
  * the function on the elements as individual
  * arguments
@@ -199,6 +207,23 @@ function arr_mosts(arr, fns, tb) {
     return mosts;
 }
 
+function arr_k_heap(arr, k, fn) {
+    var h = new ConstrainedHeap(k, function(a, b) {
+        return fn(a) <= fn(b);
+    });
+    return arr.reduce(function(acc, x) {acc.insert(x);return acc}, h);
+}
+
+// returns the k highest elements in arr
+function arr_k_most(arr, k, fn) {
+    return arr_k_heap(arr, k, fn).to_array();
+}
+
+// returns the k highest elements in arr sorted in order from lowest value of fn(x)
+function arr_k_most_sorted(arr, k, fn) {
+    return arr_k_heap(arr, k, fn).to_sorted_array();
+}
+
 function arr_proxy_filter(arr_to_filter, arr_to_filter_by, filter_fn) {
     var filtered = [];
     for (var i in arr_to_filter_by) {
@@ -213,7 +238,6 @@ function arr_proxy_filter(arr_to_filter, arr_to_filter_by, filter_fn) {
 function arr_ring(arr, idx, value) {
     var i = (idx % arr.length + arr.length) % arr.length;
     if (value == undefined) {
-        console.debug(arr);
         return arr[i];
     } else {
         arr[i] = value;
@@ -228,3 +252,4 @@ function arr_find(arr, fn) {
     }
     return null;
 }
+
