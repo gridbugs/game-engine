@@ -45,13 +45,20 @@ $(function() {
         
         var pt = Input.get_mouse_pos();
         
-        pts.push(pt);
-        
-        var t = triangulate(pts);
+        var existing = pts.find(function(v) {
+            return v.v2_equals(pt);
+        });
 
-        cu.clear();
-        pts.map(function(x) {cu.draw_point(x)});
-        t.map(function(seg){cu.draw_segment(seg, "black", 2)});
+        if (existing == null) {
+
+            pts.push(pt);
+            
+            var t = triangulate(pts);
+
+            cu.clear();
+            pts.map(function(x) {cu.draw_point(x)});
+            t.map(function(seg){cu.draw_segment(seg, "black", 2)});
+        }
     });
 
 //    var pts = [[100, 50], [100, 100], [300, 150], [120, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
@@ -93,7 +100,7 @@ $(function() {
     */
 /*
     var ch = quickhull(pts);
-    console.debug(ch);
+
     ch.map(function(seg){cu.draw_segment(seg)});
 */
 });
@@ -198,7 +205,7 @@ function sort_left_to_right(pts) {
 }
 
 function triangulate(pts) {
-    console.debug(pts);
+
     
     var sorted_pts = sort_left_to_right(pts);
 
@@ -212,7 +219,7 @@ var colour_debug = new ColourDebugger(["red", "green", "blue", "yellow", "purple
  * Returns an array of segments constituting the triangulation.
  */
 function triangulate_sorted(sorted_pts, depth) {
-    //console.debug(sorted_pts.length);
+
     switch(sorted_pts.length) {
         case 0:
         case 1:
@@ -233,7 +240,7 @@ function triangulate_sorted(sorted_pts, depth) {
             var delaunay_left = triangulate_sorted(left, depth + 1);
             var delaunay_right = triangulate_sorted(right, depth + 1);
             
-            //console.debug(depth);
+
 /*
             _.map(delaunay_left, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*4)});
             colour_debug.next_colour();
@@ -268,11 +275,11 @@ function find_satisfying_candidate(candidates, bottom, is_left) {
         var angle;
         if (is_left) {
             angle = angle_through(bottom[1], bottom[0], candidates[i]);
-            console.debug("left: " + angle);
+
         } else {
             angle = angle_through(candidates[i], bottom[1], bottom[0]);
             //angle = angle_through(bottom[0], bottom[1], candidates[i]);
-            //console.debug("right: " + angle);
+
         }
         if (angle >= Math.PI) {
             return null;
@@ -280,11 +287,11 @@ function find_satisfying_candidate(candidates, bottom, is_left) {
 
         // the next candidate is not in the circle
         if (i<num_candidates-1) {
-            console.debug("creating circle");
+
             var circle = circle_through(bottom[0], bottom[1], candidates[i]);
             if (circle.circ_contains(candidates[i+1])) {
-                console.debug("removing:");
-                console.debug(candidates[i]);
+
+
                 candidates[i].__segment.__will_remove = true;
                 continue;
             }
@@ -301,7 +308,7 @@ function remove_flagged(s) {
         if (!s[i].__will_remove) {
             ret.push(s[i]);
         } else {
-            console.debug("actually removing");
+
         }
     }
     return ret;
@@ -313,7 +320,7 @@ function remove_flagged(s) {
  */
 var count = 0;
 function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
-    console.debug("count: " + count);
+
     count++;
 
     var merge_segs = [];
@@ -341,17 +348,17 @@ function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
         var left = find_satisfying_candidate(left_candidates, bottom, true);
         var right = find_satisfying_candidate(right_candidates, bottom, false);
 
-        console.debug(right);
+
 
         var new_segment;
 
         var left_circ, right_circ;
         if (left) {
-            console.debug("before left circle");
-            console.debug(bottom);
-            console.debug(left);
+
+
+
             left_circ = circle_through(bottom[0], bottom[1], left);
-            console.debug("after left circle");
+
         }
         if (right) {
             right_circ = circle_through(bottom[0], bottom[1], right);
@@ -368,26 +375,26 @@ function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
         n++;
 
         if (left && right) {
-            console.debug("both");
+
             if (!left_circ.circ_contains(right)) {
-                console.debug("left");
+
                 new_segment = [left, bottom[1]];
             } else if (!right_circ.circ_contains(left)) {
-                console.debug("right");
+
                 new_segment = [bottom[0], right];
             }
 
         } else if (left) {
-                console.debug("left only");
+
             new_segment = [left, bottom[1]];
         } else if (right) {
-                console.debug("right only");
+
             new_segment = [bottom[0], right];
         } else {
-            console.debug("done");
+
             done = true;
         }
-        console.debug(JSON.stringify(new_segment));
+
         merge_segs.push(bottom);
         bottom = new_segment;
         /*
