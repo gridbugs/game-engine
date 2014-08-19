@@ -8,6 +8,14 @@ $(function() {
     cu = new CanvasUtil();
     cu.register_canvas($("#screen")[0]);
 
+    cu.canvas.width = $(window).width();
+    cu.canvas.height = $(window).height();
+
+    $(document).resize(function() {
+        cu.canvas.width = $(window).width();
+        cu.canvas.height = $(window).height();
+    });
+
     var player = new Agent([200, 200], 0);
     Agent.set_controlled_agent(player);
 
@@ -24,6 +32,8 @@ $(function() {
         Agent.controlled_agent.control_tick();
         setTimeout(control_loop, 50);
     }
+
+
 
     /*
     display_loop();
