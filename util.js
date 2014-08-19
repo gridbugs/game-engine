@@ -221,3 +221,10 @@ extend(Array, 'find', function(fn) {
     }
     return null;
 });
+
+extend(Array, 'get_reverse', function() {
+    return this.slice(0).reverse();
+});
+
+
+

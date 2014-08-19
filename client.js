@@ -29,45 +29,34 @@ $(function() {
     display_loop();
     control_loop();
     */
-//    var pts = [];
+    var pts = [];
     var midx = 200;
-    var left = [];
-    var right = [];
     $(document).click(function() {
+        
         var pt = Input.get_mouse_pos();
         
-        if (pt[0] > midx) {
-            right.push(pt);
-        } else {
-            left.push(pt);
-        }
+        pts.push(pt);
         
+        var t = triangulate(pts);
+
         cu.clear();
-
-        cu.draw_segment([[midx, 0], [midx, 10]], "black", 1);
-
-        left.map(function(x) {cu.draw_point(x, "red")});
-        right.map(function(x) {cu.draw_point(x, "blue")});
-
-        if (left.length > 2) {
-            quickhull(left).map(function(seg) {cu.draw_segment(seg)});
-        }
-
-        if (right.length > 2) {
-            quickhull(right).map(function(seg) {cu.draw_segment(seg)});
-        }
-
-        if (left.length > 0 && right.length > 0) {
-            var t = tangents_to_point_sets(left, right);
-            cu.draw_segment(t[0], "black", 2);
-        }
+        pts.map(function(x) {cu.draw_point(x)});
+        t.map(function(seg){cu.draw_segment(seg, "black", 2)});
     });
 
-    //var pts = [[100, 50], [100, 100], [300, 150], [120, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
+//    var pts = [[100, 50], [100, 100], [300, 150], [120, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
     
-    var pts = [[100, 50], [50, 180], [200, 225], [300, 125], [425, 65], [445, 150]].map(function(v) {
-        return [v[0], v[1]+100]});
-    
+ 
+ /*
+    var left_pts = [[100, 50], [50, 180], [200, 225]];
+    var right_pts = [[400, 50], [425, 250], [445, 150], [500, 200]];
+    var pts = left_pts.concat(right_pts);
+    left_pts.concat(right_pts).map(function(pt){cu.draw_point(pt)});
+    */
+
+//    var t = triangulate(pts);
+//    t.map(function(seg){cu.draw_segment(seg, "black", 2)});
+
     //pts = pts.map(function(pt){return [pt[0], 300 -pt[1]]});
 /*
     var sorted = sort_left_to_right(pts);
@@ -87,10 +76,11 @@ $(function() {
     cu.draw_segment(bt[1], "orange", 1);
 */
 //    cu.draw_segment(bt);
-
+/*
     _.map(triangulate(pts), function(segment) {
         cu.draw_segment(segment);
     });
+    */
 /*
     var ch = quickhull(pts);
     console.debug(ch);
@@ -138,7 +128,7 @@ function quickhull(pts) {
     // segment connecting left-most to right-most points
     var initial_segment = [
         pts.most(function(v){return -v[0]}),
-        pts.most(function(v){return v[0]})
+        pts.get_reverse().most(function(v){return v[0]})
     ];
 
     var above_pts = initial_segment.seg_filter_above(pts);
@@ -234,13 +224,13 @@ function triangulate_sorted(sorted_pts, depth) {
             var delaunay_right = triangulate_sorted(right, depth + 1);
             
             //console.debug(depth);
-
-            _.map(delaunay_left, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*2)});
+/*
+            _.map(delaunay_left, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*4)});
             colour_debug.next_colour();
-            _.map(delaunay_right, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*2)});
+            _.map(delaunay_right, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*4)});
             colour_debug.next_colour();
                                             
-
+*/
             var ret = dewall_merge(delaunay_left, delaunay_right, left, right);
 
             return ret;
@@ -253,9 +243,12 @@ function get_neighbouring_vertices(segs, pt) {
     return segs.filter(function(seg) {
         return seg[0].v2_equals(pt) || seg[1].v2_equals(pt);
     }).map(function(seg) {
-        return seg.seg_other_v(pt);
+        var v = seg.seg_other_v(pt);
+        v.__segment = seg; // tack on a reference back to the segment
+        return v;
     });
 }
+
 
 function find_satisfying_candidate(candidates, bottom, is_left) {
     var num_candidates = candidates.length;
@@ -272,13 +265,17 @@ function find_satisfying_candidate(candidates, bottom, is_left) {
             //console.debug("right: " + angle);
         }
         if (angle >= Math.PI) {
-            continue;
+            return null;
         }
 
         // the next candidate is not in the circle
         if (i<num_candidates-1) {
+            console.debug("creating circle");
             var circle = circle_through(bottom[0], bottom[1], candidates[i]);
             if (circle.circ_contains(candidates[i+1])) {
+                console.debug("removing:");
+                console.debug(candidates[i]);
+                candidates[i].__segment.__will_remove = true;
                 continue;
             }
         }
@@ -288,19 +285,35 @@ function find_satisfying_candidate(candidates, bottom, is_left) {
     return null;
 }
 
+function remove_flagged(s) {
+    var ret = [];
+    for (var i = 0,len=s.length;i<len;++i) {
+        if (!s[i].__will_remove) {
+            ret.push(s[i]);
+        } else {
+            console.debug("actually removing");
+        }
+    }
+    return ret;
+}
+
 /*
  * Takes two lists of segments representing the delaunay triangulation of two halves
  * of a point set and computes the delaunay triangulation of the entire point set.
  */
+var count = 0;
 function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
+    console.debug("count: " + count);
+    count++;
 
     var merge_segs = [];
 
     var bottom = tangents_to_point_sets(left_pts, right_pts)[0];
-    cu.draw_segment(bottom);
+   // cu.draw_segment(bottom);
 
     var n = 0;
-    while (true) {
+    var done = false;
+    while (!done) {
      
         var left_candidates = get_neighbouring_vertices(left_segs, bottom[0]);
         var right_candidates = get_neighbouring_vertices(right_segs, bottom[1]);
@@ -318,33 +331,40 @@ function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
         var left = find_satisfying_candidate(left_candidates, bottom, true);
         var right = find_satisfying_candidate(right_candidates, bottom, false);
 
+        console.debug(right);
+
         var new_segment;
 
         var left_circ, right_circ;
         if (left) {
+            console.debug("before left circle");
+            console.debug(bottom);
+            console.debug(left);
             left_circ = circle_through(bottom[0], bottom[1], left);
+            console.debug("after left circle");
         }
         if (right) {
             right_circ = circle_through(bottom[0], bottom[1], right);
         }
-
-        
+/*
+        if (count == 2) {
         right_circ && 
-            cu.circle(right_circ[0], right_circ[1], false, colour_debug.get_colour(), 8-3*n);
+            cu.circle(right_circ[0], right_circ[1], false);
         left_circ && 
-            cu.circle(left_circ[0], left_circ[1], false, colour_debug.get_colour(), 8-3*n);
+            cu.circle(left_circ[0], left_circ[1], false);
+        }
+    */
 
-        colour_debug.next_colour();
         n++;
 
         if (left && right) {
-
-            if (!left_circ.circ_contains(right_candidates[0])) {
+            console.debug("both");
+            if (!left_circ.circ_contains(right)) {
                 console.debug("left");
-                new_segment = [left_candidates[0], bottom[1]];
-            } else if (!right_circ.circ_contains(left_candidates[0])) {
+                new_segment = [left, bottom[1]];
+            } else if (!right_circ.circ_contains(left)) {
                 console.debug("right");
-                new_segment = [bottom[0], right_candidates[0]];
+                new_segment = [bottom[0], right];
             }
 
         } else if (left) {
@@ -355,12 +375,21 @@ function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
             new_segment = [bottom[0], right];
         } else {
             console.debug("done");
-            break;
+            done = true;
         }
         console.debug(JSON.stringify(new_segment));
-        merge_segs.push(new_segment);
+        merge_segs.push(bottom);
         bottom = new_segment;
+        /*
+        if (count == 1) {
+            if (n >= 0) {
+                break;
+            }
+        }
+        */
     }
 
-    merge_segs.map(function(seg){cu.draw_segment(seg)});
+    //merge_segs.map(function(seg){cu.draw_segment(seg)});
+
+    return merge_segs.concat(remove_flagged(left_segs.concat(right_segs)));
 }

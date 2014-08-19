@@ -122,8 +122,13 @@ extend(Array, 'seg_perpendicular_bisector_line', function() {
 extend(Array, 'line_intersection', function(l) {
     var r = this[0].v2_sub(l[0]);
     var matrix = [[l[1][0], this[1][0]], [l[1][1], this[1][1]]];
+
+    console.debug("before inverse");
     var inverse = numeric.inv(matrix);
+    console.debug("after inverse");
+    console.debug("before dot");
     var mult = numeric.dot(inverse, r);
+    console.debug("after dot");
     return l[0].v2_add(l[1].v2_smult(mult[0]));
 });
 
@@ -136,7 +141,11 @@ extend(Array, 'circ_contains', function(v) {
 var circle_through = function(a, b, c) {
     var l0 = [a, b].seg_perpendicular_bisector_line();
     var l1 = [b, c].seg_perpendicular_bisector_line();
+    console.debug(l1);
+    console.debug(l0);
+    console.debug("before intersection");
     var centre = l0.line_intersection(l1);
+    console.debug("after intersection");
     var radius = centre.v2_dist(a);
     return [centre, radius];
 }
