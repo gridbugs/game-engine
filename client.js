@@ -65,7 +65,8 @@ $(function() {
 
     //var pts = [[100, 50], [100, 100], [300, 150], [120, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
     
-    var pts = [[100, 50], [50, 180], [200, 225], [300, 125], [425, 65], [445, 150]];
+    var pts = [[100, 50], [50, 180], [200, 225], [300, 125], [425, 65], [445, 150]].map(function(v) {
+        return [v[0], v[1]+100]});
     
     //pts = pts.map(function(pt){return [pt[0], 300 -pt[1]]});
 /*
@@ -232,7 +233,7 @@ function triangulate_sorted(sorted_pts, depth) {
             var delaunay_left = triangulate_sorted(left, depth + 1);
             var delaunay_right = triangulate_sorted(right, depth + 1);
             
-            console.debug(depth);
+            //console.debug(depth);
 
             _.map(delaunay_left, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*2)});
             colour_debug.next_colour();
@@ -248,33 +249,118 @@ function triangulate_sorted(sorted_pts, depth) {
 }
 
 
+function get_neighbouring_vertices(segs, pt) {
+    return segs.filter(function(seg) {
+        return seg[0].v2_equals(pt) || seg[1].v2_equals(pt);
+    }).map(function(seg) {
+        return seg.seg_other_v(pt);
+    });
+}
+
+function find_satisfying_candidate(candidates, bottom, is_left) {
+    var num_candidates = candidates.length;
+    for (var i = 0;i<num_candidates;++i) {
+
+        // the angle to the candidate is less than 180 degrees
+        var angle;
+        if (is_left) {
+            angle = angle_through(bottom[1], bottom[0], candidates[i]);
+            console.debug("left: " + angle);
+        } else {
+            angle = angle_through(candidates[i], bottom[1], bottom[0]);
+            //angle = angle_through(bottom[0], bottom[1], candidates[i]);
+            //console.debug("right: " + angle);
+        }
+        if (angle >= Math.PI) {
+            continue;
+        }
+
+        // the next candidate is not in the circle
+        if (i<num_candidates-1) {
+            var circle = circle_through(bottom[0], bottom[1], candidates[i]);
+            if (circle.circ_contains(candidates[i+1])) {
+                continue;
+            }
+        }
+
+        return candidates[i];
+    }
+    return null;
+}
+
 /*
  * Takes two lists of segments representing the delaunay triangulation of two halves
  * of a point set and computes the delaunay triangulation of the entire point set.
  */
 function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
 
+    var merge_segs = [];
+
     var bottom = tangents_to_point_sets(left_pts, right_pts)[0];
     cu.draw_segment(bottom);
- 
-    var right_candidates = right_segs.filter(function(seg) {
-        return seg[0].v2_equals(bottom[1]) || seg[1].v2_equals(bottom[1]);
-    }).map(function(seg) {
-        if (seg[0].v2_equals(bottom[1])) {
-            return seg[1];
-        } else {
-            return seg[0];
+
+    var n = 0;
+    while (true) {
+     
+        var left_candidates = get_neighbouring_vertices(left_segs, bottom[0]);
+        var right_candidates = get_neighbouring_vertices(right_segs, bottom[1]);
+
+        left_candidates.sort(function(a, b) {
+            return angle_through(bottom[1], bottom[0], a) - 
+                   angle_through(bottom[1], bottom[0], b);
+        });
+
+        right_candidates.sort(function(a, b) {
+            return angle_through(a, bottom[1], bottom[0]) - 
+                   angle_through(b, bottom[1], bottom[0]);
+        });
+
+        var left = find_satisfying_candidate(left_candidates, bottom, true);
+        var right = find_satisfying_candidate(right_candidates, bottom, false);
+
+        var new_segment;
+
+        var left_circ, right_circ;
+        if (left) {
+            left_circ = circle_through(bottom[0], bottom[1], left);
         }
-    });
+        if (right) {
+            right_circ = circle_through(bottom[0], bottom[1], right);
+        }
 
-    console.debug(JSON.stringify(right_candidates));
+        
+        right_circ && 
+            cu.circle(right_circ[0], right_circ[1], false, colour_debug.get_colour(), 8-3*n);
+        left_circ && 
+            cu.circle(left_circ[0], left_circ[1], false, colour_debug.get_colour(), 8-3*n);
 
-    var right_cand = right_candidates.most(function(pt) {
-        return -pt.v2_angle_through(bottom[1], bottom[0]);
-    });
+        colour_debug.next_colour();
+        n++;
 
-    console.debug(right_cand);
+        if (left && right) {
 
-    var right_circ = circle_through(bottom[0], bottom[1], right_cand);
-    cu.circle(right_circ[0], right_circ[1]);
+            if (!left_circ.circ_contains(right_candidates[0])) {
+                console.debug("left");
+                new_segment = [left_candidates[0], bottom[1]];
+            } else if (!right_circ.circ_contains(left_candidates[0])) {
+                console.debug("right");
+                new_segment = [bottom[0], right_candidates[0]];
+            }
+
+        } else if (left) {
+                console.debug("left only");
+            new_segment = [left, bottom[1]];
+        } else if (right) {
+                console.debug("right only");
+            new_segment = [bottom[0], right];
+        } else {
+            console.debug("done");
+            break;
+        }
+        console.debug(JSON.stringify(new_segment));
+        merge_segs.push(new_segment);
+        bottom = new_segment;
+    }
+
+    merge_segs.map(function(seg){cu.draw_segment(seg)});
 }

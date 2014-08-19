@@ -39,14 +39,11 @@ extend(Array, 'v2_shortest_dist_to', function(v) {
 });
 
 extend(Array, 'v2_angle_between', function(v) {
-    return Math.atan2(this[1], this[0]) - Math.atan2(v[1], v[0]);
-});
-
-// angle through this->v->w
-extend(Array, 'v2_angle_through', function(v, w) {
-    var this_shift = this.v2_sub(v);
-    var w_shift = w.v2_sub(v);
-    return this_shift.v2_angle_between(w_shift);
+    var ret = Math.atan2(this[1], this[0]) - Math.atan2(v[1], v[0]);
+    if (ret < 0) {
+        ret += Math.PI*2;
+    }
+    return ret;
 });
 
 /* return multiplier for the distance from v to a point on this
@@ -69,6 +66,10 @@ extend(Array, 'seg_equals', function(s) {
     return this[0].v2_equals(s[0]) && this[1].v2_equals(s[1]);
 });
 
+extend(Array, 'seg_unsigned_equals', function(s) {
+    return this.seg_equals(s) || this.seg_flip().seg_equals(s);
+});
+
 extend(Array, 'seg_to_dir_v2', function() {
     return this[1].v2_sub(this[0]);
 });
@@ -88,6 +89,16 @@ extend(Array, 'seg_filter_above', function(vs) {
 
 extend(Array, 'seg_filter_below', function(vs) {
     return this.seg_flip().seg_filter_above(vs);
+});
+
+extend(Array, 'seg_other_v', function(v) {
+    if (this[0].v2_equals(v)) {
+        return this[1];
+    } else if (this[1].v2_equals(v)) {
+        return this[0];
+    } else {
+        return null;
+    }
 });
 
 extend(Array, 'seg_mid', function() {
@@ -116,6 +127,10 @@ extend(Array, 'line_intersection', function(l) {
     return l[0].v2_add(l[1].v2_smult(mult[0]));
 });
 
+extend(Array, 'circ_contains', function(v) {
+    return this[0].v2_dist(v) <= this[1];
+});
+
 // returns the circle which passes through the three specified
 // points in the form [centre, radius]
 var circle_through = function(a, b, c) {
@@ -129,3 +144,10 @@ var circle_through = function(a, b, c) {
 var radians_to_degrees = function(r) {
     return r * 180 / Math.PI;
 }
+
+var angle_through = function(a, b, c) {
+    var a_shift = a.v2_sub(b);
+    var c_shift = c.v2_sub(b);
+    return a_shift.v2_angle_between(c_shift);
+}
+
