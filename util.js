@@ -87,13 +87,12 @@ function swap_args2(f) {
     }
 }
 
-function arr_left_half(arr) {
-    return arr.slice(0, arr.length/2);
-}
-
-function arr_right_half(arr) {
-    return arr.slice(arr.length/2, arr.length);
-}
+extend(Array, 'left_half', function() {
+    return this.slice(0, this.length/2);
+});
+extend(Array, 'right_half', function() {
+    return this.slice(this.length/2, this.length);
+});
 
 function call_on_split_array(merge, f, arr) {
     return merge(f(arr_left_half(arr)), f(arr_right_half(arr)));
@@ -119,137 +118,106 @@ function id(x) {
     return x;
 }
 
-/* returns the value x in arr that maximizes the value
- * of fn(x). e.g. function(arr){return arr_most(arr, id)}
- * is a function that returns the maximum value in an array
- */
-function arr_most(arr, fn, scores) {
-    var most = arr[0];
-    var best = fn(arr[0]);
+extend(Array, 'most_idx', function(fn, scores) {
+    fn=fn||id;
+    var most_i = 0;
+    var best = fn(this[0]);
 
-    var rest = arr.slice(1);
-    for (var i in rest) {
+    var rest = this.slice(1);
+    for (var i = 0, len=rest.length;i<len;++i) {
         var val = fn(rest[i]);
         if (scores) {
             scores[i] = val;
         }
         if (val > best) {
             best = val;
-            most = rest[i];
+            most_i = i+1;
         }
     }
 
-    return most;
-}
+    return most_i;
+
+});
+
+/* returns the value x in arr that maximizes the value
+ * of fn(x). e.g. function(arr){return arr_most(arr, id)}
+ * is a function that returns the maximum value in an array
+ */
+extend(Array, 'most', function(fn, scores) {
+    return this[this.most_idx(fn, scores)];
+});
+
+extend(Array, 'rotate', function(idx) {
+    return this.slice(idx).concat(this.slice(0, idx));
+});
 
 function arr_rotate(arr, idx) {
     return arr.slice(idx).concat(arr.slice(0, idx));
 }
 
-function arr_rotate_most(arr, fn) {
-    var most = arr[0];
-    var best = fn(arr[0]);
-    var best_idx = 0;
+extend(Array, 'rotate_most', function(fn) {
+    return this.rotate(this.most_idx(fn));
+});
 
-    var rest = arr.slice(1);
-    for (var i in rest) {
-        var val = fn(rest[i]);
-        if (val > best) {
-            best = val;
-            most = rest[i];
-            best_idx = parseInt(i) + 1;
+extend(Array, 'rotate_until', function(fn) {
+    for (var i = 0,len=this.length;i<len;++i) {
+        if (fn(this[i])) {
+            return this.rotate(this, i);
         }
     }
-    return arr_rotate(arr, best_idx);
-
-}
-
-function arr_rotate_until(arr, fn) {
-    var idx;
-    for (var i in arr) {
-        if (fn(arr[i])) {
-            return arr_rotate(arr, i);
-        }
-    }
-    console.log("no match found");
-    console.debug(fn);
     return null;
-}
 
-/* fns is an array of functions that map elements
- * from arr to real numbers. This function returns
- * an array of elements from arr corresponding to 
- * the elements maximizing the fn value for each fn
- * in fns.
- */
-function arr_mosts(arr, fns, tb) {
-    // initialize with first element of array
-    var mosts = fns.map(tofn(arr[0]));
-    var bests = fns.map(function(fn){return fn(arr[0])});
+});
 
-    // for all the other elements
-    var rest = arr.slice(1);
-    for (var i in rest) {
-        var el = rest[i];
-        for (var j in mosts) {
-            var val = fns[j](el);
-            if (val > bests[j]) {
-                mosts[j] = el;
-                bests[j] = val;
-            } else if (val == bests[j] && tb) {
-                if (tb[j](el, mosts[j])) {
-                    mosts[j] = el;
-                }
-            }
-        }
-    }
-
-    return mosts;
-}
-
-function arr_k_heap(arr, k, fn) {
+extend(Array, 'mosts_heap', function(k, fn) {
+    fn=fn||id;
     var h = new ConstrainedHeap(k, function(a, b) {
         return fn(a) <= fn(b);
     });
-    return arr.reduce(function(acc, x) {acc.insert(x);return acc}, h);
-}
+    return this.reduce(function(acc, x) {acc.insert(x);return acc}, h);
+});
 
 // returns the k highest elements in arr
-function arr_k_most(arr, k, fn) {
-    return arr_k_heap(arr, k, fn).to_array();
-}
+extend(Array, 'mosts', function(k, fn) {
+    return this.mosts_heap(k, fn).to_array();
+});
 
 // returns the k highest elements in arr sorted in order from lowest value of fn(x)
-function arr_k_most_sorted(arr, k, fn) {
-    return arr_k_heap(arr, k, fn).to_sorted_array();
-}
+extend(Array, 'mosts_sorted', function(k, fn) {
+    return this.mosts_heap(k, fn).to_sorted_array();
+});
 
-function arr_proxy_filter(arr_to_filter, arr_to_filter_by, filter_fn) {
+// returns the kth fn-est element in this
+extend(Array, 'kth', function(k, fn) {
+    fn=fn||id;
+    return this.mosts(k, fn).most(function(x){return -fn(x)});
+});
+
+extend(Array, 'proxy_filter', function(arr_to_filter_by, filter_fn) {
     var filtered = [];
-    for (var i in arr_to_filter_by) {
+    for (var i = 0,len=this.length;i<len;++i) {
         if (filter_fn(arr_to_filter_by[i])) {
-            filtered.push(arr_to_filter[i]);
+            filtered.push(this[i]);
         }
     }
     return filtered;
-}
+});
 
 // treat an array like a ring buffer
-function arr_ring(arr, idx, value) {
-    var i = (idx % arr.length + arr.length) % arr.length;
+extend(Array, 'ring', function(idx, value) {
+    var i = (idx % this.length + this.length) % this.length;
     if (value == undefined) {
-        return arr[i];
+        return this[i];
     } else {
-        arr[i] = value;
+        this[i] = value;
     }
-}
+});
 
-function arr_find(arr, fn) {
-    for (var i in arr) {
-        if (fn(arr[i])) {
-            return arr[i];
+extend(Array, 'find', function(fn) {
+    for (var i = 0,len=this.length;i<len;++i) {
+        if (fn(this[i])) {
+            return this[i];
         }
     }
     return null;
-}
-
+});

@@ -113,7 +113,7 @@ function qh_seg(seg, pts) {
     var distances = new Array(pts.length);
 
     // find the furthest point from the segment
-    var next = arr_most(pts, function(pt) {
+    var next = pts.most(function(pt) {
         return seg.seg_signed_shortest_dist_to(pt)
     }, distances);
 
@@ -135,13 +135,10 @@ function qh_seg(seg, pts) {
 
 function quickhull(pts) {
     // segment connecting left-most to right-most points
-    var initial_segment = arr_mosts(pts, [
-        function(pt) {return -pt[0]}, // left most
-        function(pt) {return pt[0]}   // right most
-    ], [
-        function(cur, best) {return cur[1] < cur[1]},
-        function(cur, best) {return cur[1] >= cur[1]}
-    ]);
+    var initial_segment = [
+        pts.most(function(v){return -v[0]}),
+        pts.most(function(v){return v[0]})
+    ];
 
     var above_pts = initial_segment.seg_filter_above(pts);
     var below_pts = initial_segment.seg_filter_below(pts);
@@ -167,16 +164,16 @@ function tangents_to_point_sets(left, right) {
     
 //    cu.draw_segment(hull[0], "blue", 2);
     var left_idx = 0;
-    while (arr_ring(hull, left_idx) .seg_equals (arr_ring(left_hull, left_idx))) {
+    while (hull.ring(left_idx) .seg_equals (left_hull.ring(left_idx))) {
         ++left_idx;
     }
     
-    tangents.push(arr_ring(hull, left_idx));
+    tangents.push(hull.ring(left_idx));
     left_idx = -1;
-    while (arr_ring(hull, left_idx) .seg_equals (arr_ring(left_hull, left_idx))) {
+    while (hull.ring(left_idx) .seg_equals (left_hull.ring( left_idx))) {
         --left_idx;
     }
-    tangents.push(arr_ring(hull, left_idx));
+    tangents.push(hull.ring(left_idx));
 
     return tangents;
 
@@ -229,8 +226,8 @@ function triangulate_sorted(sorted_pts, depth) {
                    ];
         default:
 
-            var left = arr_left_half(sorted_pts);
-            var right = arr_right_half(sorted_pts);
+            var left = sorted_pts.left_half();
+            var right = sorted_pts.right_half();
 
             var delaunay_left = triangulate_sorted(left, depth + 1);
             var delaunay_right = triangulate_sorted(right, depth + 1);
@@ -272,7 +269,7 @@ function dewall_merge(left_segs, right_segs, left_pts, right_pts) {
 
     console.debug(JSON.stringify(right_candidates));
 
-    var right_cand = arr_most(right_candidates, function(pt) {
+    var right_cand = right_candidates.most(function(pt) {
         return -pt.v2_angle_through(bottom[1], bottom[0]);
     });
 
