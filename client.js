@@ -1,3 +1,4 @@
+var g;
 var cu;
 var ai0;
 $(function() {
@@ -11,6 +12,8 @@ $(function() {
     cu.canvas.width = $(window).width();
     cu.canvas.height = $(window).height();
 
+    g = new Graph(cu, 0, 0, cu.canvas.height, cu.canvas.height, undefined, undefined, cu.canvas.height/4, cu.canvas.height/4);
+    
     $(document).resize(function() {
         cu.canvas.width = $(window).width();
         cu.canvas.height = $(window).height();
