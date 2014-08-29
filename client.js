@@ -12,8 +12,6 @@ $(function() {
     cu.canvas.width = $(window).width();
     cu.canvas.height = $(window).height();
 
-    g = new Graph(cu, 0, 0, cu.canvas.height, cu.canvas.height, undefined, undefined, cu.canvas.height/4, cu.canvas.height/4);
-    
     $(document).resize(function() {
         cu.canvas.width = $(window).width();
         cu.canvas.height = $(window).height();
@@ -36,6 +34,23 @@ $(function() {
         setTimeout(control_loop, 50);
     }
 
+
+    var g = new Graph(cu, 0, 0, 400, 400, 200, 200, 2, 2);
+
+    g.set_colours(
+        tinycolor({h: 0, s: 0, v: 0, a: 1}),
+        tinycolor({h: 0, s: 0, v: 255, a: 1})
+    );
+
+    var a;
+    var d = function() {
+        g.plot_radial(_.rotate_pos_to_radial(function(x){
+            return Math.sin(x*x*x/500 + a) * Math.sin(x/10 - a)
+        }));
+        a+=0.1;
+        setTimeout(d, 30)
+    };
+    a=0;d()
 
 
     /*
