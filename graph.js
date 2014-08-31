@@ -1,4 +1,4 @@
-function Graph(cu, left, top, width, height, origin_left, origin_top, h_scale, v_scale) {
+function Graph(cu, h_scale, v_scale, left, top, width, height, origin_left, origin_top, pixsiz) {
     this.cu = cu;
     this.ctx = cu.ctx;
     this.left = left == undefined ? 0 : left;
@@ -9,6 +9,7 @@ function Graph(cu, left, top, width, height, origin_left, origin_top, h_scale, v
     this.origin_top = origin_top == undefined ? this.height / 2 : origin_top;
     this.h_scale = h_scale == undefined ? 1 : h_scale;
     this.v_scale = v_scale == undefined ? 1 : v_scale;
+    this.pixsiz = pixsiz == undefined ? 1 : pixsiz;
 
     this.set_colours(tinycolor('black'), tinycolor('white'));
 
@@ -58,6 +59,9 @@ function set_pixel_rgba(pixarr, base_i, r, g, b, a) {
     pixarr[base_i+3] = a;
 }
 
+/* f is radial a function whose first argument is an angle and the
+ * second argument is the distance from the origin
+ */
 Graph.prototype.plot_radial = function(fn, range) {
     this.plot_2vars(function(x, y) {
         return fn(Math.atan2(y, x), Math.sqrt(x*x+y*y));
@@ -70,13 +74,18 @@ Graph.prototype.plot_radial = function(fn, range) {
 Graph.prototype.plot_2vars = function(fn, range) {
     range = range || [-1, 1];
 
-    var image = this.ctx.getImageData(this.left, this.top, this.width, this.height);
-    var data = image.data;
-    var data_i = 0;
-    for (var j = 0;j!=this.height;++j) {
-        var y = -(j - this.origin_top)/this.v_scale;
-        for (var i = 0;i!=this.width;++i) {
-            var x = (i - this.origin_left)/this.h_scale;
+    var pixsiz = this.pixsiz;
+
+    this.ctx.beginPath();
+
+    var screen_width = Math.floor(this.height/(pixsiz)) + 1;
+    var screen_height = Math.floor(this.width/(pixsiz)) + 1;
+
+    for (var j = 0;j!=screen_width;++j) {
+        
+        var y = -((j*pixsiz) - this.origin_top)/this.v_scale;
+        for (var i = 0;i!=screen_height;++i) {
+            var x = ((i*pixsiz) - this.origin_left)/this.h_scale;
 
             var z = fn(x, y);
             
@@ -86,14 +95,13 @@ Graph.prototype.plot_2vars = function(fn, range) {
             var byte_scale = Math.floor(255 * one_scale);
 
             var col = this.interpolate_colour(byte_scale);
-
-            set_pixel_rgba(data, data_i, col.r, col.g, col.b, col.a*255);
-            data_i+=4;
+            this.ctx.fillStyle = 'rgba('+col.r+','+col.g+','+col.b+','+col.a+')';
+            this.ctx.fillRect(i*pixsiz, j*pixsiz, pixsiz, pixsiz);
+            this.ctx.fillRect(i*pixsiz, j*pixsiz, pixsiz, pixsiz);
         }
     }
 
-
-    this.ctx.putImageData(image, this.left, this.top);
+    this.ctx.fill();
 }
 
 

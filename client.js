@@ -34,29 +34,14 @@ $(function() {
         setTimeout(control_loop, 50);
     }
 
-
-    var g = new Graph(cu, 0, 0, 400, 400, 200, 200, 2, 2);
-
-    g.set_colours(
-        tinycolor({h: 0, s: 0, v: 0, a: 1}),
-        tinycolor({h: 0, s: 0, v: 255, a: 1})
-    );
-
-    var a;
-    var d = function() {
-        g.plot_radial(_.rotate_pos_to_radial(function(x){
-            return Math.sin(x*x*x/500 + a) * Math.sin(x/10 - a)
-        }));
-        a+=0.1;
-        setTimeout(d, 30)
-    };
-    a=0;d()
+    new Graph(cu, 1, 1, 0, 0, 400, 400).plot_radial(function(theta, dist) {return dist}, [0, 200]);
 
 
     /*
     display_loop();
     control_loop();
     */
+    
     var pts = [];
     var midx = 200;
     $(document).click(function() {
