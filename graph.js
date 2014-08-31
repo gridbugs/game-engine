@@ -70,13 +70,22 @@ Graph.prototype.plot_radial = function(fn, range) {
 Graph.prototype.plot_2vars = function(fn, range) {
     range = range || [-1, 1];
 
-    var image = this.ctx.getImageData(this.left, this.top, this.width, this.height);
-    var data = image.data;
-    var data_i = 0;
-    for (var j = 0;j!=this.height;++j) {
-        var y = -(j - this.origin_top)/this.v_scale;
-        for (var i = 0;i!=this.width;++i) {
-            var x = (i - this.origin_left)/this.h_scale;
+    //var image = this.ctx.getImageData(this.left, this.top, this.width, this.height);
+    //var data = image.data;
+    
+   // var data_i = 0;
+    const pixsiz = 8;
+
+    this.ctx.beginPath();
+
+    var screen_width = Math.floor(this.height/(pixsiz)) + 1;
+    var screen_height = Math.floor(this.width/(pixsiz)) + 1;
+
+    for (var j = 0;j!=screen_width;++j) {
+        
+        var y = -((j*pixsiz) - this.origin_top)/this.v_scale;
+        for (var i = 0;i!=screen_height;++i) {
+            var x = ((i*pixsiz) - this.origin_left)/this.h_scale;
 
             var z = fn(x, y);
             
@@ -86,14 +95,17 @@ Graph.prototype.plot_2vars = function(fn, range) {
             var byte_scale = Math.floor(255 * one_scale);
 
             var col = this.interpolate_colour(byte_scale);
-
-            set_pixel_rgba(data, data_i, col.r, col.g, col.b, col.a*255);
-            data_i+=4;
+            this.ctx.fillStyle = 'rgba('+col.r+','+col.g+','+col.b+','+col.a+')';
+            this.ctx.fillRect(i*pixsiz, j*pixsiz, pixsiz, pixsiz);
+            this.ctx.fillRect(i*pixsiz, j*pixsiz, pixsiz, pixsiz);
+    //        set_pixel_rgba(data, data_i, col.r, col.g, col.b, col.a*255);
+    //        data_i+=4;
         }
     }
 
+    this.ctx.fill();
 
-    this.ctx.putImageData(image, this.left, this.top);
+    //this.ctx.putImageData(image, this.left, this.top);
 }
 
 
