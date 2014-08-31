@@ -34,8 +34,11 @@ $(function() {
         setTimeout(control_loop, 50);
     }
 
-    new Graph(cu, 1, 1, 0, 0, 400, 400).plot_radial(function(theta, dist) {return dist}, [0, 200]);
-
+    var r = R(function(theta, dist) {return dist}).restrict_range(0, Math.PI/4).f();
+    new Graph(cu, 1, 1, 0, 0, 400, 400).plot_radial(
+        r, [0, 100]
+    );
+    
 
     /*
     display_loop();
