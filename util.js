@@ -39,7 +39,17 @@ function angle_to_unit_vector(angle) {
     ];
 }
 
-function angle_between(start, end) {
+/* returns true iff the angle b is between a and c
+ */
+function angle_between(a, b, c) {
+    if (a <= c) {
+        return a <= b && b <= c;
+    } else {
+        return !(c <= b && b <= a);
+    }
+}
+
+function _angle_between(start, end) {
     return element_array_call(
                 swap_args2(numeric.atan2), 
                 numeric['-'](end, start)

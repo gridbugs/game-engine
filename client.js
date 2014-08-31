@@ -17,33 +17,10 @@ $(function() {
         cu.canvas.height = $(window).height();
     });
 
-    var player = new Agent([200, 200], 0);
-    Agent.set_controlled_agent(player);
-
-    ai0 = new Agent([400, 200], 0);
-
-    function display_loop() {
-        cu.clear();
-        Agent.controlled_agent.draw();
-        ai0.draw();
-        setTimeout(display_loop, 50);
-    }
-
-    function control_loop() {
-        Agent.controlled_agent.control_tick();
-        setTimeout(control_loop, 50);
-    }
-
-    var r = R(function(theta, dist) {return dist}).restrict_range(0, Math.PI/4).f();
+    var r = R(function(theta, dist) {return Math.max(0, 100-dist/2)}).restrict_range_quadratic(Math.PI/4, Math.PI/6).f();
     new Graph(cu, 1, 1, 0, 0, 400, 400).plot_radial(
         r, [0, 100]
     );
-    
-
-    /*
-    display_loop();
-    control_loop();
-    */
     
     var pts = [];
     var midx = 200;

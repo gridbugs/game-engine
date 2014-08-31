@@ -12,7 +12,7 @@ Agent.set_controlled_agent = function(agent) {
     });
 }
 Agent.prototype.turn_to_face = function(pt) {
-    this.facing = angle_between(this.pos, Input.mouse_pos);
+    this.facing = _angle_between(this.pos, Input.mouse_pos);
 }
 Agent.prototype.draw = function() { 
     cu.circle(this.pos, 10, false, this.colour);
@@ -35,7 +35,7 @@ Agent.prototype.control_tick = function() {
 }
 
 Agent.prototype.turn_towards = function(pt) {
-    var target_angle = angle_between(this.pos, pt);
+    var target_angle = _angle_between(this.pos, pt);
     var angle_diff = radians_between(this.facing, target_angle);
     if (angle_diff <= this.turn_speed) {
         this.facing = target_angle;

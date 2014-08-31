@@ -11,7 +11,7 @@ function Graph(cu, h_scale, v_scale, left, top, width, height, origin_left, orig
     this.v_scale = v_scale == undefined ? 1 : v_scale;
     this.pixsiz = pixsiz == undefined ? 1 : pixsiz;
 
-    this.set_colours(tinycolor('black'), tinycolor('white'));
+    this.set_colours(tinycolor('white'), tinycolor('black'));
 
     this.col_cache = [];
 }
