@@ -17,10 +17,23 @@ $(function() {
         cu.canvas.height = $(window).height();
     });
 
-    var r = R(function(theta, dist) {return Math.max(0, 100-dist/2)}).restrict_range_quadratic(Math.PI/4, Math.PI/6).f();
-    new Graph(cu, 1, 1, 0, 0, 400, 400).plot_radial(
-        r, [0, 100]
-    );
+    //var r = R(function(theta, dist) {return Math.max(0, 100-dist/2)}).restrict_range_quadratic(Math.PI/4, Math.PI/6).f();
+
+    var r = R.strip(10, 10, 100, 10);
+    
+    var g = new Graph(cu, 1, 1, 0, 0, 500, 500);
+    
+    
+    var x = 0;
+    var tick = function() {
+        var s = r.rotate(x).f();
+        g.plot_radial(
+            s, [0, 1]
+        );
+        x += Math.PI/200;
+        setTimeout(tick, 30);
+    }
+    tick();
     
     var pts = [];
     var midx = 200;

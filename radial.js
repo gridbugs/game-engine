@@ -9,6 +9,25 @@ R.rotate = function(f) {
         return f(radius);
     });
 }
+R.strip = function(x, y, width, height, value) {
+    value = value == undefined ? 1 : value;
+    return R(function(theta, dist) {
+        var a = dist * Math.sin(theta);
+        var b = dist * Math.cos(theta);
+        if (y >= a && a >= y - height && x <= b && b <= x + width) {
+            return value;
+        } else {
+            return 0;
+        }
+    });
+}
+
+Radial.prototype.rotate = function(radians) {
+    var _this = this;
+    return R(function(theta, dist) {
+        return _this._f(theta - radians, dist);
+    });
+}
 
 Radial.prototype.f = function() {return this._f}
 

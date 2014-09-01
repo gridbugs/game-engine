@@ -236,5 +236,26 @@ extend(Array, 'get_reverse', function() {
     return this.slice(0).reverse();
 });
 
+function Approx(value, tolerance) {
+    this.value = value;
+    this.tolerance = tolerance == undefined ? 1 : tolerance;
+}
+function A(value, tolerance) {
+    return new Approx(value, tolerance);
+}
+A.approx = function(x) {
+    if (x.constructor == Approx) {
+        return x;
+    } else {
+        return A(x, 0);
+    }
+}
 
+Approx.prototype.equals = function(b) {
+    b = A.approx(b);
+    return Math.abs(this.value - b.value) < this.tolerance + b.tolerance;
+}
 
+Approx.prototype.fmap = function(f) {
+    return A(f(this.value), this.tolerance);
+}
