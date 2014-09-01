@@ -67,3 +67,19 @@ Radial.prototype.angle_multiplier = function(f) {
     });
 }
 
+/* f is of the form f(angle, distance, time)
+ * where angle is in radians, distance is the distance
+ * of a point from the origin, and time is in seconds
+ */
+var TemporalRadial = function(f) {
+    this._f = f;
+}
+TemporalRadial.prototype.f = function(){return this._f}
+var TR = function(f) {
+    return new TemporalRadial(f);
+}
+TR.by_rotating_radial = function(r, rads_per_second) {
+    return TR(function(theta, dist, time) {
+        return r._f(time + theta, dist);
+    });
+}

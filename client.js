@@ -20,20 +20,25 @@ $(function() {
     //var r = R(function(theta, dist) {return Math.max(0, 100-dist/2)}).restrict_range_quadratic(Math.PI/4, Math.PI/6).f();
 
     var r = R.strip(10, 10, 100, 10);
+    var tr = TR.by_rotating_radial(r, 1).f();
+    var g = new Graph(cu, 1, 1, 0, 0, 100, 100);
     
-    var g = new Graph(cu, 1, 1, 0, 0, 500, 500);
-    
-    
-    var x = 0;
-    var tick = function() {
-        var s = r.rotate(x).f();
+    var get_fn = function(y) {
+        return function(theta, dist) {
+            return tr(theta, dist, y);
+        }
+    }
+
+    var fps = 40;
+    var tick_len = 1000/fps;
+    var tick = function(x) {
+        var s = get_fn(x);
         g.plot_radial(
             s, [0, 1]
         );
-        x += Math.PI/200;
-        setTimeout(tick, 30);
+        setTimeout(tick, tick_len, x + tick_len);
     }
-    tick();
+    tick(0);
     
     var pts = [];
     var midx = 200;
