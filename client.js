@@ -17,93 +17,16 @@ $(function() {
         cu.canvas.height = $(window).height();
     });
 
-    //var r = R(function(theta, dist) {return Math.max(0, 100-dist/2)}).restrict_range_quadratic(Math.PI/4, Math.PI/6).f();
-
-    var r = R.strip(10, 10, 100, 10);
-    var tr = TR.by_rotating_radial(r, 1).f();
-    var g = new Graph(cu, 1, 1, 0, 0, 100, 100);
+    var player = new Agent([100, 100], 0);
+    Agent.set_controlled_agent(player);
     
-    var get_fn = function(y) {
-        return function(theta, dist) {
-            return tr(theta, dist, y);
-        }
+    function tick() {
+        cu.clear();
+        player.control_tick();
+        player.draw();
+        setTimeout(tick, 50);
     }
-
-    var fps = 40;
-    var tick_len = 1000/fps;
-    var tick = function(x) {
-        var s = get_fn(x);
-        g.plot_radial(
-            s, [0, 1]
-        );
-        setTimeout(tick, tick_len, x + tick_len);
-    }
-    tick(0);
-    
-    var pts = [];
-    var midx = 200;
-    $(document).click(function() {
-        
-        var pt = Input.get_mouse_pos();
-        
-        var existing = pts.find(function(v) {
-            return v.v2_equals(pt);
-        });
-
-        if (existing == null) {
-
-            pts.push(pt);
-            
-            var t = triangulate(pts);
-
-            cu.clear();
-            pts.map(function(x) {cu.draw_point(x)});
-            t.map(function(seg){cu.draw_segment(seg, "black", 2)});
-        }
-    });
-
-//    var pts = [[100, 50], [100, 100], [300, 150], [120, 200], [400, 140], [250, 100], [225, 130], [170, 195], [230, 50], [125, 150], [255, 25]];
-    
- 
- /*
-    var left_pts = [[100, 50], [50, 180], [200, 225]];
-    var right_pts = [[400, 50], [425, 250], [445, 150], [500, 200]];
-    var pts = left_pts.concat(right_pts);
-    left_pts.concat(right_pts).map(function(pt){cu.draw_point(pt)});
-    */
-
-//    var t = triangulate(pts);
-//    t.map(function(seg){cu.draw_segment(seg, "black", 2)});
-
-    //pts = pts.map(function(pt){return [pt[0], 300 -pt[1]]});
-/*
-    var sorted = sort_left_to_right(pts);
-
-    var left = arr_left_half(sorted);
-    var right = arr_right_half(sorted);
-    */
-/*
-    var left = [[100, 100], [100, 140]];
-    var right = [[150, 100], [110, 200]];
-    left.map(function(pt){cu.draw_point(pt, "red")});
-    right.map(function(pt){cu.draw_point(pt, "blue")});
-
-    var bt = tangents_to_point_sets(left, right);
-
-    cu.draw_segment(bt[0], "green", 1);
-    cu.draw_segment(bt[1], "orange", 1);
-*/
-//    cu.draw_segment(bt);
-/*
-    _.map(triangulate(pts), function(segment) {
-        cu.draw_segment(segment);
-    });
-    */
-/*
-    var ch = quickhull(pts);
-
-    ch.map(function(seg){cu.draw_segment(seg)});
-*/
+    tick();
 });
 
 /* computes the partial convex hull for a given segment and
