@@ -13,7 +13,13 @@ Editor.prototype.highlight_selection = function() {
     this.highlight(this.selection);
 }
 
-Editor.prototype.highlight = function(obj) {
+Editor.prototype.highlight_mouseover = function(obj) {
+    this.highlight(obj, ['black', 'black', 'rgba(0, 0, 0, 0.5)']);
+}
+
+Editor.prototype.highlight = function(obj, colours) {
+
+    colours = colours || ['orange', 'yellow', 'rgba(255,255,0,1)'];
 
     if (obj == null) {
         return;
@@ -21,33 +27,31 @@ Editor.prototype.highlight = function(obj) {
     
     switch(obj.algebra_type()) {
     case 'vector':
-        this.highlight_vertex(obj);
+        this.highlight_vertex(obj, colours);
         break;
     case 'segment':
-        this.highlight_segment(obj);
+        this.highlight_segment(obj, colours);
         break;
     case 'polygon':
-        this.highlight_polygon(obj);
+        this.highlight_polygon(obj, colours);
         break;
     }
 
 }
 
-Editor.prototype.highlight_vertex = function(v, colour) {
-    colour = colour || 'orange';
-    this.cu.draw_point(v, colour, 8);
+Editor.prototype.highlight_vertex = function(v, colours) {
+    this.cu.draw_point(v, colours[0], 8);
 }
-Editor.prototype.highlight_segment = function(s, colour) {
-    colour = colour || 'yellow';
-    this.cu.draw_segment(s, colour, 8);
-    this.highlight_vertex(s[0], 'orange');
-    this.highlight_vertex(s[1], 'orange');
+Editor.prototype.highlight_segment = function(s, colours) {
+    this.cu.draw_segment(s, colours[1], 4);
+    this.highlight_vertex(s[0], colours);
+    this.highlight_vertex(s[1], colours);
 }
-Editor.prototype.highlight_polygon = function(p, colour) {
-    this.cu.draw_polygon(p, 'black', 'rgba(255,255,0,1)', 0);
+Editor.prototype.highlight_polygon = function(p, colours) {
+    this.cu.draw_polygon(p, 'black', colours[2], 0);
     var segs = p.polygon_to_segments();
-    segs.map((function(s){this.cu.draw_segment(s, 'yellow', 8)}).bind(this));
-    p.map((function(v){this.highlight_vertex(v, 'orange')}).bind(this));
+    segs.map((function(s){this.cu.draw_segment(s, colours[1], 4)}).bind(this));
+    p.map((function(v){this.highlight_vertex(v, colours)}).bind(this));
 }
 
 Editor.prototype.init = function(cu) {
@@ -234,8 +238,12 @@ Editor.modes.create_polygons = {
 };
 
 Editor.modes.select = {
+    click: function() {
+        this.selection = this.object_near_cursor();
+    },
     draw: function() {
-        this.highlight(this.object_near_cursor());
+        this.highlight(this.selection);
+        this.highlight_mouseover(this.object_near_cursor());
         this.draw_complete();
     }
 };
