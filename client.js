@@ -22,6 +22,8 @@ $(function() {
  
     var editor = new Editor();
     editor.init(cu);
+    editor.set_mode('create_segments');
+
 
     function tick() {
         cu.clear();

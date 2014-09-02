@@ -275,3 +275,6 @@ function maybe_function(f, v) {
         return f(v);
     }
 }
+function do_nothing() {}
+
+
