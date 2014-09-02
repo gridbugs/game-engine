@@ -290,3 +290,12 @@ function do_nothing() {}
 function between(a, b, c) {
     return (a <= b && b <= c) || (c <= b && b <= a);
 }
+
+extend(Array, 'most_over_threshold', function(threshold, mostfn) {
+    var most = this.most(mostfn);
+    if (mostfn(most) >= threshold) {
+        return most;
+    } else {
+        return null;
+    }
+});

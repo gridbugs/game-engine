@@ -89,6 +89,19 @@ extend(Array, 'seg_signed_shortest_dist_to', function(v) {
     return this.seg_to_dir_v2().v2_signed_shortest_dist_to(v.v2_sub(this[0]));
 });
 
+extend(Array, 'seg_shortest_dist_to', function(v) {
+    return Math.abs(this.seg_signed_shortest_dist_to(v));
+});
+
+extend(Array, 'seg_shortest_dist_to_just', function(v) {
+    var proj = this[1].v2_sub(this[0]).v2_project(v.v2_sub(this[0])).v2_add(this[0]);
+    if (this.seg_contains_v2_on_line(proj)) {
+        return this.seg_shortest_dist_to(v);
+    } else {
+        return Math.min(this[0].v2_dist(v), this[1].v2_dist(v));
+    }
+});
+
 extend(Array, 'seg_flip', function() {return [this[1], this[0]]});
 
 extend(Array, 'seg_filter_above', function(vs) {
@@ -253,4 +266,16 @@ extend(Array, 'algebra_type', function() {
             case 'vector': return 'segment'
         }
     }
+});
+
+extend(Array, 'v2_arr_closest_to', function(v) {
+    return this.most(function(w) {
+        return -v.v2_dist(w)
+    });
+});
+
+extend(Array, 'seg_arr_closest_to', function(v) {
+    return this.most(function(s) {
+        return -s.shortest_dist_to(v);
+    });
 });

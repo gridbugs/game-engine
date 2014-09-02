@@ -23,10 +23,12 @@ $(function() {
     var editor = new Editor();
 
     editor.polygons.push([[100, 100], [100, 200], [200, 200], [200, 100]]);
+    editor.polygons.push([[300, 300], [400, 400], [300, 450], [200, 400]]);
+    editor.segments.push([[100, 50], [300, 50]]);
     editor.selection = editor.polygons[0];
     
     editor.init(cu);
-    editor.set_mode('create_polygons');
+    editor.set_mode('select');
 
 
     function tick() {

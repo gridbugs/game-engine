@@ -7,27 +7,34 @@ function Editor() {
     this.selection = null;
 }
 
+Editor.prototype.snap_distance = 8;
+
 Editor.prototype.highlight_selection = function() {
-    if (this.selection == null) {
+    this.highlight(this.selection);
+}
+
+Editor.prototype.highlight = function(obj) {
+
+    if (obj == null) {
         return;
     }
-
-    switch(this.selection.algebra_type()) {
+    
+    switch(obj.algebra_type()) {
     case 'vector':
-        this.highlight_vertex(this.selection);
+        this.highlight_vertex(obj);
         break;
     case 'segment':
-        this.highlight_segment(this.selection);
+        this.highlight_segment(obj);
         break;
     case 'polygon':
-        this.highlight_polygon(this.selection);
+        this.highlight_polygon(obj);
         break;
     }
 
 }
 
 Editor.prototype.highlight_vertex = function(v, colour) {
-    colour = colour || 'yellow';
+    colour = colour || 'orange';
     this.cu.draw_point(v, colour, 8);
 }
 Editor.prototype.highlight_segment = function(s, colour) {
@@ -54,12 +61,13 @@ Editor.prototype.init = function(cu) {
 
 }
 
+
 Editor.prototype.draw_segments = function() {
     this.segments.map((function(seg) {this.cu.draw_segment(seg, 'black', 2)}).bind(this));
 }
 
 Editor.prototype.draw_polygons = function() {
-    this.polygons.map((function(p) {this.cu.draw_polygon(p)}).bind(this));
+    this.polygons.map((function(p) {this.cu.draw_polygon(p, 'black', 'rgba(0, 0, 0, 0.1)', 2)}).bind(this));
 }
 
 Editor.prototype.draw_complete = function() {
@@ -91,15 +99,55 @@ Editor.prototype.point_near_cursor = function() {
     }
 
     var cursor = Input.get_mouse_pos();
-    var closest = all_points.most(function(pt) {
-        return -pt.v2_dist(cursor);
-    });
 
-    if (closest.v2_dist(cursor) < 8) {
-        return closest;
-    } else {
+    return all_points.most_over_threshold(-this.snap_distance, function(v) {
+        return -v.v2_dist(cursor);
+    });
+}
+
+Editor.prototype.segment_near_cursor = function() {
+    var all_segments = this.segments;
+    for (var i = 0,len=this.polygons.length;i<len;++i) {
+        all_segments = all_segments.concat(this.polygons[i].polygon_to_segments());
+    }
+
+    if (all_segments.length == 0) {
         return null;
     }
+    
+    var cursor = Input.get_mouse_pos();
+
+    return all_segments.most_over_threshold(-this.snap_distance, function(s) {
+        return -s.seg_shortest_dist_to_just(cursor);
+    });
+}
+
+Editor.prototype.polygon_near_cursor = function() {
+    var cursor = Input.get_mouse_pos();
+    for (var i = 0,len=this.polygons.length;i<len;++i) {
+        if (this.polygons[i].polygon_contains(cursor)) {
+            return this.polygons[i];
+        }
+    }
+    return null;
+}
+
+Editor.prototype.object_near_cursor = function() {
+    var obj = this.point_near_cursor();
+    if (obj != null) {
+        return obj;
+    }
+    obj = this.segment_near_cursor();
+    if (obj != null) {
+        return obj;
+    }
+
+    obj = this.polygon_near_cursor();
+    if (obj != null) {
+        return obj;
+    }
+
+    return null;
 }
 
 Editor.prototype.highlight_point_near_cursor = function() {
@@ -186,5 +234,8 @@ Editor.modes.create_polygons = {
 };
 
 Editor.modes.select = {
-       
+    draw: function() {
+        this.highlight(this.object_near_cursor());
+        this.draw_complete();
+    }
 };
