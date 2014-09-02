@@ -259,3 +259,19 @@ Approx.prototype.equals = function(b) {
 Approx.prototype.fmap = function(f) {
     return A(f(this.value), this.tolerance);
 }
+
+function maybe_method(m, v) {
+    if (v == null) {
+        return null;
+    } else {
+        return m.call(v);
+    }
+}
+
+function maybe_function(f, v) {
+    if (v == null) {
+        return null;
+    } else {
+        return f(v);
+    }
+}

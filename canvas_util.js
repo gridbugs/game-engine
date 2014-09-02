@@ -109,12 +109,9 @@ CanvasUtil.prototype.clear = function() {
 CanvasUtil.prototype.draw_point = function(pt, colour, size) {
     size = default_value(size, 4);
     colour = default_value(colour, "black");
-    var _this = this;
-    this.with_fillstyle(colour, function() {
-        _this.ctx.beginPath();
-        _this.ctx.fillRect(pt[0] - size/2, pt[1] - size/2, size, size);
-        _this.ctx.fill();
-    });
+
+    this.circle(pt, size/2, true, colour, 0);
+
 }
 
 CanvasUtil.prototype.draw_segment = function(segment, colour, size) {

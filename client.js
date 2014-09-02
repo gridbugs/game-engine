@@ -19,14 +19,17 @@ $(function() {
 
     var player = new Agent([100, 100], 0);
     Agent.set_controlled_agent(player);
-    
+ 
+    var editor = new Editor();
+    editor.init(cu);
+
     function tick() {
         cu.clear();
-        player.control_tick();
-        player.draw();
+        editor.draw();
         setTimeout(tick, 50);
     }
     tick();
+
 });
 
 /* computes the partial convex hull for a given segment and

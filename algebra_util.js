@@ -160,3 +160,9 @@ var angle_through = function(a, b, c) {
     return a_shift.v2_angle_between(c_shift);
 }
 
+/* called on an array of segments and returns
+ * an array of the points they are composed of
+ */
+extend(Array, 'segs_to_vectors', function() {
+    return this.reduce(function(a, b){return a.concat(b)}, []);
+});
