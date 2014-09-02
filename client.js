@@ -22,7 +22,7 @@ $(function() {
  
     var editor = new Editor();
     editor.init(cu);
-    editor.set_mode('create_segments');
+    editor.set_mode('create_polygons');
 
 
     function tick() {

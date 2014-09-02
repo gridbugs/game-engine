@@ -125,3 +125,22 @@ CanvasUtil.prototype.draw_segment = function(segment, colour, size) {
         _this.ctx.stroke();
     });
 }
+
+CanvasUtil.prototype.draw_polygon = function(polygon, strokecolour, fillcolour, strokewidth) {
+    strokewidth = default_value(strokewidth, 4);
+    strokecolour = default_value(strokecolour, "black");
+    fillcolour = default_value(fillcolour, "rgba(0, 0, 0, 0.2)");
+    this.ctx.beginPath();
+    this.move_to(polygon[polygon.length-1]);
+    this.with_line(strokecolour, strokewidth, (function() {
+        for (var i = 0,len=polygon.length;i!=len;++i) {
+            this.line_to(polygon[i]);
+        }
+        this.line_to(polygon[0]); // this removes the jaggedness on the last corner
+        this.ctx.stroke();
+    }).bind(this));
+    
+    this.with_fillstyle(fillcolour, (function() {
+        this.ctx.fill();
+    }).bind(this));
+}

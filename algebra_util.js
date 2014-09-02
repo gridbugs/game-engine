@@ -1,4 +1,15 @@
-// add vector methods to Array
+/* Algebra objects are not represented by javascript classes, but
+ * as javascript arrays using the following convention:
+ * - a "vector" is an array of 2 numeric elements defining its cartesian coordinates
+ * - a "line segment" is an array of 2 vectors defining its end points
+ * - a "line" is infinitely long and is an array of 2 vectors where the
+ *      first vector is a point anywhere on the line, and the second vector
+ *      describes the line's direction
+ * - a "circle" is an array where the first element is a vector representing
+ *      the centre, and the second element is a number representing the radius
+ * - a "polygon" is an array of 3 or more vectors which when connected in
+ *      the order in which they appear in the array, forms the shape of the polyon
+ */
 
 // algebraic sum of 2 vectors
 extend(Array, 'v2_add', function(v){return [this[0]+v[0], this[1]+v[1]]});
@@ -165,4 +176,15 @@ var angle_through = function(a, b, c) {
  */
 extend(Array, 'segs_to_vectors', function() {
     return this.reduce(function(a, b){return a.concat(b)}, []);
+});
+
+extend(Array, 'polygons_to_vectors', Array.prototype.segs_to_vectors);
+
+extend(Array, 'polygon_to_segments', function() {
+    var segments = [];
+    for (var i = 1,len=this.length;i<len;++i) {
+        segments.push([this[i-1], this[i]]);
+    }
+    segments.push(this[this.length-1], this[0]);
+    return segments;
 });
