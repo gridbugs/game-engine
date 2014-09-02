@@ -124,7 +124,6 @@ extend(Array, 'seg_perpendicular_bisector_line', function() {
     return [this.seg_mid(), this.seg_norm_v()];
 });
 
-
 // add line methods to Array
 // a line is a pair of vectors [p, v]
 // such that p is a point on the line and v is its direction
@@ -141,6 +140,30 @@ extend(Array, 'line_intersection', function(l) {
     var mult = numeric.dot(inverse, r);
 
     return l[0].v2_add(l[1].v2_smult(mult[0]));
+});
+
+extend(Array, 'seg_to_line', function() {
+    return [this[0], this.seg_to_dir_v2()];
+});
+
+extend(Array, 'seg_contains_v2_on_line', function(v) {
+    return between(this[0][0], v[0], this[1][0]) &&
+           between(this[0][1], v[1], this[1][1]);
+});
+
+extend(Array, 'seg_intersection', function(s) {
+    // find the interesction of the two lines
+    var intersection = this.seg_to_line().line_intersection(
+                            s.seg_to_line());
+
+    // check if it's on both segments
+    if (this.seg_contains_v2_on_line(intersection) &&
+        s.seg_contains_v2_on_line(intersection)) {
+
+        return intersection;
+    }
+
+    return null;
 });
 
 extend(Array, 'circ_contains', function(v) {
@@ -180,11 +203,54 @@ extend(Array, 'segs_to_vectors', function() {
 
 extend(Array, 'polygons_to_vectors', Array.prototype.segs_to_vectors);
 
+extend(Array, 'v2_line_in_dir', function(v) {
+    return [this, v];
+});
+
+extend(Array, 'v2_line_through', function(v) {
+    return [this, v.v2_sub(this)];
+});
+
+extend(Array, 'polygon_each_side', function(f) {
+    for (var i = 1,len=this.length;i<len;++i) {
+        f(this[i-1], this[i]);
+    }
+    f(this[this.length-1], this[0]);
+});
+
 extend(Array, 'polygon_to_segments', function() {
     var segments = [];
-    for (var i = 1,len=this.length;i<len;++i) {
-        segments.push([this[i-1], this[i]]);
-    }
-    segments.push(this[this.length-1], this[0]);
+    this.polygon_each_side(function(a, b) {
+        segments.push([a, b]);
+    });
     return segments;
+});
+
+extend(Array, 'polygon_count_intersections', function(seg) {
+    var count = 0;
+    this.polygon_each_side(function(a, b) {
+        if (seg.seg_intersection([a, b]) != null) {
+            ++count;
+        }
+    });
+    return count;
+});
+
+extend(Array, 'polygon_contains', function(v) {
+    var high = v.v2_add([0, 100000]);
+    return this.polygon_count_intersections([v, high]) % 2 == 1;
+});
+
+extend(Array, 'algebra_type', function() {
+    if (this.length > 2) {
+        return 'polygon';
+    }
+
+    switch(typeof(this[0])) {
+        case 'number': return 'vector';
+        case 'object':
+        switch(this[0].algebra_type()) {
+            case 'vector': return 'segment'
+        }
+    }
 });

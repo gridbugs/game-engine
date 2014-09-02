@@ -4,6 +4,43 @@ function Editor() {
     this.point_buffer = null;
     this.polygons = [];
     this.current_polygon = [];
+    this.selection = null;
+}
+
+Editor.prototype.highlight_selection = function() {
+    if (this.selection == null) {
+        return;
+    }
+
+    switch(this.selection.algebra_type()) {
+    case 'vector':
+        this.highlight_vertex(this.selection);
+        break;
+    case 'segment':
+        this.highlight_segment(this.selection);
+        break;
+    case 'polygon':
+        this.highlight_polygon(this.selection);
+        break;
+    }
+
+}
+
+Editor.prototype.highlight_vertex = function(v, colour) {
+    colour = colour || 'yellow';
+    this.cu.draw_point(v, colour, 8);
+}
+Editor.prototype.highlight_segment = function(s, colour) {
+    colour = colour || 'yellow';
+    this.cu.draw_segment(s, colour, 8);
+    this.highlight_vertex(s[0], 'orange');
+    this.highlight_vertex(s[1], 'orange');
+}
+Editor.prototype.highlight_polygon = function(p, colour) {
+    this.cu.draw_polygon(p, 'black', 'rgba(255,255,0,1)', 0);
+    var segs = p.polygon_to_segments();
+    segs.map((function(s){this.cu.draw_segment(s, 'yellow', 8)}).bind(this));
+    p.map((function(v){this.highlight_vertex(v, 'orange')}).bind(this));
 }
 
 Editor.prototype.init = function(cu) {
@@ -142,7 +179,12 @@ Editor.modes.create_polygons = {
     },
     draw: function() {
         this.highlight_point_near_cursor();
+        this.highlight_selection();
         this.draw_complete();
         this.draw_partial_polygon();
     }
+};
+
+Editor.modes.select = {
+       
 };

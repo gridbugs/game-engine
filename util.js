@@ -18,6 +18,16 @@ function to_array(x) {
     return [x];
 }
 
+function once(f) {
+    if (this.once_flag == undefined) {
+        this.once_flag = true;
+        f();
+    }
+}
+function print_once(x) {
+    once(function(){console.debug(x)});
+}
+
 /* takes a function and an array and calls
  * the function on each element of the array
  * as individual arguments, enclosing each argument
@@ -277,4 +287,6 @@ function maybe_function(f, v) {
 }
 function do_nothing() {}
 
-
+function between(a, b, c) {
+    return (a <= b && b <= c) || (c <= b && b <= a);
+}

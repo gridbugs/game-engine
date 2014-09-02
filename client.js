@@ -21,6 +21,10 @@ $(function() {
     Agent.set_controlled_agent(player);
  
     var editor = new Editor();
+
+    editor.polygons.push([[100, 100], [100, 200], [200, 200], [200, 100]]);
+    editor.selection = editor.polygons[0];
+    
     editor.init(cu);
     editor.set_mode('create_polygons');
 
