@@ -307,7 +307,7 @@ Editor.modes.move = {
         this.mouse_is_down = false;
     },
     mousemove: function() {
-        if (this.mouse_is_down) {
+        if (this.mouse_is_down && this.selection) {
             this.selection.move_by(this.buffer_to_mouse());
             this.buffer_mouse();
         }
