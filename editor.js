@@ -5,9 +5,19 @@ function Editor() {
     this.polygons = [];
     this.current_polygon = [];
     this.selection = null;
+    this.mouse_is_down = false;
 }
 
 Editor.prototype.snap_distance = 8;
+
+Editor.prototype.buffer_mouse = function() {
+    this.point_buffer = Input.get_mouse_pos();
+}
+
+Editor.prototype.select_near_cursor = function() {
+    this.selection = this.object_near_cursor();
+}
+    
 
 Editor.prototype.highlight_selection = function() {
     this.highlight(this.selection);
@@ -39,6 +49,16 @@ Editor.prototype.highlight = function(obj, colours) {
 
 }
 
+
+Editor.prototype.highlight_movement = function() {
+    var move_vector = this.buffer_to_mouse();
+    var clone = this.selection.deep_clone();
+    clone.move_by(move_vector);
+    this.highlight(clone, 
+        ['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.1)']
+    );
+}
+
 Editor.prototype.highlight_vertex = function(v, colours) {
     this.cu.draw_point(v, colours[0], 8);
 }
@@ -50,8 +70,8 @@ Editor.prototype.highlight_segment = function(s, colours) {
 Editor.prototype.highlight_polygon = function(p, colours) {
     this.cu.draw_polygon(p, 'black', colours[2], 0);
     var segs = p.polygon_to_segments();
-    segs.map((function(s){this.cu.draw_segment(s, colours[1], 4)}).bind(this));
-    p.map((function(v){this.highlight_vertex(v, colours)}).bind(this));
+    segs.map(function(s){this.cu.draw_segment(s, colours[1], 4)}.bind(this));
+    p.map(function(v){this.highlight_vertex(v, colours)}.bind(this));
 }
 
 Editor.prototype.init = function(cu) {
@@ -63,15 +83,33 @@ Editor.prototype.init = function(cu) {
         }
     }.bind(this));
 
+    $(window).mousedown(function() {
+        if (this.mousedown) {
+            this.mousedown();
+        }
+    }.bind(this));
+
+    $(window).mouseup(function() {
+        if (this.mouseup) {
+            this.mouseup();
+        }
+    }.bind(this));
+
+    $(window).mousemove(function() {
+        if (this.mousemove) {
+            this.mousemove();
+        }
+    }.bind(this));
+
 }
 
 
 Editor.prototype.draw_segments = function() {
-    this.segments.map((function(seg) {this.cu.draw_segment(seg, 'black', 2)}).bind(this));
+    this.segments.map(function(seg) {this.cu.draw_segment(seg, 'black', 2)}.bind(this));
 }
 
 Editor.prototype.draw_polygons = function() {
-    this.polygons.map((function(p) {this.cu.draw_polygon(p, 'black', 'rgba(0, 0, 0, 0.1)', 2)}).bind(this));
+    this.polygons.map(function(p) {this.cu.draw_polygon(p, 'black', 'rgba(0, 0, 0, 0.1)', 2)}.bind(this));
 }
 
 Editor.prototype.draw_complete = function() {
@@ -83,7 +121,7 @@ Editor.prototype.draw_partial_polygon = function() {
     if (this.current_polygon.length > 0) {
         var segs = this.current_polygon.polygon_to_segments();
         var drawn_segs = segs.slice(0, segs.length-1);
-        drawn_segs.map((function(seg){this.cu.draw_segment(seg, 'grey', 1)}).bind(this));
+        drawn_segs.map(function(seg){this.cu.draw_segment(seg, 'grey', 1)}.bind(this));
 
         this.draw_mouse_to(this.current_polygon[0], 'rgba(0,0,0,0.1)');
         this.draw_mouse_to(this.current_polygon[this.current_polygon.length-1]);
@@ -136,6 +174,10 @@ Editor.prototype.polygon_near_cursor = function() {
     return null;
 }
 
+Editor.prototype.buffer_to_mouse = function() {
+    return Input.get_mouse_pos().v2_sub(this.point_buffer);
+}
+
 Editor.prototype.object_near_cursor = function() {
     var obj = this.point_near_cursor();
     if (obj != null) {
@@ -156,7 +198,7 @@ Editor.prototype.object_near_cursor = function() {
 
 Editor.prototype.highlight_point_near_cursor = function() {
     var pt = this.point_near_cursor();
-    maybe_function((function(p) {this.cu.draw_point(p, 'yellow', 8)}).bind(this), pt);
+    maybe_function(function(p) {this.cu.draw_point(p, 'yellow', 8)}.bind(this), pt);
 }
 
 Editor.prototype.set_mode = function(mode) {
@@ -245,5 +287,29 @@ Editor.modes.select = {
         this.highlight(this.selection);
         this.highlight_mouseover(this.object_near_cursor());
         this.draw_complete();
+    }
+};
+
+Editor.modes.move = {
+    draw: function() {
+        if (!this.mouse_is_down) {
+            this.highlight(this.selection);
+            this.highlight_mouseover(this.object_near_cursor());
+        }
+        this.draw_complete();
+    },
+    mousedown: function() {
+        this.select_near_cursor();
+        this.buffer_mouse();
+        this.mouse_is_down = true;
+    },
+    mouseup: function() {
+        this.mouse_is_down = false;
+    },
+    mousemove: function() {
+        if (this.mouse_is_down) {
+            this.selection.move_by(this.buffer_to_mouse());
+            this.buffer_mouse();
+        }
     }
 };

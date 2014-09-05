@@ -279,3 +279,34 @@ extend(Array, 'seg_arr_closest_to', function(v) {
         return -s.shortest_dist_to(v);
     });
 });
+
+extend(Array, 'v2_move_by', function(v) {
+    this[0] += v[0];
+    this[1] += v[1];
+});
+
+extend(Array, 'seg_move_by', function(v) {
+    this.map(function(w) {w.v2_move_by(v)});
+});
+
+extend(Array, 'polygon_move_by', Array.prototype.seg_move_by);
+
+extend(Array, 'move_by', function(v) {
+    if (this.is_v2()) {
+        this.v2_move_by(v);
+    } else {
+        this.seg_move_by(v);
+    }
+});
+
+extend(Array, 'is_v2', function() {
+    return typeof(this[0]) == 'number';
+});
+
+extend(Array, 'deep_clone', function() {
+    if (this.is_v2()) {
+        return this.slice();
+    }
+
+    return this.map(function(x) {return x.deep_clone()});
+});

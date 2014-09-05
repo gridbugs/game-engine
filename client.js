@@ -28,7 +28,7 @@ $(function() {
     editor.selection = editor.polygons[0];
     
     editor.init(cu);
-    editor.set_mode('select');
+    editor.set_mode('move');
 
 
     function tick() {
