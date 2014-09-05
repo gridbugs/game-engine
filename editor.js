@@ -10,8 +10,8 @@ function Editor() {
 
 Editor.prototype.snap_distance = 8;
 
-Editor.prototype.buffer_mouse = function() {
-    this.point_buffer = Input.get_mouse_pos();
+Editor.prototype.buffer_mouse = function(ignore_selected) {
+    this.point_buffer = this.get_snap_point(ignore_selected);
 }
 
 Editor.prototype.select_near_cursor = function() {
@@ -77,6 +77,11 @@ Editor.prototype.highlight_polygon = function(p, colours) {
 Editor.prototype.init = function(cu) {
     this.cu = cu;
 
+    $(window).off('click');
+    $(window).off('mousedown');
+    $(window).off('mouseup');
+    $(window).off('mousemove');
+
     $(window).click(function() {
         if (this.click) {
             this.click();
@@ -128,14 +133,22 @@ Editor.prototype.draw_partial_polygon = function() {
     }
 }
 
-Editor.prototype.all_points = function() {
+Editor.prototype.all_points = function(ignore_selected) {
+    if (ignore_selected) {
+        return this.segments.segs_to_vectors().concat(
+            this.polygons.polygons_to_vectors().concat(
+            this.current_polygon))
+            .filter(function(p) {
+                return p != this.selection
+            }.bind(this));
+    }
     return this.segments.segs_to_vectors().concat(
         this.polygons.polygons_to_vectors().concat(
         this.current_polygon));
 }
 
-Editor.prototype.point_near_cursor = function() {
-    var all_points = this.all_points();
+Editor.prototype.point_near_cursor = function(ignore_selected) {
+    var all_points = this.all_points(ignore_selected);
     if (all_points.length == 0) {
         return null;
     }
@@ -174,8 +187,8 @@ Editor.prototype.polygon_near_cursor = function() {
     return null;
 }
 
-Editor.prototype.buffer_to_mouse = function() {
-    return Input.get_mouse_pos().v2_sub(this.point_buffer);
+Editor.prototype.buffer_to_mouse = function(ignore_selected) {
+    return this.get_snap_point(ignore_selected).v2_sub(this.point_buffer);
 }
 
 Editor.prototype.object_near_cursor = function() {
@@ -207,8 +220,8 @@ Editor.prototype.set_mode = function(mode) {
     }
 }
 
-Editor.prototype.get_snap_point = function() {
-    return this.point_near_cursor() || Input.get_mouse_pos();
+Editor.prototype.get_snap_point = function(ignore_selected) {
+    return this.point_near_cursor(ignore_selected) || Input.get_mouse_pos();
 }
 
 
@@ -308,8 +321,8 @@ Editor.modes.move = {
     },
     mousemove: function() {
         if (this.mouse_is_down && this.selection) {
-            this.selection.move_by(this.buffer_to_mouse());
-            this.buffer_mouse();
+            this.selection.move_by(this.buffer_to_mouse(true));
+            this.buffer_mouse(true);
         }
     }
 };

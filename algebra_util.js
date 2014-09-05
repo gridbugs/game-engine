@@ -155,6 +155,10 @@ extend(Array, 'line_intersection', function(l) {
     return l[0].v2_add(l[1].v2_smult(mult[0]));
 });
 
+extend(Array, 'seg_length', function() {
+    return this[1].v2_sub(this[0]).v2_len();
+});
+
 extend(Array, 'seg_to_line', function() {
     return [this[0], this.seg_to_dir_v2()];
 });
@@ -165,6 +169,9 @@ extend(Array, 'seg_contains_v2_on_line', function(v) {
 });
 
 extend(Array, 'seg_intersection', function(s) {
+    if (this.seg_length() == 0 || s.seg_length() == 0) {
+        return null;
+    }
     // find the interesction of the two lines
     var intersection = this.seg_to_line().line_intersection(
                             s.seg_to_line());
