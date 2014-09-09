@@ -2,6 +2,8 @@ function CanvasUtil(){
     this.strokestyle_stack = [];
     this.linewidth_stack = [];
     this.fillstyle_stack = [];
+    this.textalign_stack = [];
+    this.font_stack = [];
 }
 CanvasUtil.prototype.register_canvas = function(canvas) {
     this.canvas = canvas;
@@ -59,6 +61,10 @@ CanvasUtil.prototype.push_linewidth = function(width) {
 
 CanvasUtil.prototype.pop_linewidth = function() {
     this.ctx.lineWidth = this.linewidth_stack.pop();
+}
+
+CanvasUtil.prototype.draw_circle = function(circle, filled, colour, width) {
+    this.circle(circle[0], circle[1], filled, colour, width);
 }
 
 CanvasUtil.prototype.circle = function(centre, radius, filled, colour, width) {
@@ -127,7 +133,7 @@ CanvasUtil.prototype.draw_segment = function(segment, colour, size) {
 }
 
 CanvasUtil.prototype.draw_polygon = function(polygon, strokecolour, fillcolour, strokewidth) {
-    strokewidth = default_value(strokewidth, 4);
+    strokewidth = default_value(strokewidth, 1);
     strokecolour = default_value(strokecolour, "black");
     fillcolour = default_value(fillcolour, "rgba(0, 0, 0, 0.2)");
     this.ctx.beginPath();
@@ -143,4 +149,48 @@ CanvasUtil.prototype.draw_polygon = function(polygon, strokecolour, fillcolour, 
     this.with_fillstyle(fillcolour, (function() {
         this.ctx.fill();
     }).bind(this));
+}
+
+CanvasUtil.prototype.push_align = function(align) {
+    this.textalign_stack.push(this.ctx.textAlign);
+    this.ctx.textAlign = align;
+}
+
+CanvasUtil.prototype.pop_align = function() {
+    this.ctx.textAlign = this.textalign_stack.pop();
+}
+
+CanvasUtil.prototype.with_align = function(align, fn) {
+    this.push_align(align);
+    fn();
+    this.pop_align();
+}
+
+CanvasUtil.prototype.push_font = function(font) {
+    this.font_stack.push(this.ctx.font);
+    this.ctx.font = font;
+}
+
+CanvasUtil.prototype.pop_font = function() {
+    this.ctx.font = this.font_stack.pop();
+}
+
+CanvasUtil.prototype.with_font = function(font, fn) {
+    this.push_font(font);
+    fn();
+    this.pop_font();
+}
+
+CanvasUtil.prototype.with_text = function(font, align, fn) {
+    this.with_font(font, function() {
+        this.with_align(align, fn);
+    }.bind(this));
+}
+
+CanvasUtil.prototype.text = function(text, pos, font, align) {
+    font = font || "12px Monospace";
+    align = align || "left";
+    this.with_text(font, align, function() {
+        this.ctx.fillText(text, pos[0], pos[1])
+    }.bind(this));
 }

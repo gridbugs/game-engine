@@ -1,4 +1,5 @@
-function Editor() {
+function Editor(cu) {
+    this.cu = cu;
     this.click = null;
     this.segments = [];
     this.point_buffer = null;
@@ -6,9 +7,81 @@ function Editor() {
     this.current_polygon = [];
     this.selection = null;
     this.mouse_is_down = false;
+
+    this.field_width = 100;
+    this.field_height = 20;
+
+    this.field = $("<input/>");
+    this.field.css('position', 'absolute');
+    this.field.css('width', this.field_width + 'px');
+    this.field.css('height', this.field_height + 'px');
+    this.field.hide();
+    $('body').append(this.field);
+
 }
 
+Editor.events = ['click', 'mousedown', 'mouseup', 'mousemove', 'keydown', 'keypress', 'keyup', 'dblclick'];
+
+Editor.prototype.clear_events = function() {
+    // stop capturing the events
+    Editor.events.map(function(e){$(window).off(e)});
+
+    // remove any methods for handling events
+    Editor.events.map(function(e){this[e]=undefined}.bind(this));
+}
+
+Editor.prototype.show_field = function(content) {
+    content = content == undefined ? "" : content;
+    var pos = Input.get_mouse_pos();
+
+    var x = Math.min(this.cu.canvas.width - this.field_width, pos[0]);
+    var y = Math.min(this.cu.canvas.height - this.field_height, pos[1]);
+
+    this.field.css('left', x + 'px');
+    this.field.css('top', y + 'px');
+    this.field.val(content);
+    this.field.show();
+    this.field.focus();
+    this.field.select();
+}
+
+Editor.prototype.hide_field = function() {
+    this.field.val('');
+    this.field.hide();
+}
+
+Editor.prototype.save_field = function() {
+    
+    this.selection.name = this.field.val();
+}
+
+
 Editor.prototype.snap_distance = 8;
+
+Editor.prototype.label_segment = function(s) {
+    if (s.name) {
+        cu.text(s.name, s.polygon_average().v2_add([0, -5]), "16px Monospace", "center");
+    }
+}
+
+Editor.prototype.label_segments = function() {
+    this.segments.map(function(s){this.label_segment(s)}.bind(this));
+}
+
+Editor.prototype.label_polygon = function(p) {
+    if (p.name) {
+        cu.text(p.name, p.polygon_average(), "16px Monospace", "center");
+    }
+}
+
+Editor.prototype.label_polygons = function() {
+    this.polygons.map(function(p){this.label_polygon(p)}.bind(this));
+}
+
+Editor.prototype.show_labels = function() {
+    this.label_polygons();
+    this.label_segments();
+}
 
 Editor.prototype.buffer_mouse = function(ignore_selected) {
     this.point_buffer = this.get_snap_point(ignore_selected);
@@ -74,40 +147,17 @@ Editor.prototype.highlight_polygon = function(p, colours) {
     p.map(function(v){this.highlight_vertex(v, colours)}.bind(this));
 }
 
-Editor.prototype.init = function(cu) {
-    this.cu = cu;
+Editor.prototype.init_events = function() {
 
-    $(window).off('click');
-    $(window).off('mousedown');
-    $(window).off('mouseup');
-    $(window).off('mousemove');
-
-    $(window).click(function() {
-        if (this.click) {
-            this.click();
-        }
-    }.bind(this));
-
-    $(window).mousedown(function() {
-        if (this.mousedown) {
-            this.mousedown();
-        }
-    }.bind(this));
-
-    $(window).mouseup(function() {
-        if (this.mouseup) {
-            this.mouseup();
-        }
-    }.bind(this));
-
-    $(window).mousemove(function() {
-        if (this.mousemove) {
-            this.mousemove();
-        }
+    Editor.events.map(function(e) {
+        $(window)[e](function(x) {
+            if (this[e]) {
+                this[e](x);
+            }
+        }.bind(this));
     }.bind(this));
 
 }
-
 
 Editor.prototype.draw_segments = function() {
     this.segments.map(function(seg) {this.cu.draw_segment(seg, 'black', 2)}.bind(this));
@@ -120,6 +170,7 @@ Editor.prototype.draw_polygons = function() {
 Editor.prototype.draw_complete = function() {
     this.draw_polygons();
     this.draw_segments();
+    this.show_labels();
 }
 
 Editor.prototype.draw_partial_polygon = function() {
@@ -148,7 +199,8 @@ Editor.prototype.all_points = function(ignore_selected) {
 }
 
 Editor.prototype.point_near_cursor = function(ignore_selected) {
-    var all_points = this.all_points(ignore_selected);
+    var all_points = this.all_points(ignore_selected)
+        .map(function(p){p.ignore=true;return p});
     if (all_points.length == 0) {
         return null;
     }
@@ -163,7 +215,8 @@ Editor.prototype.point_near_cursor = function(ignore_selected) {
 Editor.prototype.segment_near_cursor = function() {
     var all_segments = this.segments;
     for (var i = 0,len=this.polygons.length;i<len;++i) {
-        all_segments = all_segments.concat(this.polygons[i].polygon_to_segments());
+        all_segments = all_segments.concat(this.polygons[i].polygon_to_segments()
+            .map(function(seg){seg.ignore = true;return seg}));
     }
 
     if (all_segments.length == 0) {
@@ -215,6 +268,10 @@ Editor.prototype.highlight_point_near_cursor = function() {
 }
 
 Editor.prototype.set_mode = function(mode) {
+    
+    this.clear_events();
+    this.init_events();
+
     for (m in Editor.modes[mode]) {
         this[m] = Editor.modes[mode][m];
     }
@@ -326,3 +383,54 @@ Editor.modes.move = {
         }
     }
 };
+
+Editor.modes.label = {
+    click: function() {
+        this.select_near_cursor();
+        if (this.selection == null || this.selection.ignore) {
+            this.hide_field();
+        } else {
+            this.show_field(this.selection.name);
+        }
+    },
+    draw: function() {
+        if (this.selection != null) {
+            this.save_field();
+        }
+        Editor.modes.select.draw.call(this);
+    },
+    keydown: function(e) {
+        switch (e.keyCode) {
+        case 13: // enter
+            if (this.selection != null) {
+                this.save_field();
+            }
+            this.hide_field();
+            break;
+        case 27: // escape
+            this.hide_field();
+            break;
+        }
+    }
+}
+
+Editor.modes.smart = {
+    draw: function() {
+        if (!this.mouse_is_down) {
+            this.highlight(this.selection);
+            this.highlight_mouseover(this.object_near_cursor());
+        }
+        this.draw_complete();
+    },
+    dblclick: Editor.modes.label.click,
+    keydown: Editor.modes.label.keydown,
+    mousedown: Editor.modes.move.mousedown,
+    mouseup: Editor.modes.move.mouseup,
+    mousemove: Editor.modes.move.mousemove,
+    click: function() {
+        this.selection = this.object_near_cursor();
+        if (this.selection == null) {
+            this.hide_field();
+        }
+    }
+}

@@ -299,3 +299,16 @@ extend(Array, 'most_over_threshold', function(threshold, mostfn) {
         return null;
     }
 });
+
+function Counter(what) {
+    this.what = what;
+    this.count = 0;
+}
+Counter.prototype.next = function() {
+
+    if (this.what[this.count]) {
+        this.what[this.count]();
+    }
+
+    this.count++;
+}

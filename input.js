@@ -76,7 +76,6 @@ Input.init = function() {
     $(document).keydown(function(e) {
         var key = Input.charFromCode(e.keyCode);
 
-
         if (Input.keydown_callbacks[key] != undefined) {
 
             for (var callback in Input.keydown_callbacks[key]) {

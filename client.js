@@ -1,6 +1,7 @@
 var g;
 var cu;
 var ai0;
+var editor;
 $(function() {
     Info.register("info");
     Info.run();
@@ -20,15 +21,43 @@ $(function() {
     var player = new Agent([100, 100], 0);
     Agent.set_controlled_agent(player);
  
-    var editor = new Editor();
+    var rad = 20;
+    var seg = [[100, 100], [200, 400]];
+    var start, end;
+    var counter = new Counter({
+        0: function() {
+            start = [Input.get_mouse_pos(), rad];
+
+            cu.clear();
+            cu.draw_circle(start);
+            cu.draw_segment(seg);
+        },
+        1: function() {
+            end = [Input.get_mouse_pos(), rad];
+            cu.draw_circle(end);
+            process_collision(start, end, seg);
+            
+            counter.count = -1;
+        }
+    });
+
+    $(window).click(function() {
+        counter.next();
+    });
+
+    cu.draw_segment(seg);
+
+
+
+ /*
+    editor = new Editor(cu);
 
     editor.polygons.push([[100, 100], [100, 200], [200, 200], [200, 100]]);
     editor.polygons.push([[300, 300], [400, 400], [300, 450], [200, 400]]);
     editor.segments.push([[100, 50], [300, 50]]);
     editor.selection = editor.polygons[0];
     
-    editor.init(cu);
-    editor.set_mode('move');
+    editor.set_mode('smart');
 
 
     function tick() {
@@ -37,8 +66,73 @@ $(function() {
         setTimeout(tick, 50);
     }
     tick();
+*/
 
 });
+
+function process_collision(start, end, seg) {
+    var middle = [start[0], end[0]];
+    var top = middle.seg_move_perpendicular(start[1]);
+    var bottom = middle.seg_move_perpendicular(-start[1]);
+
+    var pt = start.circ_closest_pt_to_seg(seg);
+
+
+    var move_v = end[0].v2_sub(start[0]);
+    var move_line = [end[0], move_v];
+    var collide_line = [pt, move_v];
+    var b = seg.seg_to_line();
+    var a = seg.seg_to_line().line_closest_pt_to_v(start[0]);
+    cu.draw_segment([start[0], a], "black", 1);
+
+    console.debug(move_line);
+    console.debug(collide_line);
+    console.debug(JSON.stringify(move_v));
+    var intersection_pt = collide_line.line_intersection(seg.seg_to_line());
+
+
+    cu.draw_point(intersection_pt, "black", 8);
+    console.debug(intersection_pt);
+
+    cu.draw_point(pt, "black", 8);
+
+    var seg_closest0 = [seg[0], move_v].line_closest_pt_to_v(start[0]);
+    var seg_closest1 = [seg[1], move_v].line_closest_pt_to_v(start[0]);
+
+    var edge_collision = seg.seg_contains_v2_on_line(intersection_pt);
+
+    var vertex_collision0 = seg_closest0.v2_dist(start[0]) <= start[1];
+    var vertex_collision1 = seg_closest1.v2_dist(start[0]) <= start[1];
+    var vertex_collision = vertex_collision0 || vertex_collision1;
+    
+    cu.draw_point(seg_closest0);
+    cu.draw_point(seg_closest1);
+    var dest;
+    if (vertex_collision) {
+        var mids;
+        if (vertex_collision0) {
+            mids = move_line.line_circle_intersections([seg[0], start[1]]);
+        } else {
+            mids = move_line.line_circle_intersections([seg[1], start[1]]);
+        }
+        var mid = mids.most(function(m) {return -m.v2_dist(start[0])});
+        dest = [mid, start[1]];
+        
+    } else if (edge_collision) {
+        var offset = start[0].v2_sub(pt);
+        var dest_centre = intersection_pt.v2_add(offset);
+        dest = [dest_centre, start[1]];
+
+    }
+
+    if (dest) {
+        cu.draw_circle(dest, false, "black", 4);
+    }
+    var collision_detected = edge_collision || vertex_collision;
+    console.debug(edge_collision);
+    console.debug(vertex_collision);
+    console.debug(collision_detected);
+}
 
 /* computes the partial convex hull for a given segment and
  * array of points where all points must be above the segment

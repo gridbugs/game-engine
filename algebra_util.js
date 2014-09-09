@@ -29,6 +29,29 @@ extend(Array, 'v2_equals', function(v){return this[0]==v[0] && this[1]==v[1]});
 // returns this rotated 90 degrees anticlockwise
 extend(Array, 'v2_norm', function() {return [-this[1], this[0]]});
 
+extend(Array, 'v2_unit', function() {
+    return this.v2_smult(1/this.v2_len());
+});
+
+extend(Array, 'v2_to_length', function(s) {
+    return this.v2_unit().v2_smult(s);
+});
+
+extend(Array, 'seg_unit_up', function() {
+    return this[1].v2_sub(this[0]).v2_norm().v2_unit();
+});
+extend(Array, 'seg_unit_down', function() {
+    return this[0].v2_sub(this[1]).v2_norm().v2_unit();
+});
+
+extend(Array, 'seg_shift_by', function(v) {
+    return [this[0].v2_add(v), this[1].v2_add(v)];
+});
+
+extend(Array, 'seg_move_perpendicular', function(s) {
+    return this.seg_shift_by(this.seg_unit_up().v2_smult(s));
+});
+
 // distance between this and v
 extend(Array, 'v2_dist', function(v) {return this.v2_sub(v).v2_len()});
 
@@ -166,6 +189,10 @@ extend(Array, 'seg_to_line', function() {
 extend(Array, 'seg_contains_v2_on_line', function(v) {
     return between(this[0][0], v[0], this[1][0]) &&
            between(this[0][1], v[1], this[1][1]);
+});
+
+extend(Array, 'seg_intersects', function(s) {
+    return this.seg_intersection(s) != null;
 });
 
 extend(Array, 'seg_intersection', function(s) {
@@ -317,3 +344,63 @@ extend(Array, 'deep_clone', function() {
 
     return this.map(function(x) {return x.deep_clone()});
 });
+
+extend(Array, 'polygon_average', function() {
+    return this.reduce(function(v, acc){return acc.v2_add(v)}).v2_smult(1/this.length);
+});
+
+extend(Array, 'line_closest_pt_to_v', function(v) {
+
+
+    return this[1].v2_project(v.v2_sub(this[0])).v2_add(this[0]);
+});
+
+extend(Array, 'circ_closest_pt_to_line', function(l) {
+    return l.line_closest_pt_to_v(this[0]).v2_sub(this[0]).v2_to_length(this[1]).v2_add(this[0]);
+});
+
+extend(Array, 'circ_closest_pt_to_seg', function(seg) {
+    return this.circ_closest_pt_to_line(seg.seg_to_line());
+});
+
+extend(Array, 'circ_add', function(v) {
+    return [this[0].v2_add(v), this[1]];
+});
+extend(Array, 'circ_sub', function(v) {
+    return [this[0].v2_sub(v), this[1]];
+});
+
+extend(Array, 'v2_circle_intersections', function(circle) {
+    var mid = circle[0];
+    var rad = circle[1];
+
+    var a = this[0]*this[0] + this[1]*this[1];
+    var b = -2*(this[0]*mid[0] + this[1]*mid[1]);
+    var c = mid[0]*mid[0] + mid[1]*mid[1] - rad*rad;
+
+    var xs = solve_quadratic(a, b, c);
+    
+    return xs.map(function(x) {return this.v2_smult(x)}.bind(this));
+});
+
+extend(Array, 'line_circle_intersections', function(circle) {
+    return this[1].v2_circle_intersections(circle.circ_sub(this[0]))
+        .map(function(x){return x.v2_add(this[0])}.bind(this));
+});
+
+function solve_quadratic(a, b, c) {
+    var to_root = b*b-4*a*c;
+    var roots;
+    if (to_root < 0) {
+        return [];
+    } else if (to_root == 0) {
+        roots = [0];
+    } else {
+        var root = Math.sqrt(to_root);
+        roots = [root, -root];
+    }
+
+    return roots.map(function(root) {
+        return (-b + root)/(2*a);
+    });
+}
