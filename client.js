@@ -34,8 +34,10 @@ $(function() {
         },
         1: function() {
             end = [Input.get_mouse_pos(), rad];
-            cu.draw_circle(end);
-            process_collision(start, end, seg);
+            
+            var dest = process_collision(start, end, seg) || end;
+            
+            cu.draw_circle(dest);
             
             counter.count = -1;
         }
@@ -75,63 +77,52 @@ function process_collision(start, end, seg) {
     var top = middle.seg_move_perpendicular(start[1]);
     var bottom = middle.seg_move_perpendicular(-start[1]);
 
+    // point on start that will eventually intersect seg
     var pt = start.circ_closest_pt_to_seg(seg);
-
 
     var move_v = end[0].v2_sub(start[0]);
     var move_line = [end[0], move_v];
+
+    // line through pt in distance of movement
     var collide_line = [pt, move_v];
-    var b = seg.seg_to_line();
-    var a = seg.seg_to_line().line_closest_pt_to_v(start[0]);
-    cu.draw_segment([start[0], a], "black", 1);
-
-    console.debug(move_line);
-    console.debug(collide_line);
-    console.debug(JSON.stringify(move_v));
+    
+    // point in line with seg at which an edge collision may occur
     var intersection_pt = collide_line.line_intersection(seg.seg_to_line());
+    
+    // boolean value true if edge collision has occured
+    var edge_collision = seg.seg_contains_v2_on_line(intersection_pt);
 
+    var dest = null;
+    var candidates = [];
+    if (edge_collision) {
+        var offset = start[0].v2_sub(pt);
+        var dest_centre = intersection_pt.v2_add(offset);
+        candidates.push(dest_centre);
+        dest = [dest_centre, start[1]];
+    }
 
-    cu.draw_point(intersection_pt, "black", 8);
-    console.debug(intersection_pt);
-
-    cu.draw_point(pt, "black", 8);
-
+    /* closest point to centre of start in line with line through start 
+     * and end of seg in direction of movement */
     var seg_closest0 = [seg[0], move_v].line_closest_pt_to_v(start[0]);
     var seg_closest1 = [seg[1], move_v].line_closest_pt_to_v(start[0]);
 
-    var edge_collision = seg.seg_contains_v2_on_line(intersection_pt);
+    // check if closest points to centre of start is inside start
 
-    var vertex_collision0 = seg_closest0.v2_dist(start[0]) <= start[1];
-    var vertex_collision1 = seg_closest1.v2_dist(start[0]) <= start[1];
-    var vertex_collision = vertex_collision0 || vertex_collision1;
+    if (seg_closest0.v2_dist(start[0]) <= start[1]) {
+        candidates.push(move_line.line_circle_intersections([seg[0], start[1]]).most(function(m){return -m.v2_dist(start[0])}));
+    }
+    if (seg_closest1.v2_dist(start[0]) <= start[1]) {
+        candidates.push(move_line.line_circle_intersections([seg[1], start[1]]).most(function(m){return -m.v2_dist(start[0])}));
+    }
     
-    cu.draw_point(seg_closest0);
-    cu.draw_point(seg_closest1);
-    var dest;
-    if (vertex_collision) {
-        var mids;
-        if (vertex_collision0) {
-            mids = move_line.line_circle_intersections([seg[0], start[1]]);
-        } else {
-            mids = move_line.line_circle_intersections([seg[1], start[1]]);
+    if (candidates.length > 0) {
+        var dest_centre = candidates.most(function(v){return -start[0].v2_dist(v)});
+        if (middle.seg_contains_v2_on_line(dest_centre) && start[0].v2_dist(end[0]) > start[0].v2_dist(dest_centre)) {
+            return [dest_centre, start[1]];
         }
-        var mid = mids.most(function(m) {return -m.v2_dist(start[0])});
-        dest = [mid, start[1]];
-        
-    } else if (edge_collision) {
-        var offset = start[0].v2_sub(pt);
-        var dest_centre = intersection_pt.v2_add(offset);
-        dest = [dest_centre, start[1]];
-
     }
 
-    if (dest) {
-        cu.draw_circle(dest, false, "black", 4);
-    }
-    var collision_detected = edge_collision || vertex_collision;
-    console.debug(edge_collision);
-    console.debug(vertex_collision);
-    console.debug(collision_detected);
+    return null;
 }
 
 /* computes the partial convex hull for a given segment and
