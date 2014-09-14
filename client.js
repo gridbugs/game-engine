@@ -18,38 +18,26 @@ $(function() {
         cu.canvas.height = $(window).height();
     });
 
-    var player = new Agent([100, 100], 0);
-    Agent.set_controlled_agent(player);
- 
-    var rad = 20;
-    var seg = [[100, 100], [200, 400]];
-    var start, end;
-    var counter = new Counter({
-        0: function() {
-            start = [Input.get_mouse_pos(), rad];
-
-            cu.clear();
-            cu.draw_circle(start);
-            cu.draw_segment(seg);
-        },
-        1: function() {
-            end = [Input.get_mouse_pos(), rad];
-            
-            var dest = process_collision(start, end, seg) || end;
-            
-            cu.draw_circle(dest);
-            
-            counter.count = -1;
-        }
-    });
+    var player = new Agent([200, 200], 0);
+    
+    var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
+    var col = new CollisionProcessor(player.rad, segs);
+    player.set_collision_processor(col);
 
     $(window).click(function() {
         counter.next();
     });
 
-    cu.draw_segment(seg);
 
+    function tick() {
+        cu.clear();
+        player.control_tick();
 
+        segs.map(function(seg){cu.draw_segment(seg)});
+        player.draw();
+        setTimeout(tick, 50);
+    }
+    tick();
 
  /*
     editor = new Editor(cu);
@@ -71,6 +59,96 @@ $(function() {
 */
 
 });
+
+function get_colliding_seg(start, end, segs) {
+    console.debug(start);
+    console.debug(end);
+    console.debug(segs);
+    var candidates = segs.map(function(seg) {return process_collision(start, end, seg)});
+    console.debug(candidates);
+    var closest = null;
+    var min_dist = 10000000000;
+
+    for (var i = 0,len=candidates.length;i<len;++i) {
+        if (candidates[i] != null) {
+            var dist = candidates[i][0].v2_dist(start[0]);
+            if (dist < min_dist) {
+                min_dist = dist;
+                closest = segs[i];
+            }
+        }
+    }
+
+    return closest;
+}
+
+function process_collision_cascade(start, end, segs) {
+    var collision_seg = get_colliding_seg(start, end, segs);
+    if (collision_seg) {
+        var slide = process_collision_slide(start, end, collision_seg);
+        cu.draw_segment(slide);
+        var s = [slide[0], start[1]];
+        var e = [slide[1], start[1]];
+        console.debug("starting second");
+        var a = get_colliding_seg(s, e, segs);
+        if (a == null) {
+            return [slide[1], start[1]];
+        }
+        console.debug("a");
+        console.debug(a);
+        var b = process_collision_slide(s, e, a);
+        console.debug("b");
+        if (b) {
+            cu.draw_segment(b);
+        }
+        return [b[1], start[1]];
+    }
+
+    return end;
+}
+
+function process_collision_slide(start, end, seg) {
+    
+    var circle_near_seg = start.circ_closest_pt_to_seg(seg);
+
+    var circle_offset = start[0].v2_sub(circle_near_seg);
+
+    var closest_to_end = seg.seg_closest_pt_to_v(end[0]);
+
+
+    var closest_to_start = seg.seg_closest_pt_to_v(start[0]);
+
+    var in_line = closest_to_end.v2_sub(closest_to_start).v2_unit();
+    var to_line = start[0].v2_sub(closest_to_start).v2_unit();
+    
+    if (seg.seg_contains_v2_on_line(closest_to_end)) {
+
+        var slide_end = closest_to_end.v2_add(circle_offset);
+
+        var slide_start = [start[0], end[0]].seg_intersection([
+            closest_to_start.v2_add(circle_offset),
+            slide_end
+        ]);
+
+        return [slide_start, slide_end];
+    }
+    
+    var past_seg = seg.seg_mid().v2_add(in_line.v2_smult(seg.seg_length()/2+start[1]))
+        .v2_add(to_line.v2_smult(start[1]));
+
+    var start_to_end = [start[0], end[0]];
+    var ict = start_to_end.seg_to_line().line_intersection([past_seg, to_line]);
+    var dest;
+    if (start_to_end.seg_contains_v2_on_line(ict)) {
+        var to_dest = end[0].v2_sub(ict);
+        dest = past_seg.v2_add(to_dest);
+    } else {
+        dest = process_collision(start, end, seg)[0];
+    }
+
+    return [past_seg, dest];
+}
+
 
 function process_collision(start, end, seg) {
     var middle = [start[0], end[0]];
@@ -108,10 +186,11 @@ function process_collision(start, end, seg) {
 
     // check if closest points to centre of start is inside start
 
-    if (seg_closest0.v2_dist(start[0]) <= start[1]) {
+    cu.draw_point(seg_closest0);
+    if (seg_closest0.v2_dist(start[0]) < start[1]) {
         candidates.push(move_line.line_circle_intersections([seg[0], start[1]]).most(function(m){return -m.v2_dist(start[0])}));
     }
-    if (seg_closest1.v2_dist(start[0]) <= start[1]) {
+    if (seg_closest1.v2_dist(start[0]) < start[1]) {
         candidates.push(move_line.line_circle_intersections([seg[1], start[1]]).most(function(m){return -m.v2_dist(start[0])}));
     }
     

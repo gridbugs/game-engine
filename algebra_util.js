@@ -349,9 +349,11 @@ extend(Array, 'polygon_average', function() {
     return this.reduce(function(v, acc){return acc.v2_add(v)}).v2_smult(1/this.length);
 });
 
+extend(Array, 'seg_closest_pt_to_v', function(v) {
+    return this.seg_to_line().line_closest_pt_to_v(v);
+});
+
 extend(Array, 'line_closest_pt_to_v', function(v) {
-
-
     return this[1].v2_project(v.v2_sub(this[0])).v2_add(this[0]);
 });
 
@@ -389,7 +391,7 @@ extend(Array, 'line_circle_intersections', function(circle) {
 });
 
 function solve_quadratic(a, b, c) {
-    var to_root = b*b-4*a*c;
+    var to_root = approx_non_negative(b*b-4*a*c);
     var roots;
     if (to_root < 0) {
         return [];
@@ -404,3 +406,12 @@ function solve_quadratic(a, b, c) {
         return (-b + root)/(2*a);
     });
 }
+
+function angle_to_unit_vector(angle) {
+    return [
+        Math.cos(angle),
+        Math.sin(angle)
+    ];
+}
+
+

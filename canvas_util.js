@@ -63,8 +63,8 @@ CanvasUtil.prototype.pop_linewidth = function() {
     this.ctx.lineWidth = this.linewidth_stack.pop();
 }
 
-CanvasUtil.prototype.draw_circle = function(circle, filled, colour, width) {
-    this.circle(circle[0], circle[1], filled, colour, width);
+CanvasUtil.prototype.draw_circle = function(circle, colour, width) {
+    this.circle(circle[0], circle[1], false, colour, width);
 }
 
 CanvasUtil.prototype.circle = function(centre, radius, filled, colour, width) {
@@ -121,15 +121,22 @@ CanvasUtil.prototype.draw_point = function(pt, colour, size) {
 }
 
 CanvasUtil.prototype.draw_segment = function(segment, colour, size) {
-    size = default_value(size, 4);
+    size = default_value(size, 1);
     colour = default_value(colour, "black");
-    var _this = this;
     this.with_line(colour, size, function() {
-        _this.ctx.beginPath();
-        _this.move_to(segment[0]);
-        _this.line_to(segment[1]);
-        _this.ctx.stroke();
-    });
+        this.ctx.beginPath();
+        this.move_to(segment[0]);
+        this.line_to(segment[1]);
+        this.ctx.stroke();
+    }.bind(this));
+}
+
+CanvasUtil.prototype.draw_line = function(line, colour, size) {
+    var left_line = [[0, 0], [0, 1]];
+    var right_line = [[this.canvas.width, 0], [0, 1]];
+    var left_point = line.line_intersection(left_line);
+    var right_point = line.line_intersection(right_line);
+    this.draw_segment([left_point, right_point], colour, size);
 }
 
 CanvasUtil.prototype.draw_polygon = function(polygon, strokecolour, fillcolour, strokewidth) {

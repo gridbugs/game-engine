@@ -42,13 +42,6 @@ function default_value(value, def_value) {
     return value == undefined ? def_value : value;
 }
 
-function angle_to_unit_vector(angle) {
-    return [
-        Math.cos(angle),
-        Math.sin(angle)
-    ];
-}
-
 /* returns true iff the angle b is between a and c
  */
 function angle_between(a, b, c) {
@@ -311,4 +304,16 @@ Counter.prototype.next = function() {
     }
 
     this.count++;
+}
+
+function d(value, def_value) {
+    return value == undefined ? def_value : value;
+}
+
+function approx_non_negative(x) {
+    if (x < 0 && x > -0.00001) {
+        return 0;
+    } else {
+        return x;
+    }
 }
