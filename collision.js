@@ -7,6 +7,7 @@ function CollisionProcessor(rad, segs) {
 }
 
 var count = 0;
+var debug = new ColourDebugger(["red", "blue", "green", "orange"]);
 CollisionProcessor.prototype.process_collision = function(start, end, to_ignore, slide) {
     slide = d(slide, true);
     to_ignore = d(to_ignore, []);
@@ -30,7 +31,6 @@ CollisionProcessor.prototype.process_collision = function(start, end, to_ignore,
 
 
     var seg = valid_segs[idx];
-    cu.draw_segment(seg, "red", 4);
     var path = collisions[idx].map(function(pt){return pt.v2_to_ints()});
 
     // the first collision is with seg, and follows path
@@ -65,52 +65,38 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     var mid = seg.seg_mid();
     var closest_end = mid.v2_add(closest_to_end.v2_sub(mid).v2_to_length(seg_half_length));
 
-    cu.draw_point(closest_end, "purple", 4);
-
-    cu.draw_point(closest_to_end, "red", 4);
-    cu.draw_point(closest_to_start, "blue", 4);
-    cu.draw_point(end, "green", 4);
-
-    if (slide) {
-        if (seg.seg_contains_v2_on_line(closest_to_end) && seg.seg_contains_v2_on_line(closest_to_start)) {
+    if (seg.seg_contains_v2_on_line(closest_to_end) && seg.seg_contains_v2_on_line(closest_to_start)) {
+        
+        if (start.v2_dist(closest_to_start) <= this.rad) {// && seg.seg_contains_v2_on_line(closest_to_start)) {
+            // path starts as sliding start until it's not overlapping
+            var path = [start, start.v2_add(start_overlap_vector)]
+            path._overlap = true;
             
-            if (start.v2_dist(closest_to_start) <= this.rad) {// && seg.seg_contains_v2_on_line(closest_to_start)) {
-                // path starts as sliding start until it's not overlapping
-                var path = [start, start.v2_add(start_overlap_vector)]
-                path._overlap = true;
-                
-                if ((end.v2_dist(closest_to_end) <= this.rad) //&& seg.seg_contains_v2_on_line(closest_to_end))
-                   || [start, end].seg_intersects(seg)
-                ) {
-                    var slide_centre = closest_to_end.v2_add(start_offset);
-                    path.push(slide_centre);
-                } else {
-                    // slide the start so it's no longer overlapping and take path to end
-                    path.push(end);
-                }
-                
-                return path;
+            if ((end.v2_dist(closest_to_end) <= this.rad) //&& seg.seg_contains_v2_on_line(closest_to_end))
+               || [start, end].seg_intersects(seg)
+            ) {
+                var slide_centre = closest_to_end.v2_add(start_offset);
+                path.push(slide_centre);
+            } else {
+                // slide the start so it's no longer overlapping and take path to end
+                path.push(end);
             }
-        
+            
+            return path;
         }
+    
+    }
 
 
-        if (end.v2_dist(closest_end) <= this.rad) {
-            console.debug("corner overlap");
-            var move_line = [closest_end, end].seg_to_line();
-            var candidates = move_line.line_circle_intersections([closest_end, this.rad]);
-            var dest_mid = candidates.most(function(pt){return -pt.v2_dist(end)})
-            cu.draw_point(dest_mid, "red", 12);
-            cu.draw_line(move_line);
-            cu.draw_circle([closest_end, this.rad], "blue", 4);
-            return [start, dest_mid];
-        }
-        
-        if (start.v2_dist(closest_end) <= this.rad) {
-            cu.draw_segment(seg, "blue", 8);
-            console.debug("stuck");
-            return [start, end];
-        }
+    if (end.v2_dist(closest_end) <= this.rad) {
+        var move_line = [closest_end, end].seg_to_line();
+        var candidates = move_line.line_circle_intersections([closest_end, this.rad]);
+        var dest_mid = candidates.most(function(pt){return -pt.v2_dist(end)})
+        return [start, dest_mid];
+    }
+    
+    if (start.v2_dist(closest_end) <= this.rad) {
+        return [start, end];
     }
 
     // point on start that will eventually intersect seg
