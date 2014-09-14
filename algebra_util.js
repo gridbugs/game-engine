@@ -414,4 +414,6 @@ function angle_to_unit_vector(angle) {
     ];
 }
 
-
+extend(Array, 'v2_to_ints', function() {
+    return [parseInt(this[0]), parseInt(this[1])];
+});

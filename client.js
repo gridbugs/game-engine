@@ -18,11 +18,34 @@ $(function() {
         cu.canvas.height = $(window).height();
     });
 
-    var player = new Agent([200, 200], 0);
+    var player = new Agent([300, 200], 0);
     
-    var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
+    var segs = [[[100, 100], [300, 300]], [[100, 100], [400, 50]], [[400, 50], [600, 50]], [[600, 50], [600, 200]]];
     var col = new CollisionProcessor(player.rad, segs);
     player.set_collision_processor(col);
+    
+    segs.map(function(seg){cu.draw_segment(seg)});
+
+    var rad = 20;
+    var start, end;
+    var counter = new Counter({
+        0: function() {
+            start = [Input.get_mouse_pos(), rad];
+
+            cu.clear();
+            cu.draw_circle(start);
+            segs.map(function(seg){cu.draw_segment(seg)});
+        },
+        1: function() {
+            end = [Input.get_mouse_pos(), rad];
+            
+            var dest = col.process_collision(start[0], end[0]);
+            
+            cu.draw_circle([dest, rad]);
+            
+            counter.count = -1;
+        }
+    });
 
     $(window).click(function() {
         counter.next();
