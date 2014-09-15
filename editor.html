@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script type="application/x-javascript" src="jquery.min.js"></script>
+<script type="application/x-javascript" src="numeric-1.2.6.min.js"></script>
+<script type="application/x-javascript" src="underscore-min.js"></script>
+<script type="application/x-javascript" src="tinycolor.js"></script>
+
+<script type="application/x-javascript" src="util.js"></script>
+<script type="application/x-javascript" src="heap.js"></script>
+<script type="application/x-javascript" src="canvas_util.js"></script>
+<script type="application/x-javascript" src="algebra_util.js"></script>
+<script type="application/x-javascript" src="colour.js"></script>
+<script type="application/x-javascript" src="graph.js"></script>
+<script type="application/x-javascript" src="radial.js"></script>
+<script type="application/x-javascript" src="collision.js"></script>
+
+<script type="application/x-javascript" src="editor.js"></script>
+<script type="application/x-javascript" src="input.js"></script>
+
+<script type="application/x-javascript">
+$(function() {
+    Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
+    Input.init();
+    cu = new CanvasUtil();
+    cu.register_canvas($("#screen")[0]);
+
+    cu.canvas.width = $(window).width();
+    cu.canvas.height = $(window).height();
+
+    $(document).resize(function() {
+        cu.canvas.width = $(window).width();
+        cu.canvas.height = $(window).height();
+    });
+
+
+    editor = new Editor(cu);
+
+    editor.set_mode('create');
+
+
+    function tick() {
+        cu.clear();
+        editor.draw();
+        setTimeout(tick, 50);
+    }
+    tick();
+
+})
+</script>
+
+<style>
+* {
+    margin: 0px;
+    padding: 0px;
+    overflow:hidden;
+}
+canvas {
+}
+.mode-button {
+    float: left;
+    border-bottom: 2px solid rgba(0,0,0,0.4);
+    border-right: 2px solid rgba(0,0,0,0.4);
+    color: rgba(0,0,0,0.4);
+    font-family: helvetica;
+    padding:5px;
+    text-align: center;
+    width: 80px;
+}
+.active-button {
+    background-color: rgba(0,0,0,0.1);
+    color: rgba(0,0,0,1);
+}
+#instructions {
+    font-family: helvetica;
+    padding: 5px;
+}
+</style>
+</head>
+<body>
+<canvas id="screen" style="position:absolute;left:0px;top:0px;" width=1200 height=600></canvas>
+<div id="button-area">
+<div class="mode-button" id="create-button">
+1<br/>Create
+</div>
+<div class="mode-button" id="modify-button">
+2<br/>Modify
+</div>
+<div class="mode-button" id="remove-button">
+3<br/>Remove
+</div>
+</div>
+<div id="instructions">
+<span>shift:</span> disable segment chaining<br/>
+<span>ctrl:</span> snap to angles at 15&#176; intervals<br/>
+<span>alt:</span> start drawing polygon on click
+</div>
+</body>
+</html>

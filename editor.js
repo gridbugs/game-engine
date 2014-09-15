@@ -23,6 +23,12 @@ function Editor(cu) {
     
     this.draw_hv_hints = null;
     this.stop_chain = false;
+
+    Editor.mode_buttons = {
+        create: $("#create-button"),
+        modify: $("#modify-button"),
+        remove: $("#remove-button")
+    };
 }
 
 Editor.events = ['click', 'mousedown', 'mouseup', 'mousemove', 'keydown', 'keypress', 'keyup', 'dblclick'];
@@ -167,6 +173,19 @@ Editor.prototype.init_events = function() {
         }.bind(this));
     }.bind(this));
 
+    $(window).keydown(function(e) {
+        switch (e.keyCode) {
+        case 49: // 1
+            this.set_mode('create');
+            break;
+        case 50: // 2
+            this.set_mode('modify');
+            break;
+        case 51: // 3
+            this.set_mode('remove');
+            break;
+        }
+    }.bind(this));
 }
 
 Editor.prototype.draw_segments = function() {
@@ -277,14 +296,30 @@ Editor.prototype.highlight_point_near_cursor = function() {
     maybe_function(function(p) {this.cu.draw_point(p, 'yellow', 8)}.bind(this), pt);
 }
 
+
 Editor.prototype.set_mode = function(mode) {
     
+    this.point_buffer = null;
     this.clear_events();
     this.init_events();
 
     for (m in Editor.modes[mode]) {
         this[m] = Editor.modes[mode][m];
     }
+
+    if (mode == 'create') {
+        $('#instructions').show();
+    } else {
+        $('#instructions').hide();
+    }
+
+    for (var i in Editor.mode_buttons) {
+        Editor.mode_buttons[i].removeClass("active-button");
+    }
+    var button = maybe(Editor.mode_buttons[mode]);
+    button.fmap(function(button) {
+        button.addClass("active-button");
+    });
 }
 
 Editor.prototype.get_angle_snap_point = function() {
@@ -359,7 +394,7 @@ Editor.prototype.get_snap_point = function(ignore_selected) {
                 hv_snap_point.in_line.map(function(pt){
                     cu.draw_point(pt, "black", 4)
 
-                    cu.draw_line([pt, hv_snap_point.point].seg_to_line(), "black", 1);
+                    cu.draw_line([pt, hv_snap_point.point].seg_to_line(), "rgba(0,0,0,0.2)", 1);
                 });
             };
             return hv_snap_point.point;
@@ -394,9 +429,7 @@ Editor.modes = {};
 Editor.modes.create_segments = {
     click: function() {
         var point = this.get_snap_point();
-        console.debug(point);
         if (this.point_buffer == null) {
-            console.debug(point);
             this.point_buffer = point;
         } else {
             var seg = [this.point_buffer, point];
@@ -408,16 +441,13 @@ Editor.modes.create_segments = {
         this.highlight_point_near_cursor();
         this.draw_complete();
         this.draw_partial_segment();
+        
     }
 };
 
 Editor.modes.chain_segments = {
     click: function() {
-        console.debug('b');
         var point = this.get_snap_point();
-        console.debug(point);
-        console.debug(this.point_buffer);
-        console.debug(this.stop_chain);
         if (this.point_buffer != null) {
             var seg = [this.point_buffer, point];
             this.segments.push(seg);
@@ -516,7 +546,7 @@ Editor.modes.label = {
     }
 }
 
-Editor.modes.change = {
+Editor.modes.modify = {
     draw: function() {
         if (!this.mouse_is_down) {
             this.highlight(this.selection);
@@ -539,17 +569,31 @@ Editor.modes.change = {
 
 Editor.modes.create = {
     draw: function() {
-        Editor.modes.create_segments.draw.call(this);
+        if (this.current_polygon.length == 0) {
+            Editor.modes.create_segments.draw.call(this);
+        } else {
+            Editor.modes.create_polygons.draw.call(this);
+        }
+
+        var point = this.get_snap_point();
         if (this.draw_hv_hints) {
             this.draw_hv_hints();
         }
     },
     click: function() {
-        if (this.shift_mode) {
-            Editor.modes.create_segments.click.call(this);
+
+        if (this.current_polygon.length == 0) {
+
+            if (this.alt_mode) {
+                Editor.modes.create_polygons.click.call(this);
+            } else if (this.shift_mode) {
+                Editor.modes.create_segments.click.call(this);
+            } else {
+                Editor.modes.chain_segments.click.call(this);
+            }
+
         } else {
-            console.debug("a");
-            Editor.modes.chain_segments.click.call(this);
+            Editor.modes.create_polygons.click.call(this);
         }
         this.draw_hv_hints = null;
     },
@@ -564,6 +608,9 @@ Editor.modes.create = {
         case 27: // escape
             this.point_buffer = null;
             break;
+        case 18: // alt
+            this.alt_mode = true;
+            break;
         }
  
     },
@@ -574,6 +621,9 @@ Editor.modes.create = {
             break;
         case 17: // ctrl
             this.angle_snap = false;
+            break;
+        case 18: // alt
+            this.alt_mode = false;
             break;
         }
 
@@ -587,5 +637,6 @@ Editor.modes.remove = {
         to_delete.fmap(function(to_delete) {
             this.delete_object(to_delete);
         }.bind(this));
+        this.selection = null;
     }
 }
