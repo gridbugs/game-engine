@@ -18,6 +18,11 @@ function Editor(cu) {
     this.field.hide();
     $('body').append(this.field);
 
+    this.hv_snap = true;
+    this.angle_snap = false;
+    
+    this.draw_hv_hints = null;
+    this.stop_chain = false;
 }
 
 Editor.events = ['click', 'mousedown', 'mouseup', 'mousemove', 'keydown', 'keypress', 'keyup', 'dblclick'];
@@ -277,8 +282,92 @@ Editor.prototype.set_mode = function(mode) {
     }
 }
 
+Editor.prototype.get_angle_snap_point = function() {
+    if (this.point_buffer == null) {
+        return null;
+    }
+
+    var cursor = Input.get_mouse_pos();
+    var vec = cursor.v2_sub(this.point_buffer);
+    var radians = vec.v2_angle();
+    var degrees = parseInt(radians_to_degrees(radians));
+    var snap_degrees = round_to_nearest(degrees, 15);
+    var snap_radians = degrees_to_radians(snap_degrees);
+
+    return angle_to_unit_vector(snap_radians).v2_to_length(vec.v2_len()).v2_add(this.point_buffer);
+}
+
+Editor.prototype.get_hv_snap_point = function(ignore_selected) {
+    var test = this.all_points();
+    var all_points = this.all_points(ignore_selected)
+        .map(function(p){p.ignore=true;return p});
+    if (all_points.length == 0) {
+        return null;
+    }
+
+    var cursor = Input.get_mouse_pos();
+    var closest_h = all_points.most_over_threshold(-this.snap_distance, function(v){
+        return -Math.abs(cursor[1] - v[1]);
+    });
+    var closest_v = all_points.most_over_threshold(-this.snap_distance, function(v){
+        return -Math.abs(cursor[0] - v[0]);
+    });
+
+    if (closest_h != null && closest_v == null) {
+        return {
+            type: 'horizontal',
+            in_line: [closest_h],
+            point: [cursor[0], closest_h[1]]
+        };
+    }
+    if (closest_v != null && closest_h == null) {
+        return {
+            type: 'vertical',
+            in_line: [closest_v],
+            point: [closest_v[0], cursor[1]]
+        };
+    }
+
+    if (closest_h != null && closest_v != null) {
+        return {
+            type: 'both',
+            in_line: [closest_h, closest_v],
+            point: [closest_v[0], closest_h[1]]
+        };
+    }
+    return null;
+}
+
 Editor.prototype.get_snap_point = function(ignore_selected) {
-    return this.point_near_cursor(ignore_selected) || Input.get_mouse_pos();
+    this.draw_hv_hints = null;
+    this.stop_chain = false;
+    
+    var near_cursor = this.point_near_cursor(ignore_selected);
+    if (near_cursor) {
+        this.stop_chain = this.point_buffer != null;
+        return near_cursor;
+    }
+    if (this.hv_snap) {
+        var hv_snap_point = this.get_hv_snap_point(ignore_selected);
+        if (hv_snap_point) {
+            this.draw_hv_hints = function() {
+                hv_snap_point.in_line.map(function(pt){
+                    cu.draw_point(pt, "black", 4)
+
+                    cu.draw_line([pt, hv_snap_point.point].seg_to_line(), "black", 1);
+                });
+            };
+            return hv_snap_point.point;
+        }
+    }
+    if (this.angle_snap) {
+        var angle_snap_point = this.get_angle_snap_point();
+        if (angle_snap_point) {
+            return angle_snap_point;
+        }
+    }
+
+    return Input.get_mouse_pos();
 }
 
 
@@ -300,7 +389,9 @@ Editor.modes = {};
 Editor.modes.create_segments = {
     click: function() {
         var point = this.get_snap_point();
+        console.debug(point);
         if (this.point_buffer == null) {
+            console.debug(point);
             this.point_buffer = point;
         } else {
             var seg = [this.point_buffer, point];
@@ -317,12 +408,18 @@ Editor.modes.create_segments = {
 
 Editor.modes.chain_segments = {
     click: function() {
+        console.debug('b');
         var point = this.get_snap_point();
-        if (this.point_buffer == null) {
-            this.point_buffer = point;
-        } else {
+        console.debug(point);
+        console.debug(this.point_buffer);
+        console.debug(this.stop_chain);
+        if (this.point_buffer != null) {
             var seg = [this.point_buffer, point];
             this.segments.push(seg);
+        }
+        if (this.stop_chain) {
+            this.point_buffer = null;
+        } else {
             this.point_buffer = point;
         }
     },
@@ -414,7 +511,7 @@ Editor.modes.label = {
     }
 }
 
-Editor.modes.smart = {
+Editor.modes.change = {
     draw: function() {
         if (!this.mouse_is_down) {
             this.highlight(this.selection);
@@ -432,5 +529,48 @@ Editor.modes.smart = {
         if (this.selection == null) {
             this.hide_field();
         }
+    }
+}
+
+Editor.modes.create = {
+    draw: function() {
+        Editor.modes.create_segments.draw.call(this);
+        if (this.draw_hv_hints) {
+            this.draw_hv_hints();
+        }
+    },
+    click: function() {
+        if (this.shift_mode) {
+            Editor.modes.create_segments.click.call(this);
+        } else {
+            console.debug("a");
+            Editor.modes.chain_segments.click.call(this);
+        }
+        this.draw_hv_hints = null;
+    },
+    keydown: function(e) {
+        switch (e.keyCode) {
+        case 16: // shift
+            this.shift_mode = true;
+            break;
+        case 17: // ctrl
+            this.angle_snap = true;
+            break;
+        case 27: // escape
+            this.point_buffer = null;
+            break;
+        }
+ 
+    },
+    keyup: function(e) {
+        switch (e.keyCode) {
+        case 16: // shift
+            this.shift_mode = false;
+            break;
+        case 17: // ctrl
+            this.angle_snap = false;
+            break;
+        }
+
     }
 }

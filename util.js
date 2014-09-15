@@ -317,3 +317,9 @@ function approx_non_negative(x) {
         return x;
     }
 }
+
+function round_to_nearest(value, nearest) {
+    var a = Math.floor((value+nearest/2)/nearest);
+    var b = a * nearest;
+    return b;
+}

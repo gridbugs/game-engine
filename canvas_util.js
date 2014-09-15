@@ -132,6 +132,10 @@ CanvasUtil.prototype.draw_segment = function(segment, colour, size) {
 }
 
 CanvasUtil.prototype.draw_line = function(line, colour, size) {
+    if (line[1][0] == 0) {
+        this.draw_segment([[line[0][0], 0], [line[0][0], this.canvas.height]], colour, size);
+        return;
+    }
     var left_line = [[0, 0], [0, 1]];
     var right_line = [[this.canvas.width, 0], [0, 1]];
     var left_point = line.line_intersection(left_line);

@@ -24,7 +24,7 @@ $(function() {
     editor.segments.push([[100, 50], [300, 50]]);
     editor.selection = editor.polygons[0];
     
-    editor.set_mode('smart');
+    editor.set_mode('create');
 
 
     function tick() {

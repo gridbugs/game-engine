@@ -72,6 +72,10 @@ extend(Array, 'v2_shortest_dist_to', function(v) {
     return v.v2_dist(this.v2_project(v));
 });
 
+extend(Array, 'v2_angle', function() {
+    return Math.atan2(this[1], this[0]);
+});
+
 extend(Array, 'v2_angle_between', function(v) {
     var ret = Math.atan2(this[1], this[0]) - Math.atan2(v[1], v[0]);
     if (ret < 0) {
@@ -233,6 +237,10 @@ var circle_through = function(a, b, c) {
 
 var radians_to_degrees = function(r) {
     return r * 180 / Math.PI;
+}
+
+var degrees_to_radians = function(d) {
+    return d * Math.PI / 180;
 }
 
 var angle_through = function(a, b, c) {
