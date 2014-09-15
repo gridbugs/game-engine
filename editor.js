@@ -27,6 +27,11 @@ function Editor(cu) {
 
 Editor.events = ['click', 'mousedown', 'mouseup', 'mousemove', 'keydown', 'keypress', 'keyup', 'dblclick'];
 
+Editor.prototype.delete_object = function(o) {
+    this.polygons = this.polygons.filter(function(p){return p!=o});
+    this.segments = this.segments.filter(function(p){return p!=o});
+}
+
 Editor.prototype.clear_events = function() {
     // stop capturing the events
     Editor.events.map(function(e){$(window).off(e)});
@@ -572,5 +577,15 @@ Editor.modes.create = {
             break;
         }
 
+    }
+}
+
+Editor.modes.remove = {
+    draw: Editor.modes.select.draw,
+    click: function() {
+        var to_delete = maybe(this.object_near_cursor());
+        to_delete.fmap(function(to_delete) {
+            this.delete_object(to_delete);
+        }.bind(this));
     }
 }

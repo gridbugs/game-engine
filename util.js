@@ -263,6 +263,28 @@ Approx.prototype.fmap = function(f) {
     return A(f(this.value), this.tolerance);
 }
 
+function Maybe(v) {
+    this.v = v;
+}
+
+function maybe(v) {
+    return new Maybe(v);
+}
+Maybe.prototype.fmap = function(f) {
+    if (this.v == null) {
+        return maybe(null);
+    } else {
+        return maybe(f(this.v));
+    }
+}
+Maybe.prototype.mmap = function(m) {
+    if (this.v == null) {
+        return maybe(null);
+    } else {
+        return maybe(m.call(this.v));
+    }
+}
+
 function maybe_method(m, v) {
     if (v == null) {
         return null;
