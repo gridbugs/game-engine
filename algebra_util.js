@@ -29,6 +29,10 @@ extend(Array, 'v2_equals', function(v){return this[0]==v[0] && this[1]==v[1]});
 // returns this rotated 90 degrees anticlockwise
 extend(Array, 'v2_norm', function() {return [-this[1], this[0]]});
 
+extend(Array, 'v2_rotate', function(rads) {
+    return angle_to_unit_vector(angle_normalize(this.v2_angle() + rads)).v2_smult(this.v2_len());
+});
+
 extend(Array, 'v2_unit', function() {
     return this.v2_smult(1/this.v2_len());
 });
@@ -425,3 +429,25 @@ function angle_to_unit_vector(angle) {
 extend(Array, 'v2_to_ints', function() {
     return [parseInt(this[0]), parseInt(this[1])];
 });
+
+function angle_normalize(angle) {
+    if (angle > -Math.PI && angle <= Math.PI) {
+        return angle;
+    }
+    if (angle <= -Math.PI) {
+        return angle_normalize(angle + Math.PI*2);
+    }
+    if (angle > Math.PI) {
+        return angle_normalize(angle - Math.PI*2);
+    }
+}
+
+const wave_fn_period = Math.PI*2;
+function saw_wave(x) {
+    x-=(wave_fn_period/2);
+    return (x-Math.floor(x/wave_fn_period)*wave_fn_period)/(wave_fn_period/2)-1;
+}
+
+function triangle_wave(x) {
+    return Math.abs(saw_wave(x+wave_fn_period/4))*2-1;
+}

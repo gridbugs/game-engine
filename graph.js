@@ -1,4 +1,6 @@
 function Graph(cu, h_scale, v_scale, left, top, width, height, origin_left, origin_top, pixsiz) {
+    var screen_width = Math.floor(this.height/(pixsiz)) + 1;
+    var screen_height = Math.floor(this.width/(pixsiz)) + 1;
     this.cu = cu;
     this.ctx = cu.ctx;
     this.left = left == undefined ? 0 : left;
@@ -10,10 +12,23 @@ function Graph(cu, h_scale, v_scale, left, top, width, height, origin_left, orig
     this.h_scale = h_scale == undefined ? 1 : h_scale;
     this.v_scale = v_scale == undefined ? 1 : v_scale;
     this.pixsiz = pixsiz == undefined ? 1 : pixsiz;
+    this.global_origin = [this.origin_left + this.left, this.origin_top + this.top];
 
     this.set_colours(tinycolor('white'), tinycolor('black'));
 
     this.col_cache = [];
+}
+
+Graph.prototype.draw_borders = function() {
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.left, this.top);
+    this.ctx.lineTo(this.left + this.width, this.top);
+    this.ctx.lineTo(this.left + this.width, this.top + this.height);
+    this.ctx.lineTo(this.left, this.top + this.height);
+    this.ctx.lineTo(this.left, this.top);
+    this.ctx.stroke();
+
+    this.cu.draw_point(this.global_origin);
 }
 
 Graph.prototype.set_colours = function(a, b) {
@@ -105,3 +120,25 @@ Graph.prototype.plot_2vars = function(fn, range) {
 }
 
 
+Graph.prototype.plot_1var = function(fn, col) {
+    var first = true;
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = col;
+    this.ctx.lineWidth = 2;
+    for (var i = 0;i!=this.width;++i) {
+        var x = (i - this.origin_left)/this.h_scale;
+        var y = fn(x);
+        var x_to_draw = this.global_origin[0] + x*this.h_scale;
+        var y_to_draw = this.global_origin[1] - y*this.v_scale;
+
+        if (first) {
+            console.debug(x_to_draw, y_to_draw);
+            console.debug(x, y);
+            this.ctx.moveTo(x_to_draw, y_to_draw);
+            first = false;
+        } else {
+            this.ctx.lineTo(x_to_draw, y_to_draw);
+        }
+    }
+    this.ctx.stroke();
+}

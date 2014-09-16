@@ -59,18 +59,6 @@ function _angle_between(start, end) {
     )[0];
 }
 
-function angle_normalize(angle) {
-    if (angle > -Math.PI && angle <= Math.PI) {
-        return angle;
-    }
-    if (angle <= -Math.PI) {
-        return angle_normalize(angle + Math.PI*2);
-    }
-    if (angle > Math.PI) {
-        return angle_normalize(angle - Math.PI*2);
-    }
-}
-
 function radians_between(a1, a2) {
     var radians = Math.abs(a1 - a2);
     while (radians > Math.PI) {
