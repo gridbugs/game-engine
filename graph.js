@@ -29,6 +29,7 @@ Graph.prototype.draw_borders = function() {
     this.ctx.stroke();
 
     this.cu.draw_point(this.global_origin);
+    return this;
 }
 
 Graph.prototype.set_colours = function(a, b) {
@@ -81,6 +82,7 @@ Graph.prototype.plot_radial = function(fn, range) {
     this.plot_2vars(function(x, y) {
         return fn(Math.atan2(y, x), Math.sqrt(x*x+y*y));
     }, range);
+    return this;
 }
 
 /* fn is a function which takes an x and y value
@@ -117,6 +119,7 @@ Graph.prototype.plot_2vars = function(fn, range) {
     }
 
     this.ctx.fill();
+    return this;
 }
 
 
@@ -132,8 +135,6 @@ Graph.prototype.plot_1var = function(fn, col) {
         var y_to_draw = this.global_origin[1] - y*this.v_scale;
 
         if (first) {
-            console.debug(x_to_draw, y_to_draw);
-            console.debug(x, y);
             this.ctx.moveTo(x_to_draw, y_to_draw);
             first = false;
         } else {
@@ -141,4 +142,5 @@ Graph.prototype.plot_1var = function(fn, col) {
         }
     }
     this.ctx.stroke();
+    return this;
 }

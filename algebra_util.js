@@ -451,3 +451,20 @@ function saw_wave(x) {
 function triangle_wave(x) {
     return Math.abs(saw_wave(x+wave_fn_period/4))*2-1;
 }
+
+function sin_to_cos(f) {
+    return function(x) {
+        return f(x+wave_fn_period/4);
+    }
+}
+
+extend(Function, 'sin_to_cos', function() {
+    return function(x) {
+        return this(x+wave_fn_period/4);
+    }.bind(this);
+});
+extend(Function, 'slide_x', function(offset) {
+    return function(x) {
+        return this(x-offset);
+    }.bind(this);
+});

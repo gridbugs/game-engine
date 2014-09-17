@@ -4,8 +4,7 @@ var editor;
 $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
-    cu = new CanvasUtil();
-    cu.register_canvas($("#screen")[0]);
+    cu = new CanvasUtil($("#screen")[0]);
 
     cu.canvas.width = $(window).width();
     cu.canvas.height = $(window).height();
@@ -16,6 +15,8 @@ $(function() {
     });
 
 
+    var hip_pt = [1000, 200];
+    
     function draw_leg(hip_angle, knee_angle) {
         const upper_length = 100;
         const lower_length = 80;
@@ -27,9 +28,6 @@ $(function() {
         foot = foot.v2_rotate(rotate_amount);
 
 
-        var mid = [200, 200];
-
-        var hip_pt = [200, 200];
         var knee_pt = hip_pt.v2_add(knee);
         var foot_pt = hip_pt.v2_add(foot);
 
@@ -42,40 +40,27 @@ $(function() {
 
     }
 
-    function upper_fn(x) {
-        
-        return - (Math.PI/6) * Math.cos(x);
-    }
+    var humanoid = new Humanoid(80, 100);
 
-    function lower_fn(x) {
-        return - (Math.PI/4) * Math.max(Math.sin(x), 0);
-    }
+    var walk = new Walk(humanoid, Math.PI*2,
+        /* hip */  function(x) {return - (Math.PI/6) * triangle_wave.sin_to_cos()(x)},
+        /* knee */ function(x) {return - (Math.PI/4) * Math.max(triangle_wave(x), 0)}
+    );
 
     function tick(x) {
         cu.clear();
 
-        draw_leg(upper_fn(x), lower_fn(x));
+        walk.to_points(x).draw_side(cu, [200, 200]);
 
-        setTimeout(tick, 50, x+Math.PI/48);
+        setTimeout(tick, 50, x+Math.PI/24);
     }
 
-//    tick(0);
-    var g = new Graph(cu, 1, 1, 0, 0, undefined, undefined, undefined, undefined, 8);
-
-    g.set_colours(
-        tinycolor({h: 0, s: 255, v: 255, a: 1}),
-        tinycolor({h: 255, s: 255, v: 255, a: 1})
-    );
-
-    var a;
-    var d = function() {
-        g.plot_radial(R(function(angle, dist){
-            return Math.sin(angle + a + dist/100);
-        }).f());
-        a+=0.1;
-        setTimeout(d, 30)
-    };
-    a=0;d()
-
-
+    tick(0);
+    /*
+    new Graph(cu, 50, 50).draw_borders()
+        .plot_1var(walk.get_left_hip_angle, "red")
+        .plot_1var(walk.get_left_knee_angle, "orange")
+        .plot_1var(walk.get_right_hip_angle, "blue")
+        .plot_1var(walk.get_right_knee_angle, "purple");
+    */
 });
