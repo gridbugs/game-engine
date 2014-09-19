@@ -40,11 +40,107 @@ $(function() {
 
     }
 
+
+    const impact = 5*Math.PI/6;
+    const impact_len = Math.PI/7;
+    const impact_strength = 0.1;
+
+    function a(x) {
+        return x + Math.sin(x)/2;
+    }
+
+    const increase = 0.1;
+    function b(x) {
+        return Math.pow((Math.sin(x-Math.PI/2)/2+0.5), 50)*increase;
+    }
+    function c(x) {
+        const half = increase/2;
+        return -Math.cos(x)*(1+half) + half;
+    }
+    function d(x) {
+        return -Math.cos(a(x)) + b(x);
+    }
+    function ab(x) {
+        return -Math.cos(in_lowest(x)*Math.PI/impact);
+    }
+    function ac(x) {
+        return (-Math.cos((in_lowest(x)-impact)*(Math.PI/impact_len))+1)*impact_strength/2;
+    }
+    function ad(x) {
+        return (1+impact_strength/2)*Math.cos((Math.PI/(2*Math.PI-impact-impact_len))*(in_lowest(x)-impact-impact_len))+impact_strength/2;
+    }
+
+    function in_second_half(x) {
+        return Math.abs(Math.floor(x/Math.PI)%2);
+    }
+    function in_first_half(x) {
+        return 1-Math.abs(Math.floor(x/Math.PI)%2);
+    }
+
+    function in_range(lo, hi) {
+        return function(x) {
+            var a = x - Math.floor(x/(Math.PI*2))*Math.PI*2;
+            if (a >= lo && a < hi) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+    function in_lowest(x) {
+        return x - Math.floor(x/(Math.PI*2))*Math.PI*2;
+    }
+
+    function upper(x) {
+        return in_range(0, impact)(x)*ab(x) +
+               in_range(impact, impact + impact_len)(x)*(1+ac(x)) +
+               in_range(impact + impact_len, Math.PI*2)(x)*ad(x);
+    }
+
+    const mult = 2.2;
+    function e(x) {
+        return Math.pow(Math.cos(x)/2+0.5, 2)*2-1;
+    }
+    function f(x) {
+        return x + Math.sin(x)/1.5;
+    }
+    function g(x) {
+        return -e(x-Math.PI);
+    }
+    function h(x) {
+        return in_range(0, Math.PI)(x)*e(x) + in_range(Math.PI, Math.PI*2)(x)*g(x);
+    }
+    function aa(x) {
+        x = in_lowest(x);
+        return h(2*x/3);
+    }
+
+
+    var guidecol = 'lightgrey';
+    new Graph(cu, 80, 200).draw_borders()
+        .draw_v_line(0, guidecol, 1)
+        .draw_v_line(Math.PI/2, guidecol, 1)
+        .draw_v_line(Math.PI, guidecol, 1)
+        .draw_v_line(3*Math.PI/2, guidecol, 1)
+        .draw_v_line(2*Math.PI, guidecol, 1)
+        .draw_v_line(impact, 'blue', 1)
+        .draw_v_line(impact+impact_len, 'blue', 1)
+        .draw_h_line(1, guidecol, 1)
+        .draw_h_line(0, guidecol, 1)
+        .draw_h_line(-1, guidecol, 1)
+        .plot_1var(function(x) {return Math.sin(x)}, guidecol, 1)
+//        .plot_1var(e, 'blue', 1)
+//        .plot_1var(f, 'grey', 1)
+//        .plot_1var(g, 'grey', 1)
+        .plot_1var(upper, 'blue', 2);
+ 
+
+
     var humanoid = new Humanoid(80, 100);
 
     var walk = new Walk(humanoid, Math.PI*2,
-        /* hip */  function(x) {return - (Math.PI/6) * triangle_wave.sin_to_cos()(x)},
-        /* knee */ function(x) {return - (Math.PI/4) * Math.max(triangle_wave(x), 0)}
+        /* hip */  upper,
+        /* knee */ function(x) {return 0}
     );
 
     function tick(x) {
@@ -55,12 +151,6 @@ $(function() {
         setTimeout(tick, 50, x+Math.PI/24);
     }
 
-    tick(0);
-    /*
-    new Graph(cu, 50, 50).draw_borders()
-        .plot_1var(walk.get_left_hip_angle, "red")
-        .plot_1var(walk.get_left_knee_angle, "orange")
-        .plot_1var(walk.get_right_hip_angle, "blue")
-        .plot_1var(walk.get_right_knee_angle, "purple");
-    */
+//    tick(0);
+
 });

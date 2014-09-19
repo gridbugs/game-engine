@@ -19,6 +19,40 @@ function Graph(cu, h_scale, v_scale, left, top, width, height, origin_left, orig
     this.col_cache = [];
 }
 
+Graph.prototype.draw_point = function(x, y) {
+    if (y == null) {
+        y = x[1];
+        x = x[0];
+    }
+
+    var x_to_draw = this.global_origin[0] + x*this.h_scale;
+    var y_to_draw = this.global_origin[1] - y*this.v_scale;
+    
+    this.cu.draw_point([x_to_draw, y_to_draw]);
+    return this;
+}
+
+Graph.prototype.draw_v_line = function(x, colour, width) {
+    var x_to_draw = this.global_origin[0] + x*this.h_scale;
+    var bottom = this.ctx.canvas.height;
+
+    this.cu.draw_with_line(colour, width, function() {
+        this.to(x_to_draw, 0).to(x_to_draw, bottom);
+    });
+    return this;
+}
+
+Graph.prototype.draw_h_line = function(y, colour, width) {
+    var y_to_draw = this.global_origin[1] - y*this.v_scale;
+    var right = this.ctx.canvas.width;
+
+    this.cu.draw_with_line(colour, width, function() {
+        this.to(0, y_to_draw).to(right, y_to_draw);
+    });
+    return this;
+}
+
+
 Graph.prototype.draw_borders = function() {
     this.ctx.beginPath();
     this.ctx.moveTo(this.left, this.top);
@@ -123,11 +157,11 @@ Graph.prototype.plot_2vars = function(fn, range) {
 }
 
 
-Graph.prototype.plot_1var = function(fn, col) {
+Graph.prototype.plot_1var = function(fn, col, width) {
     var first = true;
     this.ctx.beginPath();
     this.ctx.strokeStyle = col;
-    this.ctx.lineWidth = 2;
+    this.ctx.lineWidth = width;
     for (var i = 0;i!=this.width;++i) {
         var x = (i - this.origin_left)/this.h_scale;
         var y = fn(x);

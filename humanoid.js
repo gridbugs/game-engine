@@ -28,8 +28,8 @@ Humanoid.prototype.to_half_point_seq = function(
     hip_angle
 ) {
     var hip = [0, 0];
-    var knee = angle_to_unit_vector(hip_angle).v2_smult(this.upper_leg);
-    var foot = knee.v2_add(angle_to_unit_vector(angle_normalize(hip_angle+knee_angle)).v2_smult(this.lower_leg));
+    var knee = angle_to_unit_vector(-hip_angle).v2_smult(this.upper_leg);
+    var foot = knee.v2_add(angle_to_unit_vector(angle_normalize(-hip_angle-knee_angle)).v2_smult(this.lower_leg));
     return [foot, knee, hip].map(function(pt){return pt.v2_rotate(Math.PI/2)});
 }
 
