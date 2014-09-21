@@ -90,34 +90,78 @@ $(function() {
     function in_lowest(x) {
         return x - Math.floor(x/(Math.PI*2))*Math.PI*2;
     }
+    
+    const upper_scale = 0.5;
+    const lower_scale = 0.5;
 
     function upper(x) {
-        return in_range(0, impact)(x)*ab(x) +
+        return (in_range(0, impact)(x)*ab(x) +
                in_range(impact, impact + impact_len)(x)*(1+ac(x)) +
-               in_range(impact + impact_len, Math.PI*2)(x)*ad(x);
+               in_range(impact + impact_len, Math.PI*2)(x)*ad(x))*upper_scale;
     }
 
     const mult = 2.2;
     function e(x) {
-        return Math.pow(Math.cos(x)/2+0.5, 2)*2-1;
+        return Math.cos(f(x*Math.PI*2/impact));
     }
     function f(x) {
-        return x + Math.sin(x)/1.5;
+        return x + Math.sin(x)/1.2;
     }
     function g(x) {
-        return -e(x-Math.PI);
+        return Math.sin(x);
     }
     function h(x) {
-        return in_range(0, Math.PI)(x)*e(x) + in_range(Math.PI, Math.PI*2)(x)*g(x);
+        return x + Math.sin(x);
     }
     function aa(x) {
-        x = in_lowest(x);
-        return h(2*x/3);
+        return g(h(x));
     }
 
+    const slant_offset = 1;
+    function ae(x) {
+        x=in_lowest(x);
+        return in_range(0, slant_offset)(x)*through_pts([0,0],[slant_offset, Math.PI/2])(x) +
+               in_range(slant_offset, Math.PI*2-slant_offset)(x)*through_pts([slant_offset, Math.PI/2],[Math.PI*2-slant_offset,3*Math.PI/2])(x) +
+               in_range(Math.PI*2-slant_offset, Math.PI*2)(x)*through_pts([Math.PI*2-slant_offset,3*Math.PI/2],[Math.PI*2, Math.PI*2])(x);
+    }
+    function af(x) {
+        return Math.sin(ae(x));
+    }
+    function ag(x) {
+        //return -af((x-impact-impact_len)*Math.PI/(Math.PI*2-impact-impact_len));
+        return -af((x-impact-slant_offset/2)*Math.PI*2/(Math.PI*2-impact));
+    }
+
+    function ah(x) {
+        return Math.cos(x);
+    }
+    function aj(x) {
+        return Math.sin(x)*0.5+x;
+    }
+    function ak(x) {
+        return ah(aj(x*Math.PI*2/(impact)));
+    }
+
+    function lower(x) {
+        x=in_lowest(x);
+        return ((in_range(0,impact)(x)*ak(x) +
+               in_range(impact, Math.PI*2)(x)*ag(x))/2-0.5)*lower_scale;
+    }
+
+    function through_pts(a, b) {
+        var m = (b[1]-a[1])/(b[0]-a[0]); // rise over run
+        var c = a[1] - m*a[0];
+        return function(x) {
+            return m*x+c;
+        }
+    }
+
+    function hip_bounce(x) {
+        return Math.cos(x*2)*10;
+    }
 
     var guidecol = 'lightgrey';
-    new Graph(cu, 80, 200).draw_borders()
+    new Graph(cu, 80, 60).draw_borders()
         .draw_v_line(0, guidecol, 1)
         .draw_v_line(Math.PI/2, guidecol, 1)
         .draw_v_line(Math.PI, guidecol, 1)
@@ -129,10 +173,17 @@ $(function() {
         .draw_h_line(0, guidecol, 1)
         .draw_h_line(-1, guidecol, 1)
         .plot_1var(function(x) {return Math.sin(x)}, guidecol, 1)
-//        .plot_1var(e, 'blue', 1)
+//        .plot_1var(ae, 'grey', 1)
+//        .plot_1var(af, 'grey', 1)
+//        .plot_1var(ag, 'red', 1)
 //        .plot_1var(f, 'grey', 1)
-//        .plot_1var(g, 'grey', 1)
-        .plot_1var(upper, 'blue', 2);
+//        .plot_1var(ah, 'blue', 1)
+//        .plot_1var(ak, 'blue', 1)
+        .plot_1var(lower, 'red', 2)
+        .plot_1var(upper, 'blue', 2)
+        .plot_1var(hip_bounce, 'green', 2)
+//        .plot_1var(through_pts([1, 1], [2, -1]), 'grey', 1)
+//        .plot_1var(ag, 'grey', 1)
  
 
 
@@ -140,7 +191,8 @@ $(function() {
 
     var walk = new Walk(humanoid, Math.PI*2,
         /* hip */  upper,
-        /* knee */ function(x) {return 0}
+        /* knee */ lower,
+                   hip_bounce
     );
 
     function tick(x) {
@@ -151,6 +203,6 @@ $(function() {
         setTimeout(tick, 50, x+Math.PI/24);
     }
 
-//    tick(0);
+    tick(0);
 
 });
