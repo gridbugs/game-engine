@@ -40,70 +40,15 @@ $(function() {
 
     }
 
-
-    const walk_period = Math.PI*2;
     const half_walk_period = Math.PI;
+    const impact = 5*Math.PI/6;
+    const impact_len = Math.PI/5;
+
     
-    // point in period where foot touches the ground
-    const impact = 5*half_walk_period/6;
+    var humanoid = new Humanoid(80, 100);
 
-    // time between foot touching the ground and leaving the ground
-    const impact_len = half_walk_period/7;
+    var walk = Walk.humanoid_walk(humanoid);
 
-    // size of the affect the impact between the foot and the ground has on the walk
-    const impact_strength = 0.1;
-
-    // point in the lower leg's trajectory after impact that switches from moving back to forward
-    const skew_offset = 1;
-
-    const upper_scale = 0.5;
-    const lower_scale = 0.5;
-
-
-    function forward_swing(x) {
-        return -Math.cos(Wave.in_lowest(x)*half_walk_period/impact);
-    }
-    function impact_jolt(x) {
-        return (-Math.cos((Wave.in_lowest(x)-impact)*(half_walk_period/impact_len))+1)*impact_strength/2;
-    }
-    function back_swing(x) {
-        return (1+impact_strength/2)*Math.cos((half_walk_period/(2*half_walk_period-impact-impact_len))*(Wave.in_lowest(x)-impact-impact_len))+impact_strength/2;
-    }
-
-   
-    function upper(x) {
-        return (Wave.in_range(0, impact)(x)*forward_swing(x) +
-               Wave.in_range(impact, impact + impact_len)(x)*(1+impact_jolt(x)) +
-               Wave.in_range(impact + impact_len, walk_period)(x)*back_swing(x))*upper_scale;
-    }
-
-    function post_impact_skew(x) {
-        x=Wave.in_lowest(x);
-        return Wave.in_range(0, skew_offset)(x)*Function.through_pts([0,0],[skew_offset, half_walk_period/2])(x) +
-               Wave.in_range(skew_offset, walk_period-skew_offset)(x)*Function.through_pts([skew_offset, half_walk_period/2],[walk_period-skew_offset,3*half_walk_period/2])(x) +
-               Wave.in_range(walk_period-skew_offset, walk_period)(x)*Function.through_pts([walk_period-skew_offset,3*half_walk_period/2],[walk_period, walk_period])(x);
-    }
-
-    function post_impact(x) {
-        return -Math.sin(post_impact_skew(((x-impact-skew_offset/2)*walk_period/(walk_period-impact))));
-    }
-
-    function pre_impact_flatenner(x) {
-        return Math.sin(x)*0.5+x;
-    }
-    function pre_impact(x) {
-        return Math.cos(pre_impact_flatenner(x*walk_period/(impact)));
-    }
-
-    function lower(x) {
-        x=Wave.in_lowest(x);
-        return ((Wave.in_range(0,impact)(x)*pre_impact(x) +
-               Wave.in_range(impact, walk_period)(x)*post_impact(x))/2-0.5)*lower_scale;
-    }
-
-    function hip_bounce(x) {
-        return Math.cos(x*2)*10;
-    }
 
     var guidecol = 'lightgrey';
     new Graph(cu, 80, 60).draw_borders()
@@ -118,28 +63,7 @@ $(function() {
         .draw_h_line(0, guidecol, 1)
         .draw_h_line(-1, guidecol, 1)
         .plot_1var(function(x) {return Math.sin(x)}, guidecol, 1)
-        .plot_1var(post_impact_skew, 'grey', 1)
-//        .plot_1var(af, 'grey', 1)
-//        .plot_1var(post_impact, 'red', 1)
-//        .plot_1var(f, 'grey', 1)
-//        .plot_1var(ah, 'blue', 1)
-//        .plot_1var(pre_impact, 'blue', 1)
-        .plot_1var(lower, 'red', 2)
-        .plot_1var(upper, 'blue', 2)
-//        .plot_1var(hip_bounce.divide(10), 'green', 2)
-//        .plot_1var(through_pts([1, 1], [2, -1]), 'grey', 1)
-//        .plot_1var(post_impact, 'grey', 1)
- 
-
-
-    var humanoid = new Humanoid(80, 100);
-
-    var walk = new Walk(humanoid, walk_period,
-        /* hip */  upper,
-        /* knee */ lower,
-                   hip_bounce
-    );
-
+    
     function tick(x) {
         cu.clear();
 
