@@ -1,4 +1,4 @@
-function Walk(humanoid, period, get_hip_angle, get_knee_angle, get_hip_y_position) {
+function Walk(humanoid, period, get_hip_angle, get_knee_angle, get_hip_y_position, get_shoulder_x_position, get_shoulder_y_position, get_shoulder_angle, get_elbow_angle) {
     this.humanoid = humanoid;
 
     this.get_left_hip_angle = get_hip_angle;
@@ -6,6 +6,14 @@ function Walk(humanoid, period, get_hip_angle, get_knee_angle, get_hip_y_positio
     this.get_right_hip_angle = get_hip_angle.slide_x(period/2);
     this.get_right_knee_angle = get_knee_angle.slide_x(period/2);
     this.get_hip_y_position = get_hip_y_position;
+    this.get_left_shoulder_x_position = get_shoulder_x_position.slide_x(period/2);
+    this.get_left_shoulder_y_position = get_shoulder_y_position.slide_x(period/2);
+    this.get_right_shoulder_x_position = get_shoulder_x_position;
+    this.get_right_shoulder_y_position = get_shoulder_y_position;
+    this.get_left_shoulder_angle = get_shoulder_angle;
+    this.get_right_shoulder_angle = get_shoulder_angle.slide_x(period/2);
+    this.get_left_elbow_angle = get_elbow_angle;
+    this.get_right_elbow_angle = get_elbow_angle.slide_x(period/2);
 }
 
 Walk.prototype.to_points = function(x) {
@@ -14,7 +22,15 @@ Walk.prototype.to_points = function(x) {
         this.get_right_knee_angle(x),
         this.get_left_hip_angle(x),
         this.get_right_hip_angle(x),
-        this.get_hip_y_position(x)
+        this.get_hip_y_position(x),
+        this.get_left_shoulder_x_position(x),
+        this.get_left_shoulder_y_position(x),
+        this.get_right_shoulder_x_position(x),
+        this.get_right_shoulder_y_position(x),
+        this.get_left_shoulder_angle(x),
+        this.get_right_shoulder_angle(x),
+        this.get_left_elbow_angle(x),
+        this.get_right_elbow_angle(x)
     );
 }
 
@@ -78,6 +94,21 @@ period, impact, impact_len, impact_strength, skew_offset, upper_scale, lower_sca
         return Math.cos(x*2)*10;
     }
 
-    return new Walk(humanoid, period, upper, lower, hip_bounce);   
+    function shoulder_move_x(x) {
+        return Math.sin(x+period/4)*5;
+    }
+    function shoulder_move_y(x) {
+        return (Math.sin(x+period/2)+1)*5;
+    }
+
+    function shoulder_angle(x) {
+        return Math.sin(x)/2;
+    }
+    
+    function elbow_angle(x) {
+        return Math.sin(x)/4-0.25;
+    }
+
+    return new Walk(humanoid, period, upper, lower, hip_bounce, shoulder_move_x, shoulder_move_y, shoulder_angle, elbow_angle);   
 
 }

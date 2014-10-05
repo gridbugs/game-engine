@@ -14,42 +14,17 @@ $(function() {
         cu.canvas.height = $(window).height();
     });
 
-
-    var hip_pt = [1000, 200];
-    
-    function draw_leg(hip_angle, knee_angle) {
-        const upper_length = 100;
-        const lower_length = 80;
-
-        var rotate_amount = Math.PI/2;
-        var knee = angle_to_unit_vector(hip_angle).v2_smult(upper_length);
-        var foot = knee.v2_add(angle_to_unit_vector(angle_normalize(hip_angle+knee_angle)).v2_smult(lower_length));
-        knee = knee.v2_rotate(rotate_amount);
-        foot = foot.v2_rotate(rotate_amount);
-
-
-        var knee_pt = hip_pt.v2_add(knee);
-        var foot_pt = hip_pt.v2_add(foot);
-
-        cu.draw_point(hip_pt);
-        cu.draw_point(knee_pt);
-        cu.draw_point(foot_pt);
-
-        cu.draw_segment([hip_pt, knee_pt]);
-        cu.draw_segment([knee_pt, foot_pt]);
-
-    }
-
     const half_walk_period = Math.PI;
     const impact = 5*Math.PI/6;
     const impact_len = Math.PI/5;
 
     
-    var humanoid = new Humanoid(80, 100);
+    var humanoid = new Humanoid(80, 100, 80, 70);
 
     var walk = Walk.humanoid_walk(humanoid);
 
-
+//    console.debug(walk.get_left_shoulder_angle);
+/*
     var guidecol = 'lightgrey';
     new Graph(cu, 80, 60).draw_borders()
         .draw_v_line(0, guidecol, 1)
@@ -63,11 +38,20 @@ $(function() {
         .draw_h_line(0, guidecol, 1)
         .draw_h_line(-1, guidecol, 1)
         .plot_1var(function(x) {return Math.sin(x)}, guidecol, 1)
-    
+//        .plot_1var(walk.get_left_shoulder_x_position.divide(10), 'blue', 2)
+//        .plot_1var(walk.get_left_shoulder_angle, 'red', 2)
+        .plot_1var(walk.get_left_knee_angle, 'blue', 2)
+        .plot_1var(walk.get_left_elbow_angle, 'orange', 2)
+        .plot_1var(walk.get_left_shoulder_angle, 'red', 2)
+//        .plot_1var(walk.get_right_elbow_angle, 'cyan', 2)
+ */
+
+
     function tick(x) {
         cu.clear();
 
-        walk.to_points(x).draw_side(cu, [200, 200]);
+        walk.to_points(x).draw_side(cu, [200, 400]);
+        walk.to_points(x).draw_topdown(cu, [400, 400]);
 
         setTimeout(tick, 50, x+Math.PI/24);
     }
