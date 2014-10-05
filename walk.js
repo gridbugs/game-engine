@@ -10,10 +10,10 @@ function Walk(humanoid, period, get_hip_angle, get_knee_angle, get_hip_y_positio
     this.get_left_shoulder_y_position = get_shoulder_y_position.slide_x(period/2);
     this.get_right_shoulder_x_position = get_shoulder_x_position;
     this.get_right_shoulder_y_position = get_shoulder_y_position;
-    this.get_left_shoulder_angle = get_shoulder_angle;
-    this.get_right_shoulder_angle = get_shoulder_angle.slide_x(period/2);
-    this.get_left_elbow_angle = get_elbow_angle;
-    this.get_right_elbow_angle = get_elbow_angle.slide_x(period/2);
+    this.get_left_shoulder_angle = get_shoulder_angle.slide_x(period/2);
+    this.get_right_shoulder_angle = get_shoulder_angle;
+    this.get_left_elbow_angle = get_elbow_angle.slide_x(period/2);
+    this.get_right_elbow_angle = get_elbow_angle;
 }
 
 Walk.prototype.to_points = function(x) {
@@ -102,7 +102,7 @@ period, impact, impact_len, impact_strength, skew_offset, upper_scale, lower_sca
     }
 
     function shoulder_angle(x) {
-        return Math.sin(x)/2;
+        return Math.sin(x+period/4)/2;
     }
     
     function elbow_angle(x) {

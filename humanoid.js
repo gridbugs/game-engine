@@ -79,43 +79,47 @@ Humanoid.prototype.to_points = function(
 }
 
 
-HumanoidPoints.prototype.side_to_topdown = function() {
-
-    const foot_offset = 50;
-    const knee_offset = 40;
-    const hip_offset = 20;
-    const shoulder_lean = 8;
-    const shoulder_offset = 30;
-    const elbow_offset = 40;
-    const hand_offset = 40;
+HumanoidPoints.prototype.side_to_topdown = function(scale) {
+    scale = d(scale, 0.3);
+    var foot_offset = 50*scale;
+    var knee_offset = 40*scale;
+    var hip_offset = 20*scale;
+    var shoulder_lean = 8*scale;
+    var shoulder_offset = 30*scale;
+    var elbow_offset = 40*scale;
+    var hand_offset = 40*scale;
 
     // all the fields are side view relative
     return new HumanoidPoints(
-        [-foot_offset, this.left_foot[0]],
-        [foot_offset, this.right_foot[0]],
-        [-knee_offset, this.left_knee[0]],
-        [knee_offset, this.right_knee[0]],
-        [-hip_offset, this.left_hip[0]],
-        [hip_offset, this.right_hip[0]],
+        [-foot_offset, this.left_foot[0]*scale],
+        [foot_offset, this.right_foot[0]*scale],
+        [-knee_offset, this.left_knee[0]*scale],
+        [knee_offset, this.right_knee[0]*scale],
+        [-hip_offset, this.left_hip[0]*scale],
+        [hip_offset, this.right_hip[0]*scale],
         [0, shoulder_offset],
-        [-shoulder_offset, this.left_shoulder[0]],
-        [shoulder_offset, this.right_shoulder[0]],
-        [-elbow_offset, this.left_elbow[0]],
-        [elbow_offset, this.right_elbow[0]],
-        [-hand_offset, this.left_hand[0]],
-        [hand_offset, this.right_hand[0]]
+        [-shoulder_offset, this.left_shoulder[0]*scale],
+        [shoulder_offset, this.right_shoulder[0]*scale],
+        [-elbow_offset, this.left_elbow[0]*scale],
+        [elbow_offset, this.right_elbow[0]*scale],
+        [-hand_offset, this.left_hand[0]*scale],
+        [hand_offset, this.right_hand[0]*scale]
             );
 }
 
-HumanoidPoints.prototype.draw_topdown = function(cu, centre) {
-    const foot_radius = 20;
-    const knee_radius = 15;
-    const hip_radius = 10;
-    const shoulder_radius = 10;
-    const elbow_radius = 10;
-    const hand_radius = 5;
+HumanoidPoints.prototype.draw_topdown = function(cu, centre, direction, scale) {
+    scale = d(scale, 0.3);
+    direction = d(direction, 0);
+    direction = angle_normalize(direction - Math.PI/2);
+    var foot_radius = 20*scale;
+    var knee_radius = 15*scale;
+    var hip_radius = 10*scale;
+    var shoulder_radius = 10*scale;
+    var elbow_radius = 10*scale;
+    var hand_radius = 5*scale;
+    console.debug(direction);
+    var topdown_points = this.side_to_topdown(scale).rotate(direction);
 
-    var topdown_points = this.side_to_topdown();
     cu.draw_circle([topdown_points.left_foot.v2_add(centre), foot_radius]);
     cu.draw_circle([topdown_points.right_foot.v2_add(centre), foot_radius]);
     cu.draw_circle([topdown_points.left_knee.v2_add(centre), knee_radius], 'blue');
@@ -129,5 +133,23 @@ HumanoidPoints.prototype.draw_topdown = function(cu, centre) {
     cu.draw_circle([topdown_points.left_hand.v2_add(centre), hand_radius], 'cyan');
     cu.draw_circle([topdown_points.right_hand.v2_add(centre), hand_radius], 'cyan');
 
-    console.debug(topdown_points.left_foot);
+}
+
+HumanoidPoints.prototype.rotate = function(rads) {
+    console.debug(rads);
+    return new HumanoidPoints(
+        this.left_foot.v2_rotate(rads),
+        this.right_foot.v2_rotate(rads),
+        this.left_knee.v2_rotate(rads),
+        this.right_knee.v2_rotate(rads),
+        this.left_hip.v2_rotate(rads),
+        this.right_hip.v2_rotate(rads),
+        this.shoulder_mid.v2_rotate(rads),
+        this.left_shoulder.v2_rotate(rads),
+        this.right_shoulder.v2_rotate(rads),
+        this.left_elbow.v2_rotate(rads),
+        this.right_elbow.v2_rotate(rads),
+        this.left_hand.v2_rotate(rads),
+        this.right_hand.v2_rotate(rads)
+            );
 }

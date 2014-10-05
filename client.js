@@ -50,10 +50,11 @@ $(function() {
     function tick(x) {
         cu.clear();
 
-        walk.to_points(x).draw_side(cu, [200, 400]);
-        walk.to_points(x).draw_topdown(cu, [400, 400]);
+//        walk.to_points(x).draw_side(cu, [200, 400]);
+        var centre = [400, 400];
+        walk.to_points(x).draw_topdown(cu, centre, _angle_between(centre, Input.get_mouse_pos()), 0.5);
 
-        setTimeout(tick, 50, x+Math.PI/24);
+        setTimeout(tick, 50, x+Math.PI/12);
     }
 
     tick(0);
