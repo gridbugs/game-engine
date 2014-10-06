@@ -117,7 +117,6 @@ HumanoidPoints.prototype.draw_topdown = function(cu, centre, direction, scale) {
     var shoulder_radius = 10*scale;
     var elbow_radius = 10*scale;
     var hand_radius = 5*scale;
-    console.debug(direction);
     var topdown_points = this.side_to_topdown(scale).rotate(direction);
 
     cu.draw_circle([topdown_points.left_foot.v2_add(centre), foot_radius]);
@@ -136,7 +135,6 @@ HumanoidPoints.prototype.draw_topdown = function(cu, centre, direction, scale) {
 }
 
 HumanoidPoints.prototype.rotate = function(rads) {
-    console.debug(rads);
     return new HumanoidPoints(
         this.left_foot.v2_rotate(rads),
         this.right_foot.v2_rotate(rads),

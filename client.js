@@ -18,10 +18,28 @@ $(function() {
     const impact = 5*Math.PI/6;
     const impact_len = Math.PI/5;
 
-    
     var humanoid = new Humanoid(80, 100, 80, 70);
 
     var walk = Walk.humanoid_walk(humanoid);
+
+    var agent = new Agent([200, 200], 0);
+    Agent.set_controlled_agent(agent);
+
+    var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
+    agent.set_segs(segs);
+
+    var x = 0;
+    function tick() {
+        cu.clear();
+        if (agent.control_tick()) {
+            x+=Math.PI/20;
+        }
+        walk.to_points(x).draw_topdown(cu, agent.pos, _angle_between(agent.pos, Input.get_mouse_pos()), 0.5);
+//        agent.draw();
+        segs.map(function(s){cu.draw_segment(s)});
+        setTimeout(tick, 50);
+    }
+    tick();
 
 //    console.debug(walk.get_left_shoulder_angle);
 /*
@@ -46,7 +64,7 @@ $(function() {
 //        .plot_1var(walk.get_right_elbow_angle, 'cyan', 2)
  */
 
-
+/*
     function tick(x) {
         cu.clear();
 
@@ -58,5 +76,5 @@ $(function() {
     }
 
     tick(0);
-
+*/
 });

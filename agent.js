@@ -4,11 +4,15 @@ function Agent(pos, facing) {
     this.move_speed = 5;
     this.turn_speed = Math.PI/12;
     this.colour = "black";
-    this.rad = 20;
+    this.rad = 40;
 }
 
 Agent.prototype.set_collision_processor = function(cp) {
     this.collision_processor = cp;
+}
+
+Agent.prototype.set_segs = function(segs) {
+    this.collision_processor = new CollisionProcessor(this.rad, segs);
 }
 
 Agent.set_controlled_agent = function(agent) {
@@ -37,12 +41,13 @@ Agent.prototype.control_tick = function() {
     } else if (Input.is_down("de")) {
         angle = this.facing + Math.PI/2;
     } else {
-        return;
+        return false;
     }
     
     var dest = this.pos.v2_add(angle_to_unit_vector(angle).v2_smult(this.move_speed));
     this.pos = this.collision_processor.process_collision(this.pos, dest);
 
+    return true;
 }
 
 Agent.prototype.turn_towards = function(pt) {
