@@ -7,10 +7,6 @@ function Agent(pos, facing) {
     this.rad = 40;
 }
 
-Agent.prototype.set_collision_processor = function(cp) {
-    this.collision_processor = cp;
-}
-
 Agent.prototype.set_segs = function(segs) {
     this.collision_processor = new CollisionProcessor(this.rad, segs);
 }
@@ -28,6 +24,7 @@ Agent.prototype.draw = function() {
     cu.circle(this.pos, this.rad, false, this.colour);
     cu.line_at_angle(this.pos, this.facing, this.rad);
 }
+
 Agent.prototype.control_tick = function() {
     this.turn_to_face(Input.get_mouse_pos());
     var angle;
@@ -45,6 +42,33 @@ Agent.prototype.control_tick = function() {
     }
     
     var dest = this.pos.v2_add(angle_to_unit_vector(angle).v2_smult(this.move_speed));
+    this.pos = this.collision_processor.process_collision(this.pos, dest);
+
+    return true;
+}
+
+Agent.prototype.absolute_control_tick = function() {
+    var vec = [0, 0];
+    
+    if (Input.is_down("w,")) {
+        vec = vec.v2_add([0, -1]);
+    } 
+    if (Input.is_down("so")) {
+        vec = vec.v2_add([0, 1]);
+    }
+    if (Input.is_down("a")) {
+        vec = vec.v2_add([-1, 0]);
+    }
+    if (Input.is_down("de")) {
+        vec = vec.v2_add([1, 0]);
+    } 
+    if (vec.v2_len() == 0) {
+        return false;
+    }
+    vec = vec.v2_unit();
+    this.facing = vec.v2_angle();
+
+    var dest = this.pos.v2_add(vec.v2_smult(this.move_speed));
     this.pos = this.collision_processor.process_collision(this.pos, dest);
 
     return true;

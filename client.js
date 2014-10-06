@@ -23,7 +23,7 @@ $(function() {
     var walk = Walk.humanoid_walk(humanoid);
 
     var agent = new Agent([200, 200], 0);
-    Agent.set_controlled_agent(agent);
+    //Agent.set_controlled_agent(agent);
 
     var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
     agent.set_segs(segs);
@@ -31,11 +31,12 @@ $(function() {
     var x = 0;
     function tick() {
         cu.clear();
-        if (agent.control_tick()) {
+        if (agent.absolute_control_tick()) {
             x+=Math.PI/20;
         }
-        walk.to_points(x).draw_topdown(cu, agent.pos, _angle_between(agent.pos, Input.get_mouse_pos()), 0.5);
-//        agent.draw();
+        //walk.to_points(x).draw_topdown(cu, agent.pos, _angle_between(agent.pos, Input.get_mouse_pos()), 0.5);
+        walk.to_points(x).draw_topdown(cu, agent.pos, agent.facing, 0.5);
+        //agent.draw();
         segs.map(function(s){cu.draw_segment(s)});
         setTimeout(tick, 50);
     }
