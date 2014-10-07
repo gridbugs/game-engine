@@ -306,3 +306,11 @@ CanvasUtil.prototype.text = function(text, pos, font, align) {
         this.ctx.fillText(text, pos[0], pos[1])
     });
 }
+
+CanvasUtil.prototype.draw_image = function(image, top_left, size, clip_top_left, clip_size) {
+    top_left = d(top_left, [0, 0]);
+    size = d(size, [image.width, image.height]);
+    clip_top_left = d(clip_top_left, [0, 0]);
+    clip_size = d(clip_size, [image.width, image.height]);
+    this.ctx.drawImage(image, clip_top_left[0], clip_top_left[1], clip_size[0], clip_size[1], top_left[0], top_left[1], size[0], size[1]);
+}

@@ -120,6 +120,9 @@ $(function() {
         segs.map(function(s){cu.draw_segment(s)});
         setTimeout(tick, 50);
     }
-    tick();
+//    tick();
  
+    new ImageLoader(['images/brownshoes.png']).load_async(function(images) {
+
+    });
 });
