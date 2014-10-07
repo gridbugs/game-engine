@@ -1,3 +1,6 @@
+var a, b, c;
+
+var s0, s1, s2, sm;
 var cu;
 var ai0;
 var editor;
@@ -40,42 +43,40 @@ $(function() {
         segs.map(function(s){cu.draw_segment(s)});
         setTimeout(tick, 50);
     }
-    tick();
+    //tick();
 
-//    console.debug(walk.get_left_shoulder_angle);
-/*
-    var guidecol = 'lightgrey';
-    new Graph(cu, 80, 60).draw_borders()
-        .draw_v_line(0, guidecol, 1)
-        .draw_v_line(half_walk_period/2, guidecol, 1)
-        .draw_v_line(half_walk_period, guidecol, 1)
-        .draw_v_line(3*half_walk_period/2, guidecol, 1)
-        .draw_v_line(2*half_walk_period, guidecol, 1)
-        .draw_v_line(impact, 'blue', 1)
-        .draw_v_line(impact+impact_len, 'blue', 1)
-        .draw_h_line(1, guidecol, 1)
-        .draw_h_line(0, guidecol, 1)
-        .draw_h_line(-1, guidecol, 1)
-        .plot_1var(function(x) {return Math.sin(x)}, guidecol, 1)
-//        .plot_1var(walk.get_left_shoulder_x_position.divide(10), 'blue', 2)
-//        .plot_1var(walk.get_left_shoulder_angle, 'red', 2)
-        .plot_1var(walk.get_left_knee_angle, 'blue', 2)
-        .plot_1var(walk.get_left_elbow_angle, 'orange', 2)
-        .plot_1var(walk.get_left_shoulder_angle, 'red', 2)
-//        .plot_1var(walk.get_right_elbow_angle, 'cyan', 2)
- */
 
-/*
-    function tick(x) {
+    s0 = {
+        0: [200, 200],
+        0.5: [200, 220],
+        1: [200, 300],
+        1.5: [400, 300],
+        5: [200, 200]
+    };
+
+    s1 = {
+        0: [300, 300],
+        1: [310, 300],
+        2: [300, 300]
+    };
+    
+    s2 = {
+        0: [210, 210],
+        1: [210, 210]
+    };
+
+    a = new Sequence(s0);
+    b = new Sequence(s1);
+    c = new Sequence(s2);
+ 
+    sm = new SequenceManager();
+    sm.start(a, 0.1);
+
+
+    function tick0() {
         cu.clear();
-
-//        walk.to_points(x).draw_side(cu, [200, 400]);
-        var centre = [400, 400];
-        walk.to_points(x).draw_topdown(cu, centre, _angle_between(centre, Input.get_mouse_pos()), 0.5);
-
-        setTimeout(tick, 50, x+Math.PI/12);
+        cu.draw_point(sm.next());
+        setTimeout(tick0, 50);
     }
-
-    tick(0);
-*/
+    tick0();
 });

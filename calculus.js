@@ -58,3 +58,8 @@ extend(Function, 'divide', function(x) {
         return this(y)/x;
     }.bind(this);
 });
+
+function rem(a, b) {
+    var div = a/b;
+    return (div - Math.floor(div)) * b;
+}

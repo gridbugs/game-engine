@@ -357,6 +357,10 @@ extend(Array, 'deep_clone', function() {
     return this.map(function(x) {return x.deep_clone()});
 });
 
+extend(Array, 'v2_interpolate', function(v, amount) {
+    return this.v2_add(v.v2_sub(this).v2_smult(amount));
+});
+
 extend(Array, 'polygon_average', function() {
     return this.reduce(function(v, acc){return acc.v2_add(v)}).v2_smult(1/this.length);
 });
