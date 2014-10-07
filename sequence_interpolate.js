@@ -33,9 +33,13 @@ SequenceInterpolator.prototype.start = function(seq, interval) {
 }
 
 SequenceInterpolator.prototype.next = function() {
-    var ret = this.at_time(this.time);
+    var ret = this.current();
     this.time += this.interval;
     return ret;
+}
+
+SequenceInterpolator.prototype.current = function() {
+    return this.at_time(this.time);
 }
 
 SequenceInterpolator.prototype.at_time = function(t) {
@@ -47,12 +51,18 @@ SequenceInterpolator.prototype.at_time = function(t) {
     return surrounding[0].frame.v2_interpolate(surrounding[1].frame, ratio);
 }
 
-function SequenceManager(){}
-SequenceManager.prototype.start = function(seq, interval) {
+function SequenceManager(initial) {
+    this.seq = initial;
+}
+SequenceManager.prototype.start_with_initial = function(interval) {
     this.interval = interval;
     this.time = 0;
     this.current_si = new SequenceInterpolator();
-    this.current_si.start(seq, interval);
+    this.current_si.start(this.seq, interval);
+}
+SequenceManager.prototype.start = function(seq, interval) {
+    this.seq = seq;
+    this.start_with_initial(interval);
 }
 
 SequenceManager.prototype.switch_to = function(seq, duration, offset) {
@@ -66,9 +76,18 @@ SequenceManager.prototype.switch_to = function(seq, duration, offset) {
 }
 
 SequenceManager.prototype.next = function() {
-    var ret = this.at_time(this.time);
-    this.time += this.interval;
-
+    if (this.next_si == null) {
+        return this.current_si.next();
+    }
+    
+    var current = this.current_si.current();
+    var next = this.next_si.next();
+    var ret = current.v2_interpolate(next, this.switch_time/this.switch_duration);
+    this.switch_time += this.interval;
+    if (this.switch_time >= this.switch_duration) {
+        this.current_si = this.next_si;
+        this.next_si = null;
+    }
     return ret;
 }
 
@@ -90,4 +109,53 @@ SequenceManager.prototype.at_time = function(t) {
         this.next_si = null;
     }
     return ret;
+}
+
+function SequenceCollection(description) {
+    this.seq_arr = [];
+    this.name_arr = [];
+    for (var seq_name in description) {
+        var seq = new Sequence(description[seq_name]);
+        this.seq_arr.push(seq);
+        this.name_arr.push(seq_name);
+    }
+ 
+}
+
+function SequenceCollectionManager(sc){
+    this.sm_arr = [];
+    this.seqs = sc;
+
+    for (var i = 0;i<sc.seq_arr.length;++i) {
+        var sm = new SequenceManager(sc.seq_arr[i]);
+        this.sm_arr.push(sm);
+    }
+
+    this.offset = [0, 0];
+}
+
+SequenceCollectionManager.prototype.set_offset = function(offset) {
+    this.offset = offset;
+}
+
+SequenceCollectionManager.prototype.start = function(interval) {
+    this.sm_arr.map(function(s){s.start_with_initial(interval)});
+    this.time = 0;
+    this.interval = interval;
+}
+
+SequenceCollectionManager.prototype.next = function() {
+    var ret = {};
+    for (var i = 0;i<this.sm_arr.length;++i) {
+        ret[this.seqs.name_arr[i]] = 
+            this.sm_arr[i].next().v2_add(this.offset);
+    }
+    return ret;
+
+}
+
+SequenceCollectionManager.prototype.switch_to = function(sc, duration, offset) {
+    for (var i = 0;i<sc.seq_arr.length;++i) {
+        this.sm_arr[i].switch_to(sc.seq_arr[i], duration, offset);
+    }
 }

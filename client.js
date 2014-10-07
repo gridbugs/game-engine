@@ -1,4 +1,5 @@
 var a, b, c;
+var walk_forward, stand_still;
 
 var s0, s1, s2, sm;
 var cu;
@@ -45,37 +46,28 @@ $(function() {
     }
     //tick();
 
-
-    s0 = {
-        0: [200, 200],
-        0.5: [200, 220],
-        1: [200, 300],
-        1.5: [400, 300],
-        5: [200, 200]
+    walk_forward = {
+        left_leg:  {0: [-50, -100], 1: [-50, 0], 2: [-50, 100], 3: [-50, 0], 4: [-50, -100]},
+        right_leg: {0: [50, 100],   1: [50, 0],  2: [50, -100], 3: [50, 0],  4: [50, 100]}
     };
 
-    s1 = {
-        0: [300, 300],
-        1: [310, 300],
-        2: [300, 300]
-    };
-    
-    s2 = {
-        0: [210, 210],
-        1: [210, 210]
+    stand_still = {
+        left_leg:  {0: [-50, 0], 1: [-50, 0]},
+        right_leg: {0: [50, 0],  1: [50, 0]}
     };
 
-    a = new Sequence(s0);
-    b = new Sequence(s1);
-    c = new Sequence(s2);
- 
-    sm = new SequenceManager();
-    sm.start(a, 0.1);
+    a = new SequenceCollection(walk_forward);
+    b = new SequenceCollection(stand_still);
 
-
+    c = new SequenceCollectionManager(a);
+    c.start(0.1);
+    c.set_offset([400, 400]);
     function tick0() {
         cu.clear();
-        cu.draw_point(sm.next());
+        var pts = c.next();
+        for (var i in pts) {
+            cu.draw_point(pts[i]);
+        }
         setTimeout(tick0, 50);
     }
     tick0();
