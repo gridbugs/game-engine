@@ -1,7 +1,7 @@
 function Agent(pos, facing) {
     this.facing = facing;
     this.pos = pos;
-    this.move_speed = 5;
+    this.move_speed = 10;
     this.turn_speed = Math.PI/12;
     this.colour = "black";
     this.rad = 30;
