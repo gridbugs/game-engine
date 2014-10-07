@@ -33,42 +33,49 @@ $(function() {
     agent.set_segs(segs);
 
     var x = 0;
-    function tick() {
-        cu.clear();
-        if (agent.absolute_control_tick()) {
-            x+=Math.PI/20;
+   //tick();
+
+    function move_body(b, v, a) {
+        for (var i in b) {
+            b[i] = b[i].v2_rotate(a).v2_add(v);
         }
-        //walk.to_points(x).draw_topdown(cu, agent.pos, _angle_between(agent.pos, Input.get_mouse_pos()), 0.5);
-        walk.to_points(x).draw_topdown(cu, agent.pos, agent.facing, 0.5);
-        //agent.draw();
-        segs.map(function(s){cu.draw_segment(s)});
-        setTimeout(tick, 50);
     }
-    //tick();
 
     walk_forward = {
-        left_leg:  {0: [-50, -100], 1: [-50, 0], 2: [-50, 100], 3: [-50, 0], 4: [-50, -100]},
-        right_leg: {0: [50, 100],   1: [50, 0],  2: [50, -100], 3: [50, 0],  4: [50, 100]}
+        left_leg:  {0: [-10, -20], 0.5: [-10, -16], 1: [-10, 0], 1.5: [-10, 16], 2: [-10, 20], 2.5: [-10, 16], 3: [-10, 0], 3.5: [-10, -16], 4: [-10, -20]},
+        right_leg:  {0: [10, 20], 0.5: [10, 16], 1: [10, 0], 1.5: [10, -16], 2: [10, -20], 2.5: [10, -16], 3: [10, 0], 3.5: [10, 16], 4: [10, 20]},
     };
 
     stand_still = {
-        left_leg:  {0: [-50, 0], 1: [-50, 0]},
-        right_leg: {0: [50, 0],  1: [50, 0]}
+        left_leg:  {0: [-10, 0], 1: [-10, 0]},
+        right_leg: {0: [10, 0],  1: [10, 0]}
     };
 
     a = new SequenceCollection(walk_forward);
     b = new SequenceCollection(stand_still);
 
-    c = new SequenceCollectionManager(a);
-    c.start(0.1);
-    c.set_offset([400, 400]);
-    function tick0() {
+    c = new SequenceCollectionManager(b);
+    c.start(0.2);
+    var state = 1;
+    agent.facing = Math.PI/2;
+    function tick() {
         cu.clear();
-        var pts = c.next();
-        for (var i in pts) {
-            cu.draw_point(pts[i]);
+        if (state == 0 && agent.absolute_control_tick()) {
+            state = 1;
+            c.switch_to(a, 0.01, 0);
+        } else if (state == 1 && !agent.absolute_control_tick()) {
+            state = 0;
+            c.switch_to(b, 0.5, 0);
         }
-        setTimeout(tick0, 50);
+        
+        var p = c.next();
+        move_body(p, agent.pos, agent.facing - Math.PI/2);
+        for (var i in p) {
+            cu.draw_circle([p[i], 8]);
+        }
+        segs.map(function(s){cu.draw_segment(s)});
+        setTimeout(tick, 50);
     }
-    tick0();
+    tick();
+ 
 });

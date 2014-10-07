@@ -131,11 +131,6 @@ function SequenceCollectionManager(sc){
         this.sm_arr.push(sm);
     }
 
-    this.offset = [0, 0];
-}
-
-SequenceCollectionManager.prototype.set_offset = function(offset) {
-    this.offset = offset;
 }
 
 SequenceCollectionManager.prototype.start = function(interval) {
@@ -148,7 +143,7 @@ SequenceCollectionManager.prototype.next = function() {
     var ret = {};
     for (var i = 0;i<this.sm_arr.length;++i) {
         ret[this.seqs.name_arr[i]] = 
-            this.sm_arr[i].next().v2_add(this.offset);
+            this.sm_arr[i].next();
     }
     return ret;
 
