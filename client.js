@@ -22,10 +22,6 @@ $(function() {
     const impact = 5*Math.PI/6;
     const impact_len = Math.PI/5;
 
-    var humanoid = new Humanoid(80, 100, 80, 70);
-
-    var walk = Walk.humanoid_walk(humanoid);
-
     var agent = new Agent([200, 200], 0);
     //Agent.set_controlled_agent(agent);
 
@@ -103,10 +99,11 @@ $(function() {
     b = new SequenceCollection(stand_still);
 
     c = new SequenceCollectionManager(b);
-    c.start(0.2);
+    c.start(0.1);
     var state = 1;
     agent.facing = -Math.PI/2;
-    agent.move_speed = 6;
+    agent.move_speed = 8;
+    agent.rad = 100;
     function tick() {
         cu.clear();
         if (state == 0 && agent.absolute_control_tick()) {
@@ -118,23 +115,8 @@ $(function() {
         }
         
         var p = c.next();
-//        agent.pos = [200, 200];
-        move_body(p, agent.pos, agent.facing + Math.PI/2);
-//        for (var i in p) {
-            cu.draw_circle([p.left_foot, 5], 'blue');
-            cu.draw_circle([p.left_knee, 5], 'red');
-            cu.draw_circle([p.left_hip, 5], 'green');
-            cu.draw_circle([p.left_shoulder, 5], 'cyan');
-            cu.draw_circle([p.left_elbow, 5], 'orange');
-            cu.draw_circle([p.left_hand, 5], 'yellow');
-            
-            cu.draw_circle([p.right_foot, 5], 'blue');
-            cu.draw_circle([p.right_knee, 5], 'red');
-            cu.draw_circle([p.right_hip, 5], 'green');
-            cu.draw_circle([p.right_shoulder, 5], 'cyan');
-            cu.draw_circle([p.right_elbow, 5], 'orange');
-            cu.draw_circle([p.right_hand, 5], 'yellow');
-//        }
+        p = p.rotate(agent.facing + Math.PI/2).scale(2).translate(agent.pos);
+        p.humanoid_draw_circles(cu, 10);
         segs.map(function(s){cu.draw_segment(s)});
         setTimeout(tick, 50);
     }

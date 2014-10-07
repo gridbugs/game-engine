@@ -139,8 +139,8 @@ SequenceCollectionManager.prototype.start = function(interval) {
     this.interval = interval;
 }
 
-SequenceCollectionManager.prototype.next = function() {
-    var ret = {};
+SequenceCollectionManager.prototype.next = function(ret) {
+    ret = d(ret, new PointCollection());
     for (var i = 0;i<this.sm_arr.length;++i) {
         ret[this.seqs.name_arr[i]] = 
             this.sm_arr[i].next();
