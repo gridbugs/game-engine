@@ -11,6 +11,10 @@
  *      the order in which they appear in the array, forms the shape of the polyon
  */
 
+extend(Array, 'toString', function() {
+    return ["[", this.map(function(x){return x.toString()}).join(", "), "]"].join('');
+});
+
 // algebraic sum of 2 vectors
 extend(Array, 'v2_add', function(v){return [this[0]+v[0], this[1]+v[1]]});
 

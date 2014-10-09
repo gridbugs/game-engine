@@ -60,3 +60,5 @@ extend(Array, 'apply_origin', function() {
 extend(Array, 'set_canvas_transform', function(ctx) {
     ctx.setTransform(this[0][0], this[1][0], this[0][1], this[1][1], this[0][2], this[1][2]);
 });
+
+

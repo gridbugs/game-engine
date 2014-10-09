@@ -1,4 +1,4 @@
-var a, b, c;
+var a, b, c, a1, a2;
 var walk_forward, stand_still;
 
 var s0, s1, s2, sm;
@@ -94,7 +94,7 @@ $(function() {
         right_elbow: {0: [emx, 0], 1: [emx, 0]},
         right_hand: {0: [hmx, 0], 1: [hmx, 0]},
     };
-
+/*
     a = new SequenceCollection(walk_forward);
     b = new SequenceCollection(stand_still);
 
@@ -120,22 +120,53 @@ $(function() {
         segs.map(function(s){cu.draw_segment(s)});
         setTimeout(tick, 50);
     }
+    */
 //    tick();
  
-    new ImageLoader(['images/brownshoes.png', 'img_the_scream.jpg']).load_async(function(images) {
-        var x = 0;
-        function tick0() {
-            var a = Matrix.v2_identity()
-                        .v2_tr([300, 200])
-                        .v2_dro(x)
-                        .v2_tr([300, 200].v2_invert())
-                ;
-            x+= 0.5;
-                
-            a.set_canvas_transform(cu.ctx);
-            cu.ctx.drawImage(images[1], 0, 0);
-            setTimeout(tick0, 20);
-        }
-        tick0();
+    /*
+    new ImageLoader(['images/shoe.png', 'images/body.png', 'images/head.png']).load_async(function(images) {
+
+        var shoe = new ImageClosure(images[0], [-31, -50], [60, 80]);
+        var body = new ImageClosure(images[1], [-60, -50], [120, 100]);
+        var head = new ImageClosure(images[2], [-45, -50], [90, 90]);
+
+        cu.ctx.translate(400, 400);
+        cu.ctx.rotate(Math.PI/6);
+
+        var sg = 
+            SG('body', body, [0, 0], [1, 1], 0, 
+                [ // before
+                    SG('left_foot', shoe, [-35, 0], [1, 1], -5),
+                    SG('right_foot', shoe, [35, 0], [1, 1], 5),
+                ],
+                [ // after
+                    SG('head', head, [0, 0], [1, 1], 0)
+                ]
+            );
+        sg.draw(cu.ctx);
+
     });
+    */
+
+    a1 = new Interpolator(VectorWrapper.from_seq([
+        [0, [200, 200]], [1, [200, 300]], [2, [300, 300]], [5, [200, 200]]
+    ]));
+    a2 = new Interpolator(VectorWrapper.from_seq([
+        [0, [300, 300]], [1, [300, 100]], [2, [100, 400]], [5, [300, 300]]
+    ]));
+
+
+
+    b = new SequenceInterpolator(a1);
+
+    b.start(0.1);
+
+    function tick() {
+        cu.clear();
+        b.tick();
+        var pt = b.get().val();
+        cu.draw_point(pt);
+        setTimeout(tick, 50);
+    }
+    tick();
 });
