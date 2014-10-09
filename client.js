@@ -122,7 +122,20 @@ $(function() {
     }
 //    tick();
  
-    new ImageLoader(['images/brownshoes.png']).load_async(function(images) {
-
+    new ImageLoader(['images/brownshoes.png', 'img_the_scream.jpg']).load_async(function(images) {
+        var x = 0;
+        function tick0() {
+            var a = Matrix.v2_identity()
+                        .v2_tr([300, 200])
+                        .v2_dro(x)
+                        .v2_tr([300, 200].v2_invert())
+                ;
+            x+= 0.5;
+                
+            a.set_canvas_transform(cu.ctx);
+            cu.ctx.drawImage(images[1], 0, 0);
+            setTimeout(tick0, 20);
+        }
+        tick0();
     });
 });

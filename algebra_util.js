@@ -33,6 +33,10 @@ extend(Array, 'v2_rotate', function(rads) {
     return angle_to_unit_vector(angle_normalize(this.v2_angle() + rads)).v2_smult(this.v2_len());
 });
 
+extend(Array, 'v2_invert', function() {
+    return [-this[0], -this[1]];
+});
+
 extend(Array, 'v2_unit', function() {
     return this.v2_smult(1/this.v2_len());
 });
