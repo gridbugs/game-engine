@@ -35,8 +35,7 @@ SceneGraph.prototype.draw = function(ctx) {
     ctx.scale(s[0], s[1]);
 
     this.before.map(function(b){b.draw(ctx)});
-    
-    this.image.draw(ctx);
+    this.image.get_value_discrete().draw(ctx);
 
     this.after.map(function(a){a.draw(ctx)});
 

@@ -23,7 +23,6 @@ VectorWrapper.from_arr = function(arr) {
     return arr.map(function(x){return new VectorWrapper(x)});
 }
 VectorWrapper.from_seq = function(seq) {
-    console.debug(seq);
     return seq.map(function(x){return [x[0], new VectorWrapper(x[1])]});
 }
 VectorWrapper.prototype.add = function(o) {
@@ -50,6 +49,9 @@ function SimpleValue(v, a) {
     this.v = v;
 }
 SimpleValue.prototype.get_value = function() {
+    return this.v;
+}
+SimpleValue.prototype.get_value_discrete = function() {
     return this.v;
 }
 SimpleValue.prototype.set_value = function(v, a) {
@@ -86,6 +88,13 @@ function IS() {
     }
     return new Interpolator(ScalarWrapper.from_seq(arr));
 }
+function ID() {
+    var arr = new Array(arguments.length);
+    for (var i = 0;i<arguments.length;i++) {
+        arr[i] = arguments[i];
+    }
+    return new Interpolator(arr);
+}
 function CV(v, a) {
     if (typeof v == 'number') {
         v = [v, a];
@@ -96,13 +105,13 @@ function CS(v) {
     return new ConstantValue(new ScalarWrapper(v));
 }
 
-
 function Interpolator(seq) {
     // seq is of the form [[t0, x0], [t1, x1], ..., [tn, x0]]
     this.seq = seq;
     this.length = seq.length;
     this.max_t = this.seq[this.length-1][0];
 }
+
 
 // assume seq[0][0] <= t < seq[n][0]
 Interpolator.find_surrounding = function(t, seq) {
@@ -133,9 +142,17 @@ Interpolator.prototype.interpolate = function(t) {
     var s = this.find_surrounding(t);
     return Interpolator.simple_interpolate(s[0][0], s[1][0], t, s[0][1], s[1][1]);
 }
+
+Interpolator.prototype.get_value_discrete = function(t) {
+    t = rem(t, this.max_t);
+    var s = this.find_surrounding(t);
+    return s[0][1];
+}
+
 function SequenceInterpolator(interpolator) {
     this.current = interpolator;
 }
+
 
 SequenceInterpolator.prototype.set_interpolator = function(i) {
     this.current = i;
@@ -184,6 +201,10 @@ SequenceInterpolator.prototype.get = function() {
 
 SequenceInterpolator.prototype.get_value = function() {
     return this.get().val();
+}
+
+SequenceInterpolator.prototype.get_value_discrete = function() {
+    return this.current.get_value_discrete(this.time);
 }
 
 function SequenceManager(model) {

@@ -130,6 +130,7 @@ $(function() {
         var head = new ImageClosure(images[2], [-45, -50], [90, 90]);
 
         var still = {
+            left_foot_i: ID([0, shoe], [4, head], [6, shoe]),
             left_foot_t: CV(-35, 0),
             left_foot_s: CV(1, 1),
             left_foot_r: IS([0, dtor(-5)], [1, dtor(0)], [3, dtor(-5)]),
@@ -144,13 +145,13 @@ $(function() {
         var m = new SequenceManager(still).start();
 
         var sg = 
-            SGRoot('body', body, 
+            SGRoot('body', SV(body), 
                 [ // before
-                    SG('left_foot', shoe, m.g('left_foot_t'), m.g('left_foot_r'), m.g('left_foot_s')),
-                    SG('right_foot', shoe, m.g('right_foot_t'), m.g('right_foot_r'), m.g('right_foot_s')),
+                    SG('left_foot', SV(shoe), m.g('left_foot_t'), m.g('left_foot_r'), m.g('left_foot_s')),
+                    SG('right_foot', m.g('left_foot_i'), m.g('right_foot_t'), m.g('right_foot_r'), m.g('right_foot_s')),
                 ],
                 [ // after
-                    SG('head', head, m.g('head_t'), m.g('head_r'), m.g('head_s'))
+                    SG('head', SV(head), m.g('head_t'), m.g('head_r'), m.g('head_s'))
                 ]
             );
 
