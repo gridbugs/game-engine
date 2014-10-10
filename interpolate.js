@@ -41,6 +41,34 @@ ScalarWrapper.prototype.val = function() {
     return this.v;
 }
 
+
+function ConstantValue(v) {
+    this.v = v;
+}
+ConstantValue.prototype.interpolate = function() {
+    return this.v;
+}
+ConstantValue.prototype.get_value = function() {
+    return this.v.val();
+}
+
+function IV(seq) {
+    return new Interpolator(VectorWrapper.from_seq(seq));
+}
+function IS(seq) {
+    return new Interpolator(ScalarWrapper.from_seq(seq));
+}
+function CV(v, a) {
+    if (typeof v == 'number') {
+        v = [v, a];
+    }
+    return new ConstantValue(new VectorWrapper(v));
+}
+function CS(v) {
+    return new ConstantValue(new ScalarWrapper(v));
+}
+
+
 function Interpolator(seq) {
     // seq is of the form [[t0, x0], [t1, x1], ..., [tn, x0]]
     this.seq = seq;
@@ -63,14 +91,6 @@ Interpolator.find_surrounding = function(t, seq) {
         }
     }
 }
-Interpolator.create_static = function(v) {
-    if (typeof v == 'number') {
-        v = new ScalarWrapper(v);
-    } else if (typeof v == 'object') {
-        v = new VectorWrapper(v);
-    }
-    return new Interpolator([0, v], [1, v]);
-}
 
 Interpolator.prototype.find_surrounding = function(t) {
     return Interpolator.find_surrounding(t, this.seq);   
@@ -85,9 +105,12 @@ Interpolator.prototype.interpolate = function(t) {
     var s = this.find_surrounding(t);
     return Interpolator.simple_interpolate(s[0][0], s[1][0], t, s[0][1], s[1][1]);
 }
-
 function SequenceInterpolator(interpolator) {
     this.current = interpolator;
+}
+
+SequenceInterpolator.prototype.set_interpolator = function(i) {
+    this.current = i;
 }
 
 SequenceInterpolator.prototype.start = function(interval) {
@@ -128,5 +151,32 @@ SequenceInterpolator.prototype.get = function() {
         );
     } else {
         return current_value;
+    }
+}
+
+SequenceInterpolator.prototype.get_value = function() {
+    return this.get().val();
+}
+
+function SequenceManager(model) {
+    this.seqs = {};
+    for (var name in model) {
+        this.seqs[name] = new SequenceInterpolator(model[name]);
+    }
+}
+
+SequenceManager.prototype.start = function(interval) {
+    for (var name in this.seqs) {
+        this.seqs[name].start(interval);
+    }
+}
+
+SequenceManager.prototype.g = function(name) {
+    return this.seqs[name];
+}
+
+SequenceManager.prototype.update = function(model, duration, offset) {
+    for (var name in this.seqs) {
+        this.seqs[name].switch_to(model[name], duration, offset);
     }
 }

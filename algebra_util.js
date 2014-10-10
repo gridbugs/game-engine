@@ -254,6 +254,7 @@ var radians_to_degrees = function(r) {
 var degrees_to_radians = function(d) {
     return d * Math.PI / 180;
 }
+var dtor = degrees_to_radians;
 
 var angle_through = function(a, b, c) {
     var a_shift = a.v2_sub(b);

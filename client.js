@@ -123,7 +123,7 @@ $(function() {
     */
 //    tick();
  
-    /*
+    
     new ImageLoader(['images/shoe.png', 'images/body.png', 'images/head.png']).load_async(function(images) {
 
         var shoe = new ImageClosure(images[0], [-31, -50], [60, 80]);
@@ -133,27 +133,38 @@ $(function() {
         cu.ctx.translate(400, 400);
         cu.ctx.rotate(Math.PI/6);
 
+        var still = {
+            left_foot_t: CV(-35, 0),
+            left_foot_s: CV(1, 1),
+            left_foot_r: CS(dtor(-5)),
+            right_foot_t: CV(35, 0),
+            right_foot_s: CV(1, 1),
+            right_foot_r: CS(dtor(5)),
+            head_t: CV(0, 0),
+            head_s: CV(1, 1),
+            head_r: CS(0)
+        };
+
+        var m = new SequenceManager(still);
+
         var sg = 
-            SG('body', body, [0, 0], [1, 1], 0, 
+            SG('body', body, null, null, null,
                 [ // before
-                    SG('left_foot', shoe, [-35, 0], [1, 1], -5),
-                    SG('right_foot', shoe, [35, 0], [1, 1], 5),
+                    SG('left_foot', shoe, m.g('left_foot_t'), m.g('left_foot_s'), m.g('left_foot_r')),
+                    SG('right_foot', shoe, m.g('right_foot_t'), m.g('right_foot_s'), m.g('right_foot_r')),
                 ],
                 [ // after
-                    SG('head', head, [0, 0], [1, 1], 0)
+                    SG('head', head, m.g('head_t'), m.g('head_s'), m.g('head_r'))
                 ]
             );
         sg.draw(cu.ctx);
 
     });
-    */
+    
 
-    a1 = new Interpolator(VectorWrapper.from_seq([
-        [0, [200, 200]], [1, [200, 300]], [2, [300, 300]], [5, [200, 200]]
-    ]));
-    a2 = new Interpolator(VectorWrapper.from_seq([
-        [0, [300, 300]], [1, [300, 100]], [2, [100, 400]], [5, [300, 300]]
-    ]));
+    a1 = new IV([[0, [200, 200]], [1, [200, 300]], [2, [300, 300]], [5, [200, 200]]]);
+    a2 = new IV([[0, [300, 300]], [1, [300, 100]], [2, [100, 400]], [5, [300, 300]]]);
+    a3 = new CV(500, 500);
 
 
 
@@ -168,5 +179,5 @@ $(function() {
         cu.draw_point(pt);
         setTimeout(tick, 50);
     }
-    tick();
+//    tick();
 });
