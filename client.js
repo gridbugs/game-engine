@@ -130,9 +130,6 @@ $(function() {
         var body = new ImageClosure(images[1], [-60, -50], [120, 100]);
         var head = new ImageClosure(images[2], [-45, -50], [90, 90]);
 
-        cu.ctx.translate(400, 400);
-        cu.ctx.rotate(Math.PI/6);
-
         var still = {
             left_foot_t: CV(-35, 0),
             left_foot_s: CV(1, 1),
@@ -150,13 +147,16 @@ $(function() {
         var sg = 
             SG('body', body, null, null, null,
                 [ // before
-                    SG('left_foot', shoe, m.g('left_foot_t'), m.g('left_foot_s'), m.g('left_foot_r')),
-                    SG('right_foot', shoe, m.g('right_foot_t'), m.g('right_foot_s'), m.g('right_foot_r')),
+                    SG('left_foot', shoe, m.g('left_foot_t'), m.g('left_foot_r'), m.g('left_foot_s')),
+                    SG('right_foot', shoe, m.g('right_foot_t'), m.g('right_foot_r'), m.g('right_foot_s')),
                 ],
                 [ // after
-                    SG('head', head, m.g('head_t'), m.g('head_s'), m.g('head_r'))
+                    SG('head', head, m.g('head_t'), m.g('head_r'), m.g('head_s'))
                 ]
             );
+
+        sg.global_transform([100, 100], Math.PI/12);
+
         sg.draw(cu.ctx);
 
     });

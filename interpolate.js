@@ -32,6 +32,7 @@ VectorWrapper.prototype.sub = function(o) {
     return new VectorWrapper(this.v.v2_sub(o.v));
 }
 VectorWrapper.prototype.smult = function(v) {
+
     return new VectorWrapper(this.v.v2_smult(v));
 }
 VectorWrapper.prototype.val = function() {
@@ -41,6 +42,24 @@ ScalarWrapper.prototype.val = function() {
     return this.v;
 }
 
+function SimpleValue(v, a) {
+    if (a != undefined) {
+        v = [v, a];
+    }
+    this.v = v;
+}
+SimpleValue.prototype.get_value = function() {
+    return this.v;
+}
+SimpleValue.prototype.set_value = function(v, a) {
+    if (a != undefined) {
+        v = [v, a];
+    }
+    this.v = v;
+}
+function SV(v, a) {
+    return new SimpleValue(v, a);
+}
 
 function ConstantValue(v) {
     this.v = v;
