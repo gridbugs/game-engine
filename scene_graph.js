@@ -8,9 +8,11 @@ function SceneGraph(name, image, translate, rotate, scale, before, after) {
     this.scale = d(scale, SV(1, 1));
     
     this.before = d(before, []);
-    //console.debug(before);
-    console.debug(after);
     this.after = d(after, []);
+}
+
+function SGRoot(name, image, before, after) {
+    return new SceneGraph(name, image, null, null, null, before, after);
 }
 
 function SG(name, image, translate, scale, rotate, before, after) {
@@ -26,7 +28,6 @@ SceneGraph.prototype.global_transform = function(translate, rotate, scale) {
 SceneGraph.prototype.draw = function(ctx) {
     ctx.save();
     var t = this.translate.get_value();
-    console.debug(this.rotate);
     var r = this.rotate.get_value();
     var s = this.scale.get_value();
     ctx.translate(t[0], t[1]);

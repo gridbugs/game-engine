@@ -23,6 +23,7 @@ VectorWrapper.from_arr = function(arr) {
     return arr.map(function(x){return new VectorWrapper(x)});
 }
 VectorWrapper.from_seq = function(seq) {
+    console.debug(seq);
     return seq.map(function(x){return [x[0], new VectorWrapper(x[1])]});
 }
 VectorWrapper.prototype.add = function(o) {
@@ -71,11 +72,19 @@ ConstantValue.prototype.get_value = function() {
     return this.v.val();
 }
 
-function IV(seq) {
-    return new Interpolator(VectorWrapper.from_seq(seq));
+function IV() {
+    var arr = new Array(arguments.length);
+    for (var i = 0;i<arguments.length;i++) {
+        arr[i] = arguments[i];
+    }
+    return new Interpolator(VectorWrapper.from_seq(arr));
 }
-function IS(seq) {
-    return new Interpolator(ScalarWrapper.from_seq(seq));
+function IS() {
+    var arr = new Array(arguments.length);
+    for (var i = 0;i<arguments.length;i++) {
+        arr[i] = arguments[i];
+    }
+    return new Interpolator(ScalarWrapper.from_seq(arr));
 }
 function CV(v, a) {
     if (typeof v == 'number') {
@@ -188,6 +197,7 @@ SequenceManager.prototype.start = function(interval) {
     for (var name in this.seqs) {
         this.seqs[name].start(interval);
     }
+    return this;
 }
 
 SequenceManager.prototype.g = function(name) {
@@ -197,5 +207,11 @@ SequenceManager.prototype.g = function(name) {
 SequenceManager.prototype.update = function(model, duration, offset) {
     for (var name in this.seqs) {
         this.seqs[name].switch_to(model[name], duration, offset);
+    }
+}
+
+SequenceManager.prototype.tick = function() {
+    for (var name in this.seqs) {
+        this.seqs[name].tick();
     }
 }

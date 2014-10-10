@@ -123,7 +123,6 @@ $(function() {
     */
 //    tick();
  
-    
     new ImageLoader(['images/shoe.png', 'images/body.png', 'images/head.png']).load_async(function(images) {
 
         var shoe = new ImageClosure(images[0], [-31, -50], [60, 80]);
@@ -133,7 +132,7 @@ $(function() {
         var still = {
             left_foot_t: CV(-35, 0),
             left_foot_s: CV(1, 1),
-            left_foot_r: CS(dtor(-5)),
+            left_foot_r: IS([0, dtor(-5)], [1, dtor(0)], [3, dtor(-5)]),
             right_foot_t: CV(35, 0),
             right_foot_s: CV(1, 1),
             right_foot_r: CS(dtor(5)),
@@ -142,10 +141,10 @@ $(function() {
             head_r: CS(0)
         };
 
-        var m = new SequenceManager(still);
+        var m = new SequenceManager(still).start();
 
         var sg = 
-            SG('body', body, null, null, null,
+            SGRoot('body', body, 
                 [ // before
                     SG('left_foot', shoe, m.g('left_foot_t'), m.g('left_foot_r'), m.g('left_foot_s')),
                     SG('right_foot', shoe, m.g('right_foot_t'), m.g('right_foot_r'), m.g('right_foot_s')),
@@ -157,13 +156,18 @@ $(function() {
 
         sg.global_transform([100, 100], Math.PI/12);
 
-        sg.draw(cu.ctx);
+        function t() {
+            cu.clear();
+            sg.draw(cu.ctx);
+            m.tick();
+            setTimeout(t, 100);
+        }
+        t();
 
     });
-    
 
-    a1 = new IV([[0, [200, 200]], [1, [200, 300]], [2, [300, 300]], [5, [200, 200]]]);
-    a2 = new IV([[0, [300, 300]], [1, [300, 100]], [2, [100, 400]], [5, [300, 300]]]);
+    a1 = new IV([0, [200, 200]], [1, [200, 300]], [2, [300, 300]], [5, [200, 200]]);
+    a2 = new IV([0, [300, 300]], [1, [300, 100]], [2, [100, 400]], [5, [300, 300]]);
     a3 = new CV(500, 500);
 
 
@@ -179,5 +183,5 @@ $(function() {
         cu.draw_point(pt);
         setTimeout(tick, 50);
     }
-//    tick();
+    //tick();
 });
