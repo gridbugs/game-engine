@@ -1,5 +1,5 @@
-function ImageLoader(sources) {
-    this.sources = sources;
+function ImageLoader(root, sources) {
+    this.sources = sources.map(function(s){return root + s});;
     this.number_to_load = sources.length;
     this.number_loaded = 0;
     this.images = create_undefined_array(this.number_to_load).map(function(){return document.createElement('img')});

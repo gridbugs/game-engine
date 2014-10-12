@@ -16,7 +16,14 @@ function SGRoot(name, image, before, after) {
 }
 
 function SG(name, image, translate, scale, rotate, before, after) {
-    return new SceneGraph(name, image, translate, scale, rotate, before, after);
+    if (image.constructor == SequenceManager) {
+        var m = image;
+        before = translate;
+        after = scale;
+        return new SceneGraph(name, m.g(name + '_i'), m.g(name + '_t'), m.g(name + '_r'), m.g(name + '_s'), before, after);
+    } else {
+        return new SceneGraph(name, image, translate, scale, rotate, before, after);
+    }
 }
 
 SceneGraph.prototype.global_transform = function(translate, rotate, scale) {
@@ -33,9 +40,11 @@ SceneGraph.prototype.draw = function(ctx) {
     ctx.translate(t[0], t[1]);
     ctx.rotate(r);
     ctx.scale(s[0], s[1]);
-
     this.before.map(function(b){b.draw(ctx)});
-    this.image.get_value_discrete().draw(ctx);
+
+    if (this.image) {
+        this.image.get_value_discrete().draw(ctx);
+    }
 
     this.after.map(function(a){a.draw(ctx)});
 

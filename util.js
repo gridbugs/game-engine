@@ -333,3 +333,27 @@ function round_to_nearest(value, nearest) {
     var b = a * nearest;
     return b;
 }
+
+function obj_merge(a, b) {
+    var c = {};
+    for (var i in a) {
+        c[i] = a[i];
+    }
+    for (var i in b) {
+        c[i] = b[i];
+    }
+    return c;
+}
+function obj_merge_with(a, b) {
+    for (var i in b) {
+        a[i] = b[i];
+    }
+}
+
+function objs_merge() {
+    var r = {};
+    for (var i = 0;i<arguments.length;i++) {
+        obj_merge_with(r, arguments[i]);
+    }
+    return r;
+}

@@ -8,14 +8,14 @@ function ImageClosure(image, translate, size, clip_start, clip_size) {
 
 ImageClosure.prototype.draw = function(ctx) {
     ctx.drawImage(
-            this.image,
-            this.clip_start[0],
-            this.clip_start[1],
-            this.clip_size[0],
-            this.clip_size[1],
-            this.translate[0],
-            this.translate[1],
-            this.size[0],
-            this.size[1]
+        this.image,
+        this.clip_start[0],
+        this.clip_start[1],
+        this.clip_size[0],
+        this.clip_size[1],
+        this.translate[0],
+        this.translate[1],
+        this.size[0],
+        this.size[1]
     );
 }

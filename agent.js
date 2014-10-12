@@ -4,7 +4,7 @@ function Agent(pos, facing) {
     this.move_speed = 10;
     this.turn_speed = Math.PI/12;
     this.colour = "black";
-    this.rad = 30;
+    this.rad = 50;
 }
 
 Agent.prototype.set_segs = function(segs) {
