@@ -74,7 +74,9 @@ function HumanoidModel() {
         'left_hand',
         'right_hand',
         'left_upper_arm',
-        'right_upper_arm'
+        'right_upper_arm',
+        'left_lower_arm',
+        'right_lower_arm'
     ];
 
     for (var i = 0;i<this.args.length;i++) {

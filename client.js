@@ -95,60 +95,9 @@ $(function() {
             var right_hand = left_hand.clone_with_offset(4);
 
             var left_upper_arm = left_elbow.connect(SV(upper_arm_img));
-            /*
-            var left_upper_arm = new BodyPart(SV(upper_arm_img), CV(0, 0),
-                IA([0, to_r([-10, 30])], [2, to_r([-5, 0])], [4, to_r([-15, -30])], [6, to_r([-5, 0])], [8, to_r([-10, 30])]),
-                IV([0, to_s([-10, 30])], [2, to_s([-5, 0])], [4, to_s([-15, -30])], [6, to_s([-5, 0])], [8, to_s([-10, 30])])
-
-                //IS([0, [-10, -30].v2_angle()], [2, [-10, -30].v2_angle()], [4, [-10, -30].v2_angle()], [6, [-10, -30].v2_angle()], [8, [-10, -30].v2_angle()])
-            );
-            */
-            var right_upper_arm = right_elbow.connect(SV(upper_arm_img));
-            console.debug(left_upper_arm);
-            console.debug(right_upper_arm);
-            return new HumanoidModel(
-                left_foot, 
-                right_foot, 
-                head, 
-                left_upper_leg, 
-                right_upper_leg, 
-                left_knee, 
-                right_knee, 
-                left_hip, 
-                right_hip,
-                left_lower_leg,
-                right_lower_leg,
-                left_shoulder,
-                right_shoulder,
-                left_elbow,
-                right_elbow,
-                left_hand,
-                right_hand,
-                left_upper_arm,
-                right_upper_arm
-            ).to_seq();
-        }
-
-        function still() {
-            var left_foot = new BodyPart(SV(shoe_img), CV(0, 0));
-            var right_foot = left_foot.flip_x();
-            var head = new BodyPart(SV(head_img));
-            var left_upper_leg = new BodyPart(SV(upper_leg_img), CV(0, 0), CS(0), CV(1, 0));
-            var right_upper_leg = left_upper_leg.flip_x().clone_with_offset(4);
-            var left_knee = new BodyPart(SV(knee_img), CV(0, 0));
-            var right_knee = left_knee.flip_x().clone_with_offset(4);
-            var left_hip = new BodyPart(null, CV(-35, 0));
-            var right_hip = left_hip.flip_x().clone_with_offset(4);
-            var left_lower_leg = new BodyPart(SV(lower_leg_img), CV(0, 0), CS(0), CV(1, 0));
-            var right_lower_leg = left_lower_leg.flip_x().clone_with_offset(4);
-            var left_shoulder = new BodyPart(SV(shoulder_img), CV(-30, 0));
-            var right_shoulder = left_shoulder.flip_x();
-            var left_elbow = new BodyPart(SV(elbow_img), CV(-5, 0));
-            var right_elbow = left_elbow.clone_with_offset(4);
-            var left_hand = new BodyPart(SV(hand_img), CV(0, 0));
-            var right_hand = left_hand.clone_with_offset(4);
-            var left_upper_arm = new BodyPart(SV(upper_arm_img), CV(0, 0));
             var right_upper_arm = left_upper_arm.clone_with_offset(4);
+            var left_lower_arm = left_hand.connect(SV(lower_arm_img));
+            var right_lower_arm = left_lower_arm.clone_with_offset(4);
             
             return new HumanoidModel(
                 left_foot, 
@@ -169,14 +118,65 @@ $(function() {
                 left_hand,
                 right_hand,
                 left_upper_arm,
-                right_upper_arm
+                right_upper_arm,
+                left_lower_arm,
+                right_lower_arm
+            ).to_seq();
+        }
+
+        function still() {
+            var left_foot = new BodyPart(SV(shoe_img), CV(0, 0));
+            var right_foot = left_foot.flip_x();
+            var head = new BodyPart(SV(head_img));
+            var left_upper_leg = new BodyPart(SV(upper_leg_img), CV(0, 0), CS(0), CV(1, 0));
+            var right_upper_leg = left_upper_leg.flip_x().clone_with_offset(4);
+            var left_knee = new BodyPart(SV(knee_img), CV(0, 0));
+            var right_knee = left_knee.flip_x().clone_with_offset(4);
+            var left_hip = new BodyPart(null, CV(-35, 0));
+            var right_hip = left_hip.flip_x().clone_with_offset(4);
+            var left_lower_leg = new BodyPart(SV(lower_leg_img), CV(0, 0), CS(0), CV(1, 0));
+            var right_lower_leg = left_lower_leg.flip_x().clone_with_offset(4);
+            var left_shoulder = new BodyPart(SV(shoulder_img), CV(-55, 0));
+            var right_shoulder = left_shoulder.flip_x();
+            var left_elbow = new BodyPart(SV(elbow_img), CV(-5, 0));
+            var right_elbow = left_elbow.clone_with_offset(4);
+            var left_hand = new BodyPart(SV(hand_img), CV(0, 0));
+            var right_hand = left_hand.clone_with_offset(4);
+            
+            var left_upper_arm = left_elbow.connect(SV(upper_arm_img));
+            var right_upper_arm = left_upper_arm.clone_with_offset(4);
+            var left_lower_arm = left_hand.connect(SV(lower_arm_img));
+            var right_lower_arm = left_lower_arm.clone_with_offset(4);
+            
+            return new HumanoidModel(
+                left_foot, 
+                right_foot, 
+                head, 
+                left_upper_leg, 
+                right_upper_leg, 
+                left_knee, 
+                right_knee, 
+                left_hip, 
+                right_hip,
+                left_lower_leg,
+                right_lower_leg,
+                left_shoulder,
+                right_shoulder,
+                left_elbow,
+                right_elbow,
+                left_hand,
+                right_hand,
+                left_upper_arm,
+                right_upper_arm,
+                left_lower_arm,
+                right_lower_arm
             ).to_seq();
         }
 
         var still_seq = still();
         var walk_seq = walk();
 
-        m = new SequenceManager(walk_seq).start(0.2);
+        m = new SequenceManager(still_seq).start(0.2);
         
         sg = 
             SGRoot('body', SV(body_img),
@@ -186,8 +186,8 @@ $(function() {
                 ],
                 [ // after
                     SG('head', m), 
-                    SG('left_shoulder', m, [SG('left_upper_arm', m), SG('left_elbow', m, [SG('left_hand', m)])]),
-                    SG('right_shoulder', m, [SG('right_upper_arm', m), SG('right_elbow', m, [SG('right_hand', m)])])
+                    SG('left_shoulder', m, [SG('left_upper_arm', m), SG('left_elbow', m, [SG('left_lower_arm', m), SG('left_hand', m)])]),
+                    SG('right_shoulder', m, [SG('right_upper_arm', m), SG('right_elbow', m, [SG('right_lower_arm', m), SG('right_hand', m)])])
                 ]
             );
 
@@ -202,10 +202,10 @@ $(function() {
        
             if (state == 0 && agent.absolute_control_tick()) {
                 state = 1;
-                m.update(still_seq);
+                m.update(walk_seq, 1, -1);
             } else if (state == 1 && !agent.absolute_control_tick()) {
                 state = 0;
-                m.update(walk_seq, 1, -1);
+                m.update(still_seq);
             }
  
             sg.global_transform(agent.pos, agent.facing + Math.PI/2);

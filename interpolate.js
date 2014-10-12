@@ -126,7 +126,7 @@ ConstantValue.prototype.clone_with_offset = function() {
     return new ConstantValue(this.v);
 }
 ConstantValue.prototype.map = function(f) {
-    return new ContsantValue(f(this.v));
+    return new ConstantValue(f(this.v));
 }
 
 function IA() {
@@ -198,9 +198,6 @@ Interpolator.prototype.clone_with_offset = function(offset) {
     var new_head = seq.slice(end_i+1, seq.length-1).map(function(x){
         return [x[0]-this.max_t, x[1]]
     }.bind(this));
-    console.debug(seq.length-end_i);
-    console.debug(new_head.toString());
-    console.debug(new_tail.toString());
 
     if (last[0] != this.max_t) {
         var new_end = this.interpolate(this.max_t - offset);
