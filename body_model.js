@@ -32,17 +32,11 @@ BodyPart.prototype.connect = function(image) {
     return new BodyPart(
         image,
         CV(0, 0),
-        this.translate.map(function(vw) {
-            var v = vw.val();
-            return new AngleWrapper(Math.PI/2-[v[0], -v[1]].v2_angle());
-        }),
-        this.translate.map(function(vw) {
-            var v = vw.val();
-            return new VectorWrapper([1, v.v2_len()/image.get_value().size[1]]);
-        })
-
+        new RotateReference(this.translate),
+        new ScaleReference(this.translate, image.get_value().size[1])
     );
 }
+
 
 BodyPart.prototype.to_seq = function(name) {
     var o = {};
@@ -59,24 +53,16 @@ function HumanoidModel() {
         'left_foot',
         'right_foot', 
         'head', 
-        'left_upper_leg', 
-        'right_upper_leg', 
         'left_knee', 
         'right_knee', 
         'left_hip', 
         'right_hip', 
-        'left_lower_leg', 
-        'right_lower_leg',
         'left_shoulder',
         'right_shoulder',
         'left_elbow',
         'right_elbow',
         'left_hand',
         'right_hand',
-        'left_upper_arm',
-        'right_upper_arm',
-        'left_lower_arm',
-        'right_lower_arm'
     ];
 
     for (var i = 0;i<this.args.length;i++) {

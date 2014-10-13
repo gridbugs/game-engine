@@ -21,8 +21,11 @@ function SG(name, image, translate, scale, rotate, before, after) {
         before = translate;
         after = scale;
         return new SceneGraph(name, m.g(name + '_i'), m.g(name + '_t'), m.g(name + '_r'), m.g(name + '_s'), before, after);
+    } else if (image.constructor == BodyPart) {
+        var b = image;
+        return new SceneGraph(name, b.image, b.translate, b.rotate, b.scale, before, after)
     } else {
-        return new SceneGraph(name, image, translate, scale, rotate, before, after);
+        return new SceneGraph(name, image, translate, rotate, scale, before, after);
     }
 }
 

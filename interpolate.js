@@ -324,6 +324,15 @@ SequenceInterpolator.prototype.get_value_discrete = function() {
     return this.current.get_value_discrete(this.time);
 }
 
+SequenceInterpolator.prototype.connect = function(image) {
+    return new BodyPart(
+            image,
+            CV(0, 0),
+            new RotateReference(this),
+            new ScaleReference(this, image.get_value().size[1])
+    );
+}
+
 function SequenceManager(model) {
     this.seqs = {};
     for (var name in model) {
@@ -354,4 +363,30 @@ SequenceManager.prototype.tick = function() {
     for (var name in this.seqs) {
         this.seqs[name].tick();
     }
+}
+
+
+function TransformReference(si) {
+    this.si = si;
+}
+
+function ScaleReference(si, length) {
+    TransformReference.call(this, si);
+    this.length = length;
+}
+ScaleReference.prototype = new TransformReference();
+ScaleReference.prototype.constructor = ScaleReference;
+
+ScaleReference.prototype.get_value = function() {
+    var v = this.si.get_value();
+    return [1, v.v2_len()/this.length];
+}
+function RotateReference(si) {
+    TransformReference.call(this, si);
+}
+RotateReference.prototype = new TransformReference();
+RotateReference.prototype.constructor = RotateReference;
+RotateReference.prototype.get_value = function() {
+    var v = this.si.get_value();
+    return Math.PI/2-[v[0], -v[1]].v2_angle();
 }
