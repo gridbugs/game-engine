@@ -23,8 +23,7 @@
 $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
-    cu = new CanvasUtil();
-    cu.register_canvas($("#screen")[0]);
+    cu = new CanvasUtil($("#screen")[0]);
 
     cu.canvas.width = $(window).width();
     cu.canvas.height = $(window).height();
