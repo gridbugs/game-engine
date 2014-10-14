@@ -38,15 +38,15 @@ $(function() {
             'lower_arm.png'
     ]).load_async(function(images) {
 
-        var shoe_img = new ImageClosure(images[0], [-10, -30], [20, 40]);
+        var shoe_img = new ImageClosure(images[0], [-10, -30], [15, 40]);
         var lower_leg_img = new ImageClosure(images[1], [-5, -45], [10, 50]);
         var knee_img = new ImageClosure(images[2], [-10, -10], [20, 20]);
         var upper_leg_img = new ImageClosure(images[3], [-5, -60], [10, 60]);
         var body_img = new ImageClosure(images[4], [-30, -30], [60, 60]);
         var head_img = new ImageClosure(images[5], [-30, -30], [60, 60]);
         var shoulder_img = new ImageClosure(images[6], [-10, -10], [20, 20]);
-        var elbow_img = new ImageClosure(images[7], [-8, -8], [16, 16]);
-        var hand_img = new ImageClosure(images[8], [-10, -10], [20, 20]);
+        var elbow_img = new ImageClosure(images[7], [-5, -5], [10, 10]);
+        var hand_img = new ImageClosure(images[8], [-5, -5], [10, 10]);
         var upper_arm_img = new ImageClosure(images[9], [-5, -40], [10, 40]);
         var lower_arm_img = new ImageClosure(images[10], [-5, -40], [10, 40]);
 
@@ -62,7 +62,7 @@ $(function() {
             var right_upper_leg = left_upper_leg.flip_x().clone_with_offset(4);
             var left_knee = new BodyPart(
                 SV(knee_img),
-                IV([0, [0, -50]], [4, [0, 50]], [6, [0, 0]], [7, [0, -45]], [8, [0, -50]])
+                IV([0, [0, -30]], [4, [0, 20]], [6, [0, 0]], [7, [0, -25]], [8, [0, -30]])
             );
             var right_knee = left_knee.flip_x().clone_with_offset(4);
             var left_hip = new BodyPart(null, CV(-15, 0));
@@ -74,10 +74,10 @@ $(function() {
                 IV([0, [1, 30/50]], [1, [1, 0]], [4, [1, -30/50]], [7, [1, 0]], [8, [1, 30/50]])
             );
             var right_lower_leg = left_lower_leg.flip_x().clone_with_offset(4);
-            var left_shoulder = new BodyPart(SV(shoulder_img), CV(-35, 0));
-            var right_shoulder = left_shoulder.flip_x();
+            var left_shoulder = new BodyPart(SV(shoulder_img), IV([0, [-35, 5]], [4, [-35, -5]], [8, [-35, 5]]));
+            var right_shoulder = left_shoulder.flip_x().clone_with_offset(4);
             var left_elbow = new BodyPart(SV(elbow_img),
-                IV([0, [-10, 30]], [2, [-5, 0]], [4, [-15, -30]], [6, [-5, 0]], [8, [-10, 30]])
+                IV([0, [0, 30]], [2, [-5, 0]], [4, [-10, -30]], [6, [-5, 0]], [8, [0, 30]])
             );
             var right_elbow = left_elbow.clone_with_offset(4);
             var left_hand = new BodyPart(SV(hand_img),
@@ -141,7 +141,7 @@ $(function() {
         var still_seq = still();
         var walk_seq = walk();
 
-        m = new SequenceManager(still_seq).start(0.2);
+        m = new SequenceManager(still_seq).start(0.3);
 
         var left_upper_arm = m.g('left_elbow_t').connect(SV(upper_arm_img));
         var left_lower_arm = m.g('left_hand_t').connect(SV(lower_arm_img));
