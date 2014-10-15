@@ -31,6 +31,11 @@ function Editor(cu) {
     };
 }
 
+Editor.prototype.to_output_object = function() {
+    var out = {};
+
+}
+
 Editor.events = ['click', 'mousedown', 'mouseup', 'mousemove', 'keydown', 'keypress', 'keyup', 'dblclick'];
 
 Editor.prototype.delete_object = function(o) {
