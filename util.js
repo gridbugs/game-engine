@@ -6,6 +6,11 @@ function extend(cl, fn_name, fn) {
     );
 }
 
+function subclass(c, p) {
+    c.prototype = new p();
+    c.prototype.constructor = c;
+}
+
 /* takes a function and an array and calls
  * the function on the elements as individual
  * arguments

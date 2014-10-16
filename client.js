@@ -19,7 +19,7 @@ $(function() {
 
     new CharacterLoader([
         WalkDemo
-    ]).load_async(function() {
+    ]).run(function() {
         var demo = new WalkDemo('still', 0.3, cu.ctx);
 
         agent.facing = -Math.PI/2;

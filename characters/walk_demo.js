@@ -18,7 +18,7 @@ WalkDemo.init.run = function(then) {
             'hand.png',
             'upper_arm.png',
             'lower_arm.png'
-    ]).load_async(function(images) {
+    ]).run(function(images) {
 
         var shoe_img = new ImageClosure(images[0], [-10, -30], [15, 40]);
         var lower_leg_img = new ImageClosure(images[1], [-5, -45], [10, 50]);
