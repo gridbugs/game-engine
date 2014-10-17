@@ -42,18 +42,18 @@ Function.through_pts = function(a, b) {
     }
 }
 
-extend(Function, 'sin_to_cos', function() {
+Function.add_method('sin_to_cos', function() {
     return function(x) {
         return this(x+Wave.PERIOD/4);
     }.bind(this);
 });
-extend(Function, 'slide_x', function(offset) {
+Function.add_method('slide_x', function(offset) {
     return function(x) {
         return this(x-offset);
     }.bind(this);
 });
 
-extend(Function, 'divide', function(x) {
+Function.add_method('divide', function(x) {
     return function(y) {
         return this(y)/x;
     }.bind(this);

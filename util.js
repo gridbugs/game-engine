@@ -1,16 +1,3 @@
-function extend(cl, fn_name, fn) {
-    Object.defineProperty(cl.prototype, fn_name, {
-            value: fn,
-            enumerable: false,
-        }
-    );
-}
-
-function subclass(c, p) {
-    c.prototype = new p();
-    c.prototype.constructor = c;
-}
-
 /* takes a function and an array and calls
  * the function on the elements as individual
  * arguments
@@ -93,10 +80,10 @@ function swap_args2(f) {
     }
 }
 
-extend(Array, 'left_half', function() {
+Array.add_method('left_half', function() {
     return this.slice(0, this.length/2);
 });
-extend(Array, 'right_half', function() {
+Array.add_method('right_half', function() {
     return this.slice(this.length/2, this.length);
 });
 
@@ -124,7 +111,7 @@ function id(x) {
     return x;
 }
 
-extend(Array, 'most_idx', function(fn, scores) {
+Array.add_method('most_idx', function(fn, scores) {
     fn=fn||id;
     var most_i = 0;
     var best = fn(this[0]);
@@ -149,11 +136,11 @@ extend(Array, 'most_idx', function(fn, scores) {
  * of fn(x). e.g. function(arr){return arr_most(arr, id)}
  * is a function that returns the maximum value in an array
  */
-extend(Array, 'most', function(fn, scores) {
+Array.add_method('most', function(fn, scores) {
     return this[this.most_idx(fn, scores)];
 });
 
-extend(Array, 'rotate', function(idx) {
+Array.add_method('rotate', function(idx) {
     return this.slice(idx).concat(this.slice(0, idx));
 });
 
@@ -161,11 +148,11 @@ function arr_rotate(arr, idx) {
     return arr.slice(idx).concat(arr.slice(0, idx));
 }
 
-extend(Array, 'rotate_most', function(fn) {
+Array.add_method('rotate_most', function(fn) {
     return this.rotate(this.most_idx(fn));
 });
 
-extend(Array, 'rotate_until', function(fn) {
+Array.add_method('rotate_until', function(fn) {
     for (var i = 0,len=this.length;i<len;++i) {
         if (fn(this[i])) {
             return this.rotate(this, i);
@@ -175,7 +162,7 @@ extend(Array, 'rotate_until', function(fn) {
 
 });
 
-extend(Array, 'mosts_heap', function(k, fn) {
+Array.add_method('mosts_heap', function(k, fn) {
     fn=fn||id;
     var h = new ConstrainedHeap(k, function(a, b) {
         return fn(a) <= fn(b);
@@ -184,22 +171,22 @@ extend(Array, 'mosts_heap', function(k, fn) {
 });
 
 // returns the k highest elements in arr
-extend(Array, 'mosts', function(k, fn) {
+Array.add_method('mosts', function(k, fn) {
     return this.mosts_heap(k, fn).to_array();
 });
 
 // returns the k highest elements in arr sorted in order from lowest value of fn(x)
-extend(Array, 'mosts_sorted', function(k, fn) {
+Array.add_method('mosts_sorted', function(k, fn) {
     return this.mosts_heap(k, fn).to_sorted_array();
 });
 
 // returns the kth fn-est element in this
-extend(Array, 'kth', function(k, fn) {
+Array.add_method('kth', function(k, fn) {
     fn=fn||id;
     return this.mosts(k, fn).most(function(x){return -fn(x)});
 });
 
-extend(Array, 'proxy_filter', function(arr_to_filter_by, filter_fn) {
+Array.add_method('proxy_filter', function(arr_to_filter_by, filter_fn) {
     var filtered = [];
     for (var i = 0,len=this.length;i<len;++i) {
         if (filter_fn(arr_to_filter_by[i])) {
@@ -210,7 +197,7 @@ extend(Array, 'proxy_filter', function(arr_to_filter_by, filter_fn) {
 });
 
 // treat an array like a ring buffer
-extend(Array, 'ring', function(idx, value) {
+Array.add_method('ring', function(idx, value) {
     var i = (idx % this.length + this.length) % this.length;
     if (value == undefined) {
         return this[i];
@@ -219,7 +206,7 @@ extend(Array, 'ring', function(idx, value) {
     }
 });
 
-extend(Array, 'find', function(fn) {
+Array.add_method('find', function(fn) {
     for (var i = 0,len=this.length;i<len;++i) {
         if (fn(this[i])) {
             return this[i];
@@ -228,7 +215,7 @@ extend(Array, 'find', function(fn) {
     return null;
 });
 
-extend(Array, 'get_reverse', function() {
+Array.add_method('get_reverse', function() {
     return this.slice(0).reverse();
 });
 
@@ -299,7 +286,7 @@ function between(a, b, c) {
     return (a <= b && b <= c) || (c <= b && b <= a);
 }
 
-extend(Array, 'most_over_threshold', function(threshold, mostfn) {
+Array.add_method('most_over_threshold', function(threshold, mostfn) {
     var most = this.most(mostfn);
     if (mostfn(most) >= threshold) {
         return most;
