@@ -20,27 +20,32 @@ $(function() {
     new CharacterLoader([
         WalkDemo
     ]).run(function() {
-        var demo = new WalkDemo('still', 0.3, cu.ctx);
+        var demo = new WalkDemo('still', cu.ctx);
 
         agent.facing = -Math.PI/2;
         agent.move_speed = 8;
         var state = 1;
+        var prev_time = Date.now();
         function t() {
+            var curr_time = Date.now();
+            var time_delta = curr_time - prev_time;
+            prev_time = curr_time;
+
             cu.clear();
        
             if (state == 0 && agent.absolute_control_tick()) {
                 state = 1;
-                demo.update('walk', 1, -1);
+                demo.update('walk', 100, -100);
             } else if (state == 1 && !agent.absolute_control_tick()) {
                 state = 0;
                 demo.update('still');
             }
  
             demo.draw(agent.pos, agent.facing + Math.PI/2);
-            demo.tick();
-       //     agent.draw();
+            demo.tick(time_delta);
             segs.map(function(s){cu.draw_segment(s)});
-            setTimeout(t, 33);
+            
+            requestAnimationFrame(t);
         }
         t();
 

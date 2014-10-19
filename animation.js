@@ -1,15 +1,14 @@
 function Animation() {}
-Animation.prototype.init = function(initial, interval, ctx) {
-    this.sm = this.constructor.sequence_manager(this.constructor.seqs[initial], interval);
+Animation.prototype.init = function(initial, ctx) {
+    this.sm = this.constructor.sequence_manager(this.constructor.seqs[initial]);
     this.sg = this.constructor.scene_graph(this.sm);
     this.ctx = ctx;
 }
 Animation.init = {
     run: function(then) {then()},
-    val: function(){return null}
 }
-Animation.prototype.tick = function() {
-    this.sm.tick();
+Animation.prototype.tick = function(time_delta) {
+    this.sm.tick(time_delta);
 }
 Animation.prototype.draw = function(translate, rotate, scale) {
     this.sg.global_transform(translate, rotate, scale);

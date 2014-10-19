@@ -189,7 +189,6 @@ Interpolator.prototype.flip_x = function() {
 
 Interpolator.prototype.clone_with_offset = function(offset) {
     var seq = this.seq.map(function(x){return [x[0]+offset, x[1]]});
-
     // the index of the last element of the new sequence
     var end_i = Interpolator.binary_search(this.max_t, seq);
     var last = seq[end_i];
@@ -268,16 +267,12 @@ Interpolator.prototype.get_value_discrete = function(t) {
 
 function SequenceInterpolator(interpolator) {
     this.current = interpolator;
+    this.time = 0;
 }
 
 
 SequenceInterpolator.prototype.set_interpolator = function(i) {
     this.current = i;
-}
-
-SequenceInterpolator.prototype.start = function(interval) {
-    this.interval = d(interval, 1);
-    this.time = 0;
 }
 
 SequenceInterpolator.prototype.switch_to = function(interpolator, duration, offset) {
@@ -288,9 +283,9 @@ SequenceInterpolator.prototype.switch_to = function(interpolator, duration, offs
     this.switch_offset = d(offset, 0);
 }
 
-SequenceInterpolator.prototype.tick = function() {
+SequenceInterpolator.prototype.tick = function(time_delta) {
     if (this.next) {
-        this.switch_progress += this.interval;
+        this.switch_progress += time_delta;
         if (this.switch_progress >= this.switch_duration) {
             this.current = this.next;
             this.next = null;
@@ -298,7 +293,7 @@ SequenceInterpolator.prototype.tick = function() {
             this.time = this.switch_progress + this.switch_offset;
         }
     } else {
-        this.time += this.interval;
+        this.time += time_delta;
     }
 
     return this;
@@ -342,13 +337,6 @@ function SequenceManager(model) {
     }
 }
 
-SequenceManager.prototype.start = function(interval) {
-    for (var name in this.seqs) {
-        this.seqs[name].start(interval);
-    }
-    return this;
-}
-
 SequenceManager.prototype.g = function(name) {
     return this.seqs[name];
 }
@@ -359,9 +347,9 @@ SequenceManager.prototype.update = function(model, duration, offset) {
     }
 }
 
-SequenceManager.prototype.tick = function() {
+SequenceManager.prototype.tick = function(time_delta) {
     for (var name in this.seqs) {
-        this.seqs[name].tick();
+        this.seqs[name].tick(time_delta);
     }
 }
 

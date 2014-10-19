@@ -28,4 +28,11 @@ function FileLoader(path, names) {
     var paths = PathManager.get_paths(path, names);
     AsyncGroup.call(this, paths.map(function(p){return new SingleFileLoader(p)}));
 }
-FileLoader.inherit(AsyncGroup);
+FileLoader.inherit_from(AsyncGroup);
+
+FileLoader.load = function(path, names) {
+    var fl = new FileLoader(path, names);
+    return function(f) {
+        fl.run(f.arr_args());
+    };
+}

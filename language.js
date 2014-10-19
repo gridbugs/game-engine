@@ -11,9 +11,15 @@ Object.defineProperty(Function.prototype, 'add_method', {
     }
 );
 
-Function.add_method('inherit', function(p) {
+Function.add_method('inherit_from', function(p) {
     this.prototype = new p();
     this.prototype.constructor = this;
     return this;
 });
 
+Function.add_method('arr_args', function() {
+    var _this = this;
+    return function(args) {
+        return _this.apply(this, args);
+    };
+});

@@ -1,5 +1,5 @@
-function WalkDemo(initial, interval, ctx) {
-    Animation.prototype.init.call(this, initial, interval, ctx);
+function WalkDemo(initial, ctx) {
+    Animation.prototype.init.call(this, initial, ctx);
 }
 WalkDemo.prototype = new Animation();
 WalkDemo.prototype.constructor = WalkDemo;
@@ -33,39 +33,42 @@ WalkDemo.init.run = function(then) {
         var lower_arm_img = new ImageClosure(images[10], [-5, -40], [10, 40]);
 
         function walk() {
-            var left_foot = new BodyPart(SV(shoe_img), IV([0, [0, -30]], [1, [0, 0]], [4, [0, 30]], [7, [0, 0]], [8, [0, -30]]));
-            var right_foot = left_foot.flip_x().clone_with_offset(4);
+
+            var left_foot = new BodyPart(SV(shoe_img), IV([0, [0, -30]], [100, [0, 0]], [400, [0, 30]], [700, [0, 0]], [800, [0, -30]]));
+            var right_foot = left_foot.flip_x().clone_with_offset(400);
+
+
             var left_upper_leg = new BodyPart(
                     SV(upper_leg_img),
                     CV(0, 0),
                     CS(0),
-                    IV([0, [1, 50/60]], [4, [1, -50/60]], [6, [1, 0]], [7, [1, 45/60]], [8, [1, 50/60]])
+                    IV([0, [100, 50/60]], [400, [1, -50/60]], [600, [1, 0]], [700, [1, 45/60]], [800, [1, 50/60]])
                 );
-            var right_upper_leg = left_upper_leg.flip_x().clone_with_offset(4);
+            var right_upper_leg = left_upper_leg.flip_x().clone_with_offset(400);
             var left_knee = new BodyPart(
                 SV(knee_img),
-                IV([0, [0, -30]], [4, [0, 20]], [6, [0, 0]], [7, [0, -25]], [8, [0, -30]])
+                IV([0, [0, -30]], [400, [0, 20]], [600, [0, 0]], [700, [0, -25]], [800, [0, -30]])
             );
-            var right_knee = left_knee.flip_x().clone_with_offset(4);
+            var right_knee = left_knee.flip_x().clone_with_offset(400);
             var left_hip = new BodyPart(null, CV(-15, 0));
-            var right_hip = left_hip.flip_x().clone_with_offset(4);
+            var right_hip = left_hip.flip_x().clone_with_offset(400);
             var head = new BodyPart(SV(head_img));
 
             var left_lower_leg = new BodyPart(
                 SV(lower_leg_img), CV(0, 0), CS(0),
-                IV([0, [1, 30/50]], [1, [1, 0]], [4, [1, -30/50]], [7, [1, 0]], [8, [1, 30/50]])
+                IV([0, [1, 30/50]], [100, [1, 0]], [400, [1, -30/50]], [700, [1, 0]], [800, [1, 30/50]])
             );
-            var right_lower_leg = left_lower_leg.flip_x().clone_with_offset(4);
-            var left_shoulder = new BodyPart(SV(shoulder_img), IV([0, [-35, 5]], [4, [-35, -5]], [8, [-35, 5]]));
-            var right_shoulder = left_shoulder.flip_x().clone_with_offset(4);
+            var right_lower_leg = left_lower_leg.flip_x().clone_with_offset(400);
+            var left_shoulder = new BodyPart(SV(shoulder_img), IV([0, [-35, 5]], [400, [-35, -5]], [800, [-35, 5]]));
+            var right_shoulder = left_shoulder.flip_x().clone_with_offset(400);
             var left_elbow = new BodyPart(SV(elbow_img),
-                IV([0, [0, 30]], [2, [-5, 0]], [4, [-10, -30]], [6, [-5, 0]], [8, [0, 30]])
+                IV([0, [0, 30]], [200, [-5, 0]], [400, [-10, -30]], [600, [-5, 0]], [800, [0, 30]])
             );
-            var right_elbow = left_elbow.clone_with_offset(4);
+            var right_elbow = left_elbow.clone_with_offset(400);
             var left_hand = new BodyPart(SV(hand_img),
-                IV([0, [-5, 20]], [2, [0, 0]], [4, [10, -30]], [6, [0, 0]], [8, [-5, 20]])
+                IV([0, [-5, 20]], [200, [0, 0]], [400, [10, -30]], [600, [0, 0]], [800, [-5, 20]])
             );
-            var right_hand = left_hand.clone_with_offset(4);
+            var right_hand = left_hand.clone_with_offset(400);
 
             return new HumanoidModel(
                 left_foot, 
@@ -125,8 +128,8 @@ WalkDemo.init.run = function(then) {
             walk: walk()
         };
 
-        WalkDemo.sequence_manager = function(initial_seq, interval) {
-            return new SequenceManager(initial_seq).start(interval);
+        WalkDemo.sequence_manager = function(initial_seq) {
+            return new SequenceManager(initial_seq);
         }
 
         WalkDemo.scene_graph = function(m) {
