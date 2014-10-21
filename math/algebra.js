@@ -454,4 +454,7 @@ function angle_normalize(angle) {
         return angle_normalize(angle - Math.PI*2);
     }
 }
-
+function rem(a, b) {
+    var div = a/b;
+    return (div - Math.floor(div)) * b;
+}

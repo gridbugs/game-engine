@@ -6,8 +6,6 @@ function CollisionProcessor(rad, segs) {
     }
 }
 
-var count = 0;
-var debug = new ColourDebugger(["red", "blue", "green", "orange"]);
 CollisionProcessor.prototype.process_collision = function(start, end, to_ignore, slide) {
     slide = d(slide, true);
     to_ignore = d(to_ignore, []);

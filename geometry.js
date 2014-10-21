@@ -134,13 +134,6 @@ function triangulate_sorted(sorted_pts, depth) {
             var delaunay_right = triangulate_sorted(right, depth + 1);
             
 
-/*
-            _.map(delaunay_left, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*4)});
-            colour_debug.next_colour();
-            _.map(delaunay_right, function(segment) {cu.draw_segment(segment, colour_debug.get_colour(), depth*4)});
-            colour_debug.next_colour();
-                                            
-*/
             var ret = dewall_merge(delaunay_left, delaunay_right, left, right);
 
             return ret;
