@@ -9,7 +9,9 @@
 
 <script type="application/x-javascript" src="language.js"></script>
 <script type="application/x-javascript" src="util.js"></script>
+<script type="application/x-javascript" src="time_manager.js"></script>
 <script type="application/x-javascript" src="async.js"></script>
+<script type="application/x-javascript" src="path_manager.js"></script>
 <script type="application/x-javascript" src="file_loader.js"></script>
 <script type="application/x-javascript" src="image_loader.js"></script>
 <script type="application/x-javascript" src="heap.js"></script>
@@ -36,18 +38,33 @@
 <script type="application/x-javascript" src="character_loader.js"></script>
 <script type="application/x-javascript" src="characters/walk_demo.js"></script>
 
-
 <style>
 * {
     margin: 0px;
     padding: 0px;
     overflow:hidden;
 }
+
 canvas {
 }
 </style>
+
+<script type="application/x-javascript" src="console.js"></script>
+<link rel="stylesheet" type="text/css" href="console.css">
+
 </head>
 <body>
-<canvas id="screen" style="position:absolute;left:0px;top:0px;" width=1200 height=600></canvas>
+    <canvas id="screen" style="position:absolute;left:0px;top:0px;" width=1200 height=600></canvas>
+
+    <div id="info-overlay">
+        <div id="fps" style="position:absolute;font-family:monospace"></div>
+    </div>
+
+    <div id="console-container">
+        <div id="console-output">
+        </div>
+        <input id="console-input"/>
+    </div>
+
 </body>
 </html>

@@ -7,32 +7,10 @@ SingleFileLoader.prototype.run = function(then) {
     }.bind(this));
 }
 
-function PathManager(){}
-PathManager.get_paths = function(path, names) {
-    if (names == undefined) {
-        names = [path];
-        path = "";
-    }
-    if (names.constructor != Array) {
-        var _names = new Array(arguments.length);
-        for (var i = 0;i<arguments.length;++i) {
-            _names[i] = arguments[i];
-        }
-        path = "";
-        names = _names;
-    }
-    return names.map(function(n){return path + n});
-}
-
 function FileLoader(path, names) {
-    var paths = PathManager.get_paths(path, names);
+    var paths = PathManager.get_paths.apply(window, Array.arguments_array(arguments));
     AsyncGroup.call(this, paths.map(function(p){return new SingleFileLoader(p)}));
 }
 FileLoader.inherit_from(AsyncGroup);
 
-FileLoader.load = function(path, names) {
-    var fl = new FileLoader(path, names);
-    return function(f) {
-        fl.run(f.arr_args());
-    };
-}
+FileLoader.load = Async.file_load_fn(FileLoader);

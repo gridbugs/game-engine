@@ -8,8 +8,28 @@ Input.register_mousemove_callback = function(name, fn) {
 }
 
 Input.keydown_callbacks = [];
-
+Input.active = true;
 Input.down_keys = [];
+Input.toggle_console = function() {
+    if (Input.active) {
+        $("#console-container").show();
+        Input.suspend();
+    } else {
+        $("#console-container").hide();
+        Input.resume();
+    }
+}
+Input.overlay = false;
+Input.toggle_overlay = function() {
+    if (Input.overlay) {
+        $("#info-overlay").hide();
+        Input.overlay = false;
+    } else {
+        $("#info-overlay").show();
+        Input.overlay = true;
+    }
+}
+
 
 Input.is_down = function(keys) {
     var chars = keys.split("");
@@ -55,13 +75,27 @@ Input.charFromCode = function(code) {
         case 188: return ",";
         case 222: return "'";
         case 190: return ".";
+        case 192: return "~";
+        case 220: return "\\";
+        case 221: return ']';
+        case 219: return '[';
         default:
             return String.fromCharCode(code).toLowerCase();
     }
 }
 
+Input.suspend = function() {
+    Input.active = false;
+}
+Input.resume = function() {
+    Input.active = true;
+}
+
 Input.init = function() { 
     $(document).mousemove(function(e) {
+        if (!Input.active) {
+            return;
+        }
         Input.mouse_x = e.pageX - Input.canvas_offset_x;
         Input.mouse_y = e.pageY - Input.canvas_offset_y;
         Input.mouse_pos[0] = Input.mouse_x;
@@ -74,6 +108,16 @@ Input.init = function() {
 
     $(document).keydown(function(e) {
         var key = Input.charFromCode(e.keyCode);
+        if (key == "\\") {
+            Input.toggle_console();
+        }
+        if ($("#console-input").is(":focus")) {
+            return;
+        }
+        if (key == "]") {
+            Input.toggle_overlay();
+        }
+        
 
         if (Input.keydown_callbacks[key] != undefined) {
 

@@ -1,5 +1,17 @@
 var cu;
+var game_console;
 $(function() {
+    game_console = new Console(
+        document.getElementById("console-input"),
+        document.getElementById("console-output"),
+        new Echoer()
+    );
+    game_console.setup_keys();
+    $("#console-container").hide();
+    $("#info-overlay").hide();
+
+
+
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
     cu = new CanvasUtil($("#screen")[0]);
@@ -25,11 +37,9 @@ $(function() {
         agent.facing = -Math.PI/2;
         agent.move_speed = 8;
         var state = 1;
-        var prev_time = Date.now();
+        var fps_box = $("#fps");
+        var tm = new TimeManager();
         function t() {
-            var curr_time = Date.now();
-            var time_delta = curr_time - prev_time;
-            prev_time = curr_time;
 
             cu.clear();
        
@@ -42,12 +52,18 @@ $(function() {
             }
  
             demo.draw(agent.pos, agent.facing + Math.PI/2);
-            demo.tick(time_delta);
+            demo.tick(tm.get_delta());
             segs.map(function(s){cu.draw_segment(s)});
             
             requestAnimationFrame(t);
         }
         t();
+
+        function fps_t() {
+            fps_box.text("FPS: " + Math.floor(tm.last_rate));
+            setTimeout(fps_t, 100);
+        }
+        fps_t();
 
     });
 });

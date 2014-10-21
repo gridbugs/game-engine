@@ -23,3 +23,18 @@ Function.add_method('arr_args', function() {
         return _this.apply(this, args);
     };
 });
+
+Array.arguments_array = function(args) {
+    var arr = new Array(args.length);
+    for (var i = 0;i<args.length;i++) {
+        arr[i] = args[i];
+    }
+    return arr;
+}
+Array.array_or_arguments = function(arg, args) {
+    if (arg.constructor == Array) {
+        return arg;
+    } else {
+        return Array.arguments_array(args);
+    }
+}
