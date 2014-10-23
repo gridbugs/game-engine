@@ -38,3 +38,11 @@ Array.array_or_arguments = function(arg, args) {
         return Array.arguments_array(args);
     }
 }
+
+Object.add_method('default', function() {
+    for (var len=arguments.length,i=0;i<len;++i) {
+        if (this[i] == undefined) {
+            this[i] = arguments[i];
+        }
+    }
+});
