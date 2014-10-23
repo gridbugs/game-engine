@@ -18,7 +18,7 @@ Agent.set_controlled_agent = function(agent) {
     });
 }
 Agent.prototype.turn_to_face = function(pt) {
-    this.facing = _angle_between(this.pos, Input.mouse_pos);
+    this.facing = this.pos.v2_angle_between(Input.mouse_pos);
 }
 Agent.prototype.draw = function() { 
     cu.circle(this.pos, this.rad, false, this.colour);
@@ -82,8 +82,4 @@ Agent.prototype.turn_towards = function(pt) {
     } else {
         this.facing += this.turn_speed * nearest_rotation_type(this.facing, target_angle);
     }
-}
-
-Agent.prototype.move_forward = function() {
-    this.pos = numeric['+'](this.pos, numeric['*'](this.move_speed, angle_to_unit_vector(this.facing)));
 }

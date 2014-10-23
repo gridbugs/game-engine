@@ -189,14 +189,6 @@ CanvasUtil.prototype.start = function() {
     return this.begin_path();
 }
 
-CanvasUtil.prototype.line_at_angle = function(start, angle, length) {
-    this.ctx.beginPath();
-    var end = numeric['+'](numeric['*'](length, angle_to_unit_vector(angle)), start);
-    this.move_to(start);
-    this.line_to(end);
-    this.ctx.stroke();
-}
-
 CanvasUtil.prototype.clear = function() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 }
