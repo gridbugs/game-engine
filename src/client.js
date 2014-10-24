@@ -1,4 +1,3 @@
-var cu;
 var game_console;
 $(function() {
     game_console = new Console(
@@ -14,25 +13,34 @@ $(function() {
 
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
-    cu = new CanvasUtil($("#screen")[0]);
-
-    cu.canvas.width = $(window).width();
-    cu.canvas.height = $(window).height();
-
-    $(document).resize(function() {
-        cu.canvas.width = $(window).width();
-        cu.canvas.height = $(window).height();
-    });
 
     var agent = new Agent([200, 200], 0);
 
     var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
     agent.set_segs(segs);
+    
+    var canvas = document.getElementById('screen');
+    
+    $(document).resize(function() {
+        canvas.width = $(window).width();
+        canvas.height = $(window).height();
+    });
 
-    new CharacterLoader([
-        WalkDemo
-    ]).run(function() {
-        var demo = new WalkDemo('still', cu.ctx);
+    canvas.width = $(window).width();
+    canvas.height = $(window).height();
+   
+    var drawer = new CanvasDrawer(canvas);
+
+    new AsyncGroup(
+        new WalkDemo(drawer)
+    ).run(function(characters) {
+        var walk_demo = characters[0];
+
+        var demo = walk_demo.instance('still');
+        var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 2)});
+
+        demo.draw();
+        console.debug(demo);
 
         agent.facing = -Math.PI/2;
         agent.move_speed = 8;
@@ -40,9 +48,8 @@ $(function() {
         var fps_box = $("#fps");
         var tm = new TimeManager();
         function t() {
+            drawer.clear();
 
-            cu.clear();
-       
             if (state == 0 && agent.absolute_control_tick()) {
                 state = 1;
                 demo.update('walk', 100, -100);
@@ -53,7 +60,7 @@ $(function() {
  
             demo.draw(agent.pos, agent.facing + Math.PI/2);
             demo.tick(tm.get_delta());
-            segs.map(function(s){cu.draw_segment(s)});
+            walls.map(function(w){w.draw()});
             
             requestAnimationFrame(t);
         }

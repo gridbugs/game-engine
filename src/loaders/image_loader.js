@@ -16,6 +16,6 @@ function ImageLoader(root, sources) {
     var paths = PathManager.get_paths(root, sources);
     AsyncGroup.call(this, paths.map(function(p){return new SingleImageLoader(p)}));
 }
-ImageLoader.inherit_from(AsyncGroup);
+ImageLoader.inherits_from(AsyncGroup);
 
 ImageLoader.load = Async.file_load_fn(ImageLoader);

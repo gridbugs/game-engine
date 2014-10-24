@@ -104,7 +104,7 @@ tinycolor.prototype = {
     toHex8: function() {
         return rgbaToHex(this._r, this._g, this._b, this._a);
     },
-    toGLArray: function() {
+    toGL: function() {
         return [this._r/255, this._g/255, this._b/255, this._a];
     },
     toHex8String: function() {

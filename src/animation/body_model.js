@@ -50,6 +50,7 @@ BodyPart.prototype.to_seq = function(name) {
 
 function HumanoidModel() {
     this.args = [
+        'body',
         'left_foot',
         'right_foot', 
         'head', 

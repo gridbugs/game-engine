@@ -334,3 +334,7 @@ WebGLManager.prototype.draw_element_triangles = function(length, offset) {
     var gl = this.gl;
     gl.drawElements(gl.TRIANGLES, length, gl.UNSIGNED_SHORT, offset);
 }
+WebGLManager.prototype.draw_element_lines = function(length, offset) {
+    var gl = this.gl;
+    gl.drawElements(gl.POINTS, length, gl.UNSIGNED_SHORT, offset);
+}

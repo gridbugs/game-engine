@@ -11,7 +11,7 @@ Object.defineProperty(Function.prototype, 'add_method', {
     }
 );
 
-Function.add_method('inherit_from', function(p) {
+Function.add_method('inherits_from', function(p) {
     this.prototype = new p();
     this.prototype.constructor = this;
     return this;
@@ -25,11 +25,7 @@ Function.add_method('arr_args', function() {
 });
 
 Array.arguments_array = function(args) {
-    var arr = new Array(args.length);
-    for (var i = 0;i<args.length;i++) {
-        arr[i] = args[i];
-    }
-    return arr;
+    return Array.prototype.slice.call(args);
 }
 Array.array_or_arguments = function(arg, args) {
     if (arg.constructor == Array) {
@@ -39,10 +35,3 @@ Array.array_or_arguments = function(arg, args) {
     }
 }
 
-Object.add_method('default', function() {
-    for (var len=arguments.length,i=0;i<len;++i) {
-        if (this[i] == undefined) {
-            this[i] = arguments[i];
-        }
-    }
-});

@@ -1,11 +1,9 @@
-function WalkDemo(initial, ctx) {
-    Animation.prototype.init.call(this, initial, ctx);
+function WalkDemo(drawer) {
+    Animation.call(this, drawer);
 }
-WalkDemo.prototype = new Animation();
-WalkDemo.prototype.constructor = WalkDemo;
+WalkDemo.inherits_from(Animation);
 
-WalkDemo.init = Animation.init;
-WalkDemo.init.run = function(then) {
+WalkDemo.prototype.run = function(then) {
     new ImageLoader('images/', [
             'shoe.png', 
             'lower_leg.png', 
@@ -19,21 +17,23 @@ WalkDemo.init.run = function(then) {
             'upper_arm.png',
             'lower_arm.png'
     ]).run(function(images) {
+        var drawer = this.drawer;
 
-        var shoe_img = new ImageClosure(images[0], [-10, -30], [15, 40]);
-        var lower_leg_img = new ImageClosure(images[1], [-5, -45], [10, 50]);
-        var knee_img = new ImageClosure(images[2], [-10, -10], [20, 20]);
-        var upper_leg_img = new ImageClosure(images[3], [-5, -60], [10, 60]);
-        var body_img = new ImageClosure(images[4], [-30, -30], [60, 60]);
-        var head_img = new ImageClosure(images[5], [-30, -30], [60, 60]);
-        var shoulder_img = new ImageClosure(images[6], [-10, -10], [20, 20]);
-        var elbow_img = new ImageClosure(images[7], [-5, -5], [10, 10]);
-        var hand_img = new ImageClosure(images[8], [-5, -5], [10, 10]);
-        var upper_arm_img = new ImageClosure(images[9], [-5, -40], [10, 40]);
-        var lower_arm_img = new ImageClosure(images[10], [-5, -40], [10, 40]);
+        var shoe_img = drawer.image(images[0], [-10, -30], [15, 40]);
+        var lower_leg_img = drawer.image(images[1], [-5, -45], [10, 50]);
+        var knee_img = drawer.image(images[2], [-10, -10], [20, 20]);
+        var upper_leg_img = drawer.image(images[3], [-5, -60], [10, 60]);
+        var body_img = drawer.image(images[4], [-30, -30], [60, 60]);
+        var head_img = drawer.image(images[5], [-30, -30], [60, 60]);
+        var shoulder_img = drawer.image(images[6], [-10, -10], [20, 20]);
+        var elbow_img = drawer.image(images[7], [-5, -5], [10, 10]);
+        var hand_img = drawer.image(images[8], [-5, -5], [10, 10]);
+        var upper_arm_img = drawer.image(images[9], [-5, -40], [10, 40]);
+        var lower_arm_img = drawer.image(images[10], [-5, -40], [10, 40]);
 
         function walk() {
 
+            var body = new BodyPart(SV(body_img));
             var left_foot = new BodyPart(SV(shoe_img), IV([0, [0, -30]], [100, [0, 0]], [400, [0, 30]], [700, [0, 0]], [800, [0, -30]]));
             var right_foot = left_foot.flip_x().clone_with_offset(400);
 
@@ -71,6 +71,7 @@ WalkDemo.init.run = function(then) {
             var right_hand = left_hand.clone_with_offset(400);
 
             return new HumanoidModel(
+                body,
                 left_foot, 
                 right_foot, 
                 head, 
@@ -88,6 +89,7 @@ WalkDemo.init.run = function(then) {
         }
 
         function still() {
+            var body = new BodyPart(SV(body_img));
             var left_foot = new BodyPart(SV(shoe_img), CV(0, 0));
             var right_foot = left_foot.flip_x();
             var head = new BodyPart(SV(head_img));
@@ -107,6 +109,7 @@ WalkDemo.init.run = function(then) {
             var right_hand = left_hand.clone_with_offset(4);
             
             return new HumanoidModel(
+                body,
                 left_foot, 
                 right_foot, 
                 head, 
@@ -123,39 +126,50 @@ WalkDemo.init.run = function(then) {
             ).to_seq();
         }
 
-        WalkDemo.seqs = {
+        this.seqs = {
             still: still(),
             walk: walk()
         };
 
-        WalkDemo.sequence_manager = function(initial_seq) {
+        this.sequence_manager = function(initial_seq) {
             return new SequenceManager(initial_seq);
         }
 
-        WalkDemo.scene_graph = function(m) {
-            
-            var left_upper_arm = m.g('left_elbow_t').connect(SV(upper_arm_img));
-            var left_lower_arm = m.g('left_hand_t').connect(SV(lower_arm_img));
-            var right_upper_arm = m.g('right_elbow_t').connect(SV(upper_arm_img));
-            var right_lower_arm = m.g('right_hand_t').connect(SV(lower_arm_img));
-            var left_upper_leg = m.g('left_knee_t').connect(SV(upper_leg_img));
-            var left_lower_leg = m.g('left_foot_t').connect(SV(lower_leg_img));
-            var right_upper_leg = m.g('right_knee_t').connect(SV(upper_leg_img));
-            var right_lower_leg = m.g('right_foot_t').connect(SV(lower_leg_img));
-
-            return SGRoot('body', SV(body_img),
-                [ // before
-                    SG('left_hip', m, [SG('left_upper_leg', left_upper_leg), SG('left_knee', m, [SG('left_foot', m), SG('left_lower_leg', left_lower_leg)])]),
-                    SG('right_hip', m, [SG('right_upper_leg', right_upper_leg), SG('right_knee', m, [SG('right_foot', m), SG('right_lower_leg', right_lower_leg)])])
+        this.scene_graph = function(drawer, m) {
+            return new SceneGraph(drawer, m, 'body', [
+                'left_hip', [
+                    {connect_to: 'left_knee', with: upper_leg_img},
+                    'left_knee', [
+                        'left_foot',
+                        {connect_to: 'left_foot', with: lower_leg_img}
+                    ]
                 ],
-                [ // after
-                    SG('head', m), 
-                    SG('left_shoulder', m, [SG('left_uppper_arm', left_upper_arm), SG('left_elbow', m, [SG('left_lower_arm', left_lower_arm), SG('left_hand', m)])]),
-                    SG('right_shoulder', m, [SG('right_upper_arm', right_upper_arm), SG('right_elbow', m, [SG('right_lower_arm', right_lower_arm), SG('right_hand', m)])])
+                'right_hip', [
+                    {connect_to: 'right_knee', with: upper_leg_img},
+                    'right_knee', [
+                        'right_foot',
+                        {connect_to: 'right_foot', with: lower_leg_img}
+                    ]
                 ]
-            );
+            ], [
+                'head',
+                'left_shoulder', [
+                    {connect_to: 'left_elbow', with: upper_arm_img},
+                    'left_elbow', [
+                        {connect_to: 'left_hand', with: lower_arm_img},
+                        'left_hand'
+                    ],
+                ],
+                'right_shoulder', [
+                    {connect_to: 'right_elbow', with: upper_arm_img},
+                    'right_elbow', [
+                        {connect_to: 'right_hand', with: lower_arm_img},
+                        'right_hand'
+                    ]
+                ]
+            ]);
         }
 
-        then();
-    })
+        then(this);
+    }.bind(this))
 }
