@@ -160,10 +160,15 @@ WebGLManager.AbstractBuffer.prototype.init = function(data, gl) {
     this.buffer = gl.createBuffer();
     this.gl = gl;
 }
+WebGLManager.AbstractBuffer.prototype.add = function(arr) {
+    for (var i = 0;i!=arr.length;++i) {
+        this.data.push(arr[i]);
+    }
+}
 
 
 WebGLManager.ArrayBuffer = function(data, datum_size, gl) {
-    WebGLManager.AbstractBuffer.prototype.init.call(this, data, gl);
+    this.init(data, gl);
     this.datum_size = datum_size;
 }
 WebGLManager.ArrayBuffer.prototype = new WebGLManager.AbstractBuffer();
@@ -262,7 +267,7 @@ WebGLManager.Framebuffer.prototype.texture = function(texture) {
     return this;
 }
 
-WebGLManager.Slice = function(length, offset, gl) {
+WebGLManager.Slice = function(offset, length, gl) {
     this.length = length;
     this.offset = offset;
     this.gl = gl;
@@ -272,8 +277,8 @@ WebGLManager.Slice.prototype.draw_triangles = function() {
     gl.drawElements(gl.TRIANGLES, this.length, gl.UNSIGNED_SHORT, this.offset);
 }
 
-WebGLManager.prototype.slice = function(length, offset) {
-    return new WebGLManager.Slice(length, offset, this.gl);
+WebGLManager.prototype.slice = function(offset, length) {
+    return new WebGLManager.Slice(offset, length, this.gl);
 }
 
 WebGLManager.prototype.texture = function(a, b) {
