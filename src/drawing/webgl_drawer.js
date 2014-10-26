@@ -260,3 +260,75 @@ WebGLDrawer.Capture.prototype.draw = function() {
 
     this.after_draw();
 }
+
+WebGLDrawer.Circle = function(position, radius, colour, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+    if (!WebGLDrawer.Circle.initialized) {
+        WebGLDrawer.Circle.init_class();
+    }
+
+    this.position = position;
+    this.radius = radius;
+    this.colour = colour || [0,0,0,1];
+    
+    drawer.index_buffer.add(this.plus_v_offset(WebGLDrawer.Circle.indices));
+
+    var points = WebGLDrawer.Circle.points.slice();
+    for (var i = 0,len=points.length/2;i!=len;++i) {
+        var idx = i*2;
+        var pt = [points[idx], points[idx+1]].v2_smult(radius).v2_add(position);
+        drawer.vertex_buffer.add(pt);
+    }
+
+    drawer.texture_buffer.add(points.map(function(){return 0}));
+
+    this.slice = drawer.glm.slice(this.i_offset, WebGLDrawer.Circle.indices.length)
+
+}
+WebGLDrawer.Circle.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.Circle.init_class = function() {
+    var angle_between = Math.PI*2/WebGLDrawer.Circle.num_points;
+    WebGLDrawer.Circle.points = [0, 0];
+    var angle = 0;
+    for (var i = 0;i!=WebGLDrawer.Circle.num_points;++i) {
+        WebGLDrawer.Circle.points.push(Math.cos(angle));
+        WebGLDrawer.Circle.points.push(Math.sin(angle));
+
+        angle += angle_between;
+    }
+
+    WebGLDrawer.Circle.indices = [];
+    for (var i = 1;i!=WebGLDrawer.Circle.num_points;++i) {
+        WebGLDrawer.Circle.indices.push(0); // centre
+        WebGLDrawer.Circle.indices.push(i);
+        WebGLDrawer.Circle.indices.push(i+1);
+    }
+    
+    WebGLDrawer.Circle.indices.push(0); // centre
+    WebGLDrawer.Circle.indices.push(WebGLDrawer.Circle.num_points);
+    WebGLDrawer.Circle.indices.push(1);
+
+
+
+    WebGLDrawer.Circle.initialized = true;
+}
+WebGLDrawer.Circle.num_points = 36;
+WebGLDrawer.Circle.initialized = false;
+WebGLDrawer.Circle.points = null;
+WebGLDrawer.Circle.indices = null;
+
+WebGLDrawer.prototype.circle = function(position, radius, colour, transform) {
+    return new WebGLDrawer.Circle(position, radius, colour, transform, this);
+}
+
+WebGLDrawer.Circle.prototype.draw = function() {
+    var drawer = this.before_draw();
+
+    drawer.u_colour.set(this.colour);
+    drawer.no_texture();
+
+    this.slice.draw_triangles();
+
+    this.after_draw();
+}
