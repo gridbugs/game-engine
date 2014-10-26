@@ -21,6 +21,12 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_point_size = this.shader_program.uniform1f('u_point_size');
     this.u_flip_y = this.shader_program.uniform1f('u_flip_y');
 
+    this.u_pixelate = this.shader_program.uniform1i('u_pixelate');
+    this.u_pixel_size = this.shader_program.uniform1i('u_pixel_size');
+
+    this.u_blur = this.shader_program.uniform1i('u_blur');
+    this.u_blur_radius = this.shader_program.uniform1i('u_blur_radius');
+
     this.u_flip_y.set(-1);
 }
 
@@ -237,6 +243,7 @@ WebGLDrawer.Capture.prototype.begin = function() {
     this.framebuffer.bind();
     this.texture.bind();
     this.drawer.u_flip_y.set(1);
+    this.drawer.glm.clear();
 }
 
 WebGLDrawer.Capture.prototype.end = function() {

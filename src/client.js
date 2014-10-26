@@ -46,7 +46,6 @@ $(function() {
 
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
 
-
         drawer.sync_buffers();
         
         agent.facing = -Math.PI/2;
@@ -68,6 +67,8 @@ $(function() {
             }
             
             capture.begin();
+
+            drawer.remove_filters();
             demo.draw(agent.pos, agent.facing + Math.PI/2);
             walls.map(function(w){w.draw()});
             capture.end();
