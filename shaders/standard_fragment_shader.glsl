@@ -41,7 +41,7 @@ void main() {
                     if (_j >= u_blur_radius) {
                         break;
                     }
-                    sum += texture2D(u_image, v_tex_coord + vec2(_i, _j)*pixel_size);
+                    sum += texture2D(u_image, (screen_coord + vec2(_i, _j))*pixel_size );
                 }
             }
             gl_FragColor = sum/float(u_blur_radius*u_blur_radius*4);
