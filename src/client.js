@@ -44,14 +44,11 @@ $(function() {
         var demo = walk_demo.instance('still');
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 2)});
 
+        var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+
+
         drawer.sync_buffers();
         
-        drawer.save();
-        drawer.translate([100, 100]);
-        demo.draw();
-        drawer.restore();
-        //console.debug(demo);
-
         agent.facing = -Math.PI/2;
         agent.move_speed = 8;
         var state = 1;
@@ -69,10 +66,15 @@ $(function() {
                 state = 0;
                 demo.update('still');
             }
- 
+            
+            capture.begin();
             demo.draw(agent.pos, agent.facing + Math.PI/2);
-            demo.tick(tm.get_delta());
             walls.map(function(w){w.draw()});
+            capture.end();
+
+            capture.draw();
+            
+            demo.tick(tm.get_delta());
             
             requestAnimationFrame(t);
         }

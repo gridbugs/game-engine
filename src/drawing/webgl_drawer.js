@@ -19,6 +19,9 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_has_texture = this.shader_program.uniform1i('u_has_texture');
     this.u_line_width = this.shader_program.uniform1f('u_line_width');
     this.u_point_size = this.shader_program.uniform1f('u_point_size');
+    this.u_flip_y = this.shader_program.uniform1f('u_flip_y');
+
+    this.u_flip_y.set(-1);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -201,4 +204,52 @@ WebGLDrawer.LineSegment.prototype.draw = function() {
 
 WebGLDrawer.prototype.line_segment = function(start, end, width, colour, transform) {
     return new WebGLDrawer.LineSegment(start, end, width, colour, transform, this);
+}
+
+WebGLDrawer.Capture = function(top_left, size, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+    
+    drawer.index_buffer.add(this.plus_v_offset(WebGLDrawer.Rect.indices));
+    
+    drawer.vertex_buffer.add([
+        top_left[0], top_left[1],
+        top_left[0] + size[0], top_left[1],
+        top_left[0] + size[0], top_left[1] + size[1],
+        top_left[0], top_left[1] + size[1],
+    ]);
+
+    drawer.texture_buffer.add([0,0,1,0,1,1,0,1]);
+    
+    this.size = size;
+    this.slice = drawer.glm.slice(this.i_offset, 6);
+    this.texture = drawer.glm.texture(size[0], size[1]);
+    this.framebuffer = drawer.glm.framebuffer().bind().texture(this.texture);
+
+    this.framebuffer.unbind();
+}
+WebGLDrawer.Capture.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.prototype.capture = function(top_left, size, transform) {
+    return new WebGLDrawer.Capture(top_left, size, transform, this);
+}
+
+WebGLDrawer.Capture.prototype.begin = function() {
+    this.framebuffer.bind();
+    this.texture.bind();
+    this.drawer.u_flip_y.set(1);
+}
+
+WebGLDrawer.Capture.prototype.end = function() {
+    this.drawer.u_flip_y.set(-1);
+    this.framebuffer.unbind();
+}
+
+WebGLDrawer.Capture.prototype.draw = function() {
+    var drawer = this.before_draw();
+
+    drawer.use_texture(this.size[0], this.size[1]);
+    this.texture.bind();
+    this.slice.draw_triangles();
+
+    this.after_draw();
 }
