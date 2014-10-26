@@ -1,3 +1,4 @@
+var body_img;
 function WalkDemo(drawer) {
     Animation.call(this, drawer);
 }
@@ -23,13 +24,14 @@ WalkDemo.prototype.run = function(then) {
         var lower_leg_img = drawer.image(images[1], [-5, -45], [10, 50]);
         var knee_img = drawer.image(images[2], [-10, -10], [20, 20]);
         var upper_leg_img = drawer.image(images[3], [-5, -60], [10, 60]);
-        var body_img = drawer.image(images[4], [-30, -30], [60, 60]);
+        body_img = drawer.image(images[4], [-30, -30], [60, 60]);
         var head_img = drawer.image(images[5], [-30, -30], [60, 60]);
         var shoulder_img = drawer.image(images[6], [-10, -10], [20, 20]);
         var elbow_img = drawer.image(images[7], [-5, -5], [10, 10]);
         var hand_img = drawer.image(images[8], [-5, -5], [10, 10]);
         var upper_arm_img = drawer.image(images[9], [-5, -40], [10, 40]);
         var lower_arm_img = drawer.image(images[10], [-5, -40], [10, 40]);
+
 
         function walk() {
 

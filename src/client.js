@@ -29,24 +29,36 @@ $(function() {
     canvas.width = $(window).width();
     canvas.height = $(window).height();
    
-    var drawer = new CanvasDrawer(canvas);
+    var drawer = new WebGLDrawer(canvas);
 
     new AsyncGroup(
-        new WalkDemo(drawer)
-    ).run(function(characters) {
-        var walk_demo = characters[0];
+        new WalkDemo(drawer),
+        new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl'])
+    ).run(function(walk_demo, shaders) {
+        
+        drawer.standard_shaders(shaders[0], shaders[1]);
+        drawer.init_uniforms();
+        drawer.update_resolution();
+
 
         var demo = walk_demo.instance('still');
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 2)});
 
+        drawer.sync_buffers();
+        
+        drawer.save();
+        drawer.translate([100, 100]);
         demo.draw();
-        console.debug(demo);
+        drawer.restore();
+        //console.debug(demo);
 
         agent.facing = -Math.PI/2;
         agent.move_speed = 8;
         var state = 1;
         var fps_box = $("#fps");
         var tm = new TimeManager();
+        
+        
         function t() {
             drawer.clear();
 
@@ -72,5 +84,5 @@ $(function() {
         }
         fps_t();
 
-    });
+    }.arr_args());
 });

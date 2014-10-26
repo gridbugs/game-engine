@@ -17,6 +17,8 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_model_view = this.shader_program.uniformMatrix3fv('u_model_view');
     this.u_tex_size = this.shader_program.uniform2fv('u_tex_size');
     this.u_has_texture = this.shader_program.uniform1i('u_has_texture');
+    this.u_line_width = this.shader_program.uniform1f('u_line_width');
+    this.u_point_size = this.shader_program.uniform1f('u_point_size');
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -57,6 +59,8 @@ WebGLDrawer.Drawable = function(transform, drawer) {
 
     // halved since each point is represented by 2 values
     this.v_offset = drawer.vertex_buffer.data.length/2;
+
+    // doubled since this is measured in bytes and each element is 2 bytes
     this.i_offset = drawer.index_buffer.data.length*2;
     Transformable.call(this, transform);
 }
@@ -68,6 +72,7 @@ WebGLDrawer.Drawable.prototype.before_draw = function() {
     var mv_transform = drawer.mv_transform;
     mat3.multiply(mv_transform, mv_transform, this.mv_transform);
     drawer.u_model_view.set(mv_transform);
+    drawer.index_buffer.bind();
     return drawer;
 }
 
@@ -107,7 +112,6 @@ WebGLDrawer.Rect.prototype.draw = function() {
     drawer.u_colour.set(this.colour);
     drawer.no_texture();
 
-    drawer.index_buffer.bind();
     this.slice.draw_triangles();
 
     this.after_draw();
@@ -136,25 +140,65 @@ WebGLDrawer.Image = function(image, position, size, clip_start, clip_size, trans
         position[0], position[1] + size[1],
     ]);
     
-    drawer.texture_buffer.add(WebGLDrawer.Image.texture_coords);
+    clip_start = this.clip_start;
+    clip_size = this.clip_size;
+    var clip_top_left = [clip_start[0]/image.width, clip_start[1]/image.height];
+    var clip_bottom_right = [(clip_start[0]+clip_size[0])/image.width, (clip_start[1]+clip_size[1])/image.height];
+    drawer.texture_buffer.add([
+        clip_top_left[0], clip_top_left[1],
+        clip_bottom_right[0], clip_top_left[1],
+        clip_bottom_right[0], clip_bottom_right[1],
+        clip_top_left[0], clip_bottom_right[1]
+    ]);
 
     this.texture = drawer.glm.texture(image);
 
     this.slice = drawer.glm.slice(this.i_offset, 6);
 }
 WebGLDrawer.Image.inherits_from(WebGLDrawer.Drawable);
-WebGLDrawer.Image.texture_coords = [0,0,1,0,1,1,0,1];
 
 WebGLDrawer.Image.prototype.draw = function() {
     var drawer = this.before_draw();
  
     drawer.use_texture(this.image.width, this.image.height);
-
-    drawer.index_buffer.bind();
+    this.texture.bind();
     this.slice.draw_triangles();
 
     this.after_draw();
 }
 WebGLDrawer.prototype.image = function(image, position, size, clip_start, clip_size, transform) {
     return new WebGLDrawer.Image(image, position, size, clip_start, clip_size, transform, this);
+}
+
+WebGLDrawer.LineSegment = function(start, end, width, colour, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+    this.start = start;
+    this.end = end;
+    this.width = width != undefined ? width : 1;
+    this.colour = colour != undefined ? colour : [0,0,0,1];
+
+    drawer.index_buffer.add(this.plus_v_offset([0, 1]));
+    drawer.vertex_buffer.add([
+        start[0], start[1],
+        end[0], end [1]
+    ]);
+    drawer.texture_buffer.add([0,0,0,0]);
+
+    this.slice = drawer.glm.slice(this.i_offset, 2);
+}
+WebGLDrawer.LineSegment.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.LineSegment.prototype.draw = function() {
+    var drawer = this.before_draw();
+    drawer.no_texture();
+    drawer.u_line_width.set(this.width);
+    drawer.u_colour.set(this.colour);
+
+    this.slice.draw_lines();
+
+    this.after_draw();
+}
+
+WebGLDrawer.prototype.line_segment = function(start, end, width, colour, transform) {
+    return new WebGLDrawer.LineSegment(start, end, width, colour, transform, this);
 }
