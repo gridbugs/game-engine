@@ -4,7 +4,7 @@ function Agent(pos, facing) {
     this.move_speed = 10;
     this.turn_speed = Math.PI/12;
     this.colour = "black";
-    this.rad = 50;
+    this.rad = 200;
 }
 
 Agent.prototype.set_segs = function(segs) {
@@ -72,6 +72,16 @@ Agent.prototype.absolute_control_tick = function() {
     this.pos = this.collision_processor.process_collision(this.pos, dest);
 
     return true;
+}
+
+Agent.prototype.test = function() {
+    var vec = [0, 0];
+    vec = vec.v2_add([1, 0]);
+    vec = vec.v2_unit();
+    this.facing = vec.v2_angle();
+
+    var dest = this.pos.v2_add(vec.v2_smult(this.move_speed));
+    this.pos = this.collision_processor.process_collision(this.pos, dest);
 }
 
 Agent.prototype.turn_towards = function(pt) {

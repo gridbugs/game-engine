@@ -1,4 +1,5 @@
 var game_console;
+var agent;
 $(function() {
     game_console = new Console(
         document.getElementById("console-input"),
@@ -14,9 +15,11 @@ $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
 
-    var agent = new Agent([200, 200], 0);
+    agent = new Agent([200, 200], 0);
 
     var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
+    segs = [[[300, 100], [400, 400]]];
+    segs = [[[600, 400], [300, 100]]];
     agent.set_segs(segs);
     
     var canvas = document.getElementById('screen');
@@ -72,7 +75,7 @@ $(function() {
             drawer.remove_filters();
             drawer.save();
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
-            circle.draw();
+            circle.outline();
 //            demo.draw();
             drawer.restore();
             walls.map(function(w){w.draw()});

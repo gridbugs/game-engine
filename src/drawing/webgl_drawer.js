@@ -350,7 +350,7 @@ WebGLDrawer.Circle.prototype.outline = function() {
     drawer.u_colour.set(this.colour);
     drawer.no_texture();
     
-    this.outline_slice.draw_line_strip(width);
+    this.outline_slice.draw_line_strip();
 
     this.after_draw();
 }
