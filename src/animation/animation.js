@@ -12,8 +12,11 @@ Animation.Instance = function(animation, initial) {
 Animation.Instance.prototype.tick = function(time_delta) {
     this.sm.tick(time_delta);
 }
-Animation.Instance.prototype.draw = function(translate, rotate, scale) {
+Animation.Instance.prototype.draw_at = function(translate, rotate, scale) {
     this.sg.draw_at(translate, rotate, scale);
+}
+Animation.Instance.prototype.draw = function() {
+    this.sg.draw();
 }
 Animation.Instance.prototype.update = function(seq_name, duration, offset) {
     this.sm.update(this.animation.seqs[seq_name], duration, offset);

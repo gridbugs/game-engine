@@ -29,7 +29,8 @@ $(function() {
     canvas.width = $(window).width();
     canvas.height = $(window).height();
    
-    var drawer = new WebGLDrawer(canvas);
+    var drawer = new CanvasDrawer(canvas);
+//    var drawer = new WebGLDrawer(canvas);
 
     new AsyncGroup(
         new WalkDemo(drawer),
@@ -42,9 +43,10 @@ $(function() {
 
 
         var demo = walk_demo.instance('still');
-        var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 2)});
+        var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.75]);
 
         drawer.sync_buffers();
         
@@ -53,7 +55,6 @@ $(function() {
         var state = 1;
         var fps_box = $("#fps");
         var tm = new TimeManager();
-        
         
         function t() {
             drawer.clear();
@@ -69,7 +70,11 @@ $(function() {
             capture.begin();
 
             drawer.remove_filters();
-            demo.draw(agent.pos, agent.facing + Math.PI/2);
+            drawer.save();
+            drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
+            circle.draw();
+//            demo.draw();
+            drawer.restore();
             walls.map(function(w){w.draw()});
             capture.end();
 

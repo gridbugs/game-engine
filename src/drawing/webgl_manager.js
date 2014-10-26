@@ -280,6 +280,10 @@ WebGLManager.Slice.prototype.draw_lines = function() {
     var gl = this.gl;
     gl.drawElements(gl.LINES, this.length, gl.UNSIGNED_SHORT, this.offset);
 }
+WebGLManager.Slice.prototype.draw_line_strip = function() {
+    var gl = this.gl;
+    gl.drawElements(gl.LINE_STRIP, this.length, gl.UNSIGNED_SHORT, this.offset);
+}
 
 WebGLManager.prototype.slice = function(offset, length) {
     return new WebGLManager.Slice(offset, length, this.gl);

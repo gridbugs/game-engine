@@ -148,6 +148,15 @@ CanvasDrawer.Circle.prototype.draw = function() {
     ctx.fill();
     this.after_draw();
 }
+CanvasDrawer.Circle.prototype.outline = function() {
+    var ctx = this.before_draw();
+    ctx.beginPath();
+    ctx.strokeStyle = this.colour;
+    ctx.arc(this.position[0], this.position[1], this.radius, 0, Math.PI*2);
+    ctx.stroke();
+    this.after_draw();
+   
+}
 
 
 CanvasDrawer.prototype.circle = function(position, radius, colour, transform) {
@@ -158,7 +167,7 @@ CanvasDrawer.Sequence = function(points, width, colour, transform, drawer) {
     this.drawer = drawer;
     this.ctx = drawer.ctx;
     this.points = points;
-    this.width = width != undefined ? width : 2;
+    this.width = width != undefined ? width : 1;
     this.colour = CanvasDrawer.convert_colour(colour);
     CanvasDrawer.Drawable.call(this, transform);
 }
@@ -180,3 +189,18 @@ CanvasDrawer.Sequence.prototype.draw = function() {
 CanvasDrawer.prototype.sequence = function(points, width, colour, transform) {
     return new CanvasDrawer.Sequence(points, width, colour, transform, this);
 }
+
+/* dummy methods so the interface matches that of WebGLDrawer */
+CanvasDrawer.Capture = function(){}
+CanvasDrawer.Capture.inherits_from(CanvasDrawer.Drawable);
+CanvasDrawer.prototype.capture = function(){return new CanvasDrawer.Capture()}
+CanvasDrawer.Capture.prototype.begin = function(){}
+CanvasDrawer.Capture.prototype.end = function(){}
+CanvasDrawer.Capture.prototype.draw = function(){}
+CanvasDrawer.prototype.remove_filters = function(){}
+CanvasDrawer.prototype.pixelate_filter = function(){}
+CanvasDrawer.prototype.blur_filter = function(){}
+CanvasDrawer.prototype.standard_shaders = function(){}
+CanvasDrawer.prototype.init_uniforms = function(){}
+CanvasDrawer.prototype.update_resolution = function(){}
+CanvasDrawer.prototype.sync_buffers = function(){}

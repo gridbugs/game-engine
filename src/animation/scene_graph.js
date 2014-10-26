@@ -88,6 +88,10 @@ SceneGraph.Node.prototype.draw = function() {
     drawer.restore();
 }
 
+SceneGraph.prototype.draw = function() {
+    this.root.draw();
+}
+
 SceneGraph.prototype.draw_at = function(translate, rotate, scale) {
     var drawer = this.drawer;
     drawer.save();
