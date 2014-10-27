@@ -58,7 +58,13 @@ $(function() {
         var demo = walk_demo.instance('still');
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
-        var capture = drawer.capture_pair([0, 0], [canvas.width, canvas.height]);
+        var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters(
+            drawer.blur_filter(2),
+            drawer.pixelate_filter(6, 0.2),
+            drawer.blur_filter(1)
+        );
+
+        
         var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         drawer.sync_buffers();
@@ -82,7 +88,7 @@ $(function() {
                 demo.update('still');
             }
             
-            capture.begin();
+            filterer.begin();
 
             drawer.remove_filters();
             drawer.save();
@@ -92,24 +98,7 @@ $(function() {
             drawer.restore();
             walls.map(function(w){w.draw()});
             
-            capture.swap();
-
-            drawer.blur_filter(2);
-            capture.draw();
-
-            capture.swap();
-
-            drawer.remove_filters();
-            drawer.pixelate_filter(6, 0.2);
-            
-            capture.draw();
-
-            capture.end();
-            
-            drawer.remove_filters();
-            drawer.blur_filter(1);
-            capture.capturing.draw();
-
+            filterer.draw();
 
             drawer.sync_gpu();
             

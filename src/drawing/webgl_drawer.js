@@ -288,16 +288,21 @@ WebGLDrawer.CapturePair.prototype.begin = function() {
     this.capturing.begin();
 }
 
-WebGLDrawer.CapturePair.prototype.swap = function() {
-    this.capturing.end();
+WebGLDrawer.CapturePair.prototype.do_swap = function() {
     var tmp = this.capturing;
     this.capturing = this.drawing;
     this.drawing = tmp;
+}
+
+WebGLDrawer.CapturePair.prototype.swap = function() {
+    this.capturing.end();
+    this.do_swap();
     this.capturing.begin();
 }
 
 WebGLDrawer.CapturePair.prototype.end = function() {
     this.capturing.end();
+    this.do_swap();
 }
 WebGLDrawer.prototype.capture_pair = function(top_left, size, transform) {
     return new WebGLDrawer.CapturePair(top_left, size, transform, this);
