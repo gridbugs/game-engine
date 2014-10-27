@@ -1,4 +1,5 @@
 var game_console;
+var agent;
 $(function() {
     game_console = new Console(
         document.getElementById("console-input"),
@@ -23,7 +24,7 @@ $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
 
-    var agent = new Agent([200, 200], 0);
+    agent = new Agent([200, 200], 0);
 
     var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
     agent.set_segs(segs);

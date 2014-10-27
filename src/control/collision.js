@@ -98,8 +98,8 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
      // if the destination is closer to the segment end closest to the destination than the radius
     if (end.v2_dist(closest_end) <= this.rad) {
 
-        if (angle_through(start, closest_end, furthest_end) >= Math.PI/2 &&
-            angle_through(furthest_end, closest_end, start) >= Math.PI/2) {
+        if (angle_through(end, closest_end, furthest_end) >= Math.PI/2 &&
+            angle_through(furthest_end, closest_end, end) >= Math.PI/2) {
             
             // line through closest end and destination
             var move_line = [closest_end, end].seg_to_line();
