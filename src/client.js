@@ -58,8 +58,7 @@ $(function() {
         var demo = walk_demo.instance('still');
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
-        var capture1 = drawer.capture([0, 0], [canvas.width, canvas.height]);
-        var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var capture = drawer.capture_pair([0, 0], [canvas.width, canvas.height]);
         var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         drawer.sync_buffers();
@@ -83,26 +82,34 @@ $(function() {
                 demo.update('still');
             }
             
-            capture1.begin();
+            capture.begin();
 
             drawer.remove_filters();
             drawer.save();
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
-            //circle.draw();
+            circle.draw();
             demo.draw();
             drawer.restore();
-            capture1.end();
+            walls.map(function(w){w.draw()});
+            
+            capture.swap();
 
             drawer.blur_filter(2);
-            capture2.begin();
-            capture1.draw();
-            capture2.end();
+            capture.draw();
+
+            capture.swap();
 
             drawer.remove_filters();
             drawer.pixelate_filter(6, 0.2);
-            capture2.draw();
+            
+            capture.draw();
 
-            walls.map(function(w){w.draw()});
+            capture.end();
+            
+            drawer.remove_filters();
+            drawer.blur_filter(1);
+            capture.capturing.draw();
+
 
             drawer.sync_gpu();
             

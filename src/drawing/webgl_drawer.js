@@ -275,6 +275,34 @@ WebGLDrawer.Capture.prototype.draw = function() {
     this.after_draw();
 }
 
+WebGLDrawer.CapturePair = function(top_left, size, transform, drawer) {
+    this.drawing = drawer.capture(top_left, size, transform);
+    this.capturing = drawer.capture(top_left, size, transform);
+}
+
+WebGLDrawer.CapturePair.prototype.draw = function() {
+    this.drawing.draw();
+}
+
+WebGLDrawer.CapturePair.prototype.begin = function() {
+    this.capturing.begin();
+}
+
+WebGLDrawer.CapturePair.prototype.swap = function() {
+    this.capturing.end();
+    var tmp = this.capturing;
+    this.capturing = this.drawing;
+    this.drawing = tmp;
+    this.capturing.begin();
+}
+
+WebGLDrawer.CapturePair.prototype.end = function() {
+    this.capturing.end();
+}
+WebGLDrawer.prototype.capture_pair = function(top_left, size, transform) {
+    return new WebGLDrawer.CapturePair(top_left, size, transform, this);
+}
+
 WebGLDrawer.Circle = function(position, radius, colour, transform, drawer) {
     WebGLDrawer.Drawable.call(this, transform, drawer);
     if (!WebGLDrawer.Circle.initialized) {
