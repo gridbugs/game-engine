@@ -29,7 +29,7 @@ Agent.prototype.draw = function() {
     cu.line_at_angle(this.pos, this.facing, this.rad);
 }
 
-Agent.prototype.control_tick = function() {
+Agent.prototype.control_tick = function(time_delta) {
     this.turn_to_face(Input.get_mouse_pos());
     var angle;
 
@@ -51,7 +51,7 @@ Agent.prototype.control_tick = function() {
     return true;
 }
 
-Agent.prototype.absolute_control_tick = function() {
+Agent.prototype.absolute_control_tick = function(time_delta) {
     var vec = [0, 0];
     
     if (Input.is_down("w,")) {
@@ -72,7 +72,7 @@ Agent.prototype.absolute_control_tick = function() {
     vec = vec.v2_unit();
     this.facing = vec.v2_angle();
 
-    var dest = this.pos.v2_add(vec.v2_smult(this.move_speed));
+    var dest = this.pos.v2_add(vec.v2_smult(this.move_speed*time_delta/1000));
     this.pos = this.collision_processor.process_collision(this.pos, dest);
 
     return true;

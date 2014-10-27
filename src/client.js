@@ -54,15 +54,10 @@ $(function() {
         drawer.init_uniforms();
         drawer.update_resolution();
 
-
         var demo = walk_demo.instance('still');
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
-        var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters(
-            drawer.blur_filter(2),
-            drawer.pixelate_filter(6, 0.2),
-            drawer.blur_filter(1)
-        );
+        var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
 
         
         var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
@@ -70,7 +65,7 @@ $(function() {
         drawer.sync_buffers();
         
         agent.facing = -Math.PI/2;
-        agent.move_speed = 8;
+        agent.move_speed = 400;
         var state = 1;
         var tm = new TimeManager();
         
@@ -78,12 +73,13 @@ $(function() {
             fps_stats.begin();
             ms_stats.begin();
             
+            var time_delta = tm.get_delta();
             drawer.clear();
 
-            if (state == 0 && agent.control_tick()) {
+            if (state == 0 && agent.absolute_control_tick(time_delta)) {
                 state = 1;
                 demo.update('walk', 100, -100);
-            } else if (state == 1 && !agent.control_tick()) {
+            } else if (state == 1 && !agent.absolute_control_tick(time_delta)) {
                 state = 0;
                 demo.update('still');
             }
@@ -102,7 +98,7 @@ $(function() {
 
             drawer.sync_gpu();
             
-            demo.tick(tm.get_delta());
+            demo.tick(time_delta);
             
             requestAnimationFrame(t);
 

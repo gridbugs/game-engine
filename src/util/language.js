@@ -28,6 +28,9 @@ Array.arguments_array = function(args) {
     return Array.prototype.slice.call(args);
 }
 Array.array_or_arguments = function(arg, args) {
+    if (arg == undefined) {
+        return [];
+    }
     if (arg.constructor == Array) {
         return arg;
     } else {

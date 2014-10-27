@@ -21,6 +21,11 @@ WebGLDrawer.FilterPipeline.prototype.begin = function() {
 
 WebGLDrawer.FilterPipeline.prototype.draw = function() {
     var filters = this.filters;
+    if (filters == undefined || filters.length == 0) {
+        this.capture_pair.end();
+        this.capture_pair.draw();
+        return;
+    }
     // loop over all but the last filter
     for (var i = 0,len=this.num_filters;i<len-1;i++) {
         this.capture_pair.swap();
