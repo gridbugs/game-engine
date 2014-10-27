@@ -204,3 +204,4 @@ CanvasDrawer.prototype.standard_shaders = function(){}
 CanvasDrawer.prototype.init_uniforms = function(){}
 CanvasDrawer.prototype.update_resolution = function(){}
 CanvasDrawer.prototype.sync_buffers = function(){}
+CanvasDrawer.prototype.sync_gpu = function(){}

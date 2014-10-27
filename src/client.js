@@ -12,6 +12,7 @@ $(function() {
     var fps_stats = new Stats();
     fps_stats.setMode(0);
     fps_stats.domElement.style.position = 'relative';
+    fps_stats.domElement.style.float = 'left';
     document.getElementById('info-overlay').appendChild(fps_stats.domElement);
     var ms_stats = new Stats();
     ms_stats.setMode(1);
@@ -57,7 +58,7 @@ $(function() {
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
-        var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.75]);
+        var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         drawer.sync_buffers();
         
@@ -73,7 +74,6 @@ $(function() {
         function t() {
             fps_stats.begin();
             ms_stats.begin();
-            var start_frame = Date.now();
             
             drawer.clear();
 
@@ -90,33 +90,24 @@ $(function() {
             drawer.remove_filters();
             drawer.save();
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
-//            circle.draw();
+            circle.draw();
             demo.draw();
             drawer.restore();
             walls.map(function(w){w.draw()});
             capture.end();
 
             capture.draw();
+
+            drawer.sync_gpu();
             
             demo.tick(tm.get_delta());
             
-            
             requestAnimationFrame(t);
 
-            var end_frame = Date.now();
-            cpu_delta = end_frame - start_frame;
             fps_stats.end();
             ms_stats.end();
         }
         t();
-
-        function fps_t() {
-            fps_box.text("FPS: " + Math.floor(tm.last_rate));
-            frame_time_box.text("Frame Time (MS): " + Math.floor(1000/tm.last_rate));
-            cpu_time_box.text("CPU Time (MS): " + (cpu_delta));
-            setTimeout(fps_t, 100);
-        }
-        fps_t();
 
     }.arr_args());
 });

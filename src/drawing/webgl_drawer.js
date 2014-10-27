@@ -11,6 +11,19 @@ function WebGLDrawer(canvas, stack_size) {
 }
 WebGLDrawer.inherits_from(TransformStack);
 
+/*
+ * Sync the cpu to the gpu
+ */
+WebGLDrawer.prototype.sync_gpu = function() {
+    /* read one pixel value from the screen into an array,
+     * forcing the cpu to wait until the gpu has drawn the
+     * image before proceeding
+     */
+    var gl = this.glm.gl;
+    var pixels = new Uint8Array(4);
+    gl.readPixels( 0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+}
+
 WebGLDrawer.prototype.init_uniforms = function() {
     this.u_resolution = this.shader_program.uniform2fv('u_resolution');
     this.u_colour = this.shader_program.uniform4fv('u_colour');
