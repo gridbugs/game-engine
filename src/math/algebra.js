@@ -183,10 +183,13 @@ Array.add_method('seg_perpendicular_bisector_line', function() {
 
 Array.add_method('line_intersection', function(l) {
     var r = this[0].v2_sub(l[0]);
-    var matrix = [l[1][0], this[1][0], l[1][1], this[1][1]];
+    var matrix = [
+        -this[1][0], -this[1][1],
+        l[1][0], l[1][1]
+    ];
     mat2.invert(matrix, matrix); // invert the matrix in place
     mat2.multiply(r, matrix, r); // reuse r as the output
-    return l[0].v2_add(l[1].v2_smult(r[0]));
+    return this[0].v2_add(this[1].v2_smult(r[0]));
 });
 
 Array.add_method('seg_length', function() {
@@ -251,6 +254,9 @@ var degrees_to_radians = function(d) {
 }
 var dtor = degrees_to_radians;
 
+/*
+ * Returns the anticlockwise angle between a->b->c
+ */
 var angle_through = function(a, b, c) {
     var a_shift = a.v2_sub(b);
     var c_shift = c.v2_sub(b);
