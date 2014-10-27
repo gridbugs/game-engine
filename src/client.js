@@ -1,5 +1,6 @@
 var game_console;
 var agent;
+var cu;
 $(function() {
     game_console = new Console(
         document.getElementById("console-input"),
@@ -33,6 +34,9 @@ $(function() {
     canvas.height = $(window).height();
    
     var drawer = new CanvasDrawer(canvas);
+    cu = new CanvasUtil();
+    cu.canvas = canvas;
+    cu.ctx = drawer.ctx;
 //    var drawer = new WebGLDrawer(canvas);
 
     new AsyncGroup(
@@ -71,7 +75,6 @@ $(function() {
             }
             
             capture.begin();
-
             drawer.remove_filters();
             drawer.save();
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);

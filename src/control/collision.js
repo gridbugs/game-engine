@@ -7,8 +7,8 @@ function CollisionProcessor(rad, segs) {
 }
 
 CollisionProcessor.prototype.process_collision = function(start, end, to_ignore, slide) {
-    slide = d(slide, true);
-    to_ignore = d(to_ignore, []);
+    slide = slide != undefined ? slide : true;
+    to_ignore = to_ignore != undefined ? to_ignore : [];
 
     var valid_segs = this.segs.filter(function(s){return !to_ignore[s.id]});
     if (valid_segs.length == 0) {
@@ -18,6 +18,7 @@ CollisionProcessor.prototype.process_collision = function(start, end, to_ignore,
         return this.find_collision_path(start, end, s, slide);
     }.bind(this));
 
+//    console.debug(collisions[0].toString());
 
     var idx = collisions.most_idx(function(path) {
         if (path._overlap) {
@@ -53,24 +54,35 @@ CollisionProcessor.prototype.get_collision_path_length = function(path) {
  * at start would stop on its way to being centred at end by colliding with seg */
 CollisionProcessor.prototype.find_collision_path = function(start, end, seg, slide) {
     // find closest point on seg's line to end
-    var closest_to_end = seg.seg_closest_pt_to_v(end);
-    var closest_to_start = seg.seg_closest_pt_to_v(start);
+    var closest_to_end = seg.seg_closest_pt_to_v(end); // closest point on line in line with seg to destination
 
-    var start_overlap_vector = start.v2_sub(closest_to_start);
-    var start_offset = start_overlap_vector.v2_to_length(this.rad);
-
+    // closest point on line in line with seg to destination
+    var closest_to_start = seg.seg_closest_pt_to_v(start); 
+    
+    // vector from closest_to_start to start
+    var start_overlap_vector = start.v2_sub(closest_to_start); 
+    
+    // start_overlap_vector scaled to the radius of the collision processor
+    var start_offset = start_overlap_vector.v2_to_length(this.rad); 
+    
     var seg_half_length = seg.seg_length()/2;
     var mid = seg.seg_mid();
+
+    // end of the segment closest to destination
     var closest_end = mid.v2_add(closest_to_end.v2_sub(mid).v2_to_length(seg_half_length));
 
+    // if the closest point to the start and end are both in the line segment
     if (seg.seg_contains_v2_on_line(closest_to_end) && seg.seg_contains_v2_on_line(closest_to_start)) {
         
-        if (start.v2_dist(closest_to_start) <= this.rad) {// && seg.seg_contains_v2_on_line(closest_to_start)) {
-            // path starts as sliding start until it's not overlapping
+        // if the circle as it was at the start overlaps the segment
+        if (start.v2_dist(closest_to_start) <= this.rad) {
+            // start by moving away from the segment until no longer overlapping
             var path = [start, start.v2_add(start_overlap_vector)]
+
+            // this is used for bookkeeping later on
             path._overlap = true;
-            
-            if ((end.v2_dist(closest_to_end) <= this.rad) //&& seg.seg_contains_v2_on_line(closest_to_end))
+
+            if ((end.v2_dist(closest_to_end) <= this.rad)
                || [start, end].seg_intersects(seg)
             ) {
                 var slide_centre = closest_to_end.v2_add(start_offset);
@@ -79,13 +91,12 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
                 // slide the start so it's no longer overlapping and take path to end
                 path.push(end);
             }
-            
             return path;
         }
     
     }
 
-
+    // if the destination is closer to the segment end closest to the destination that the radius
     if (end.v2_dist(closest_end) <= this.rad) {
         var move_line = [closest_end, end].seg_to_line();
         var candidates = move_line.line_circle_intersections([closest_end, this.rad]);
@@ -100,6 +111,8 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     // point on start that will eventually intersect seg
     var pt_will_collide = [start, this.rad].circ_closest_pt_to_seg(seg);
 
+    cu.draw_point(pt_will_collide, 'blue');
+
     // vector from start to end
     var move_v = end.v2_sub(start);
 
@@ -111,6 +124,13 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     
     // point in line with seg at which an edge collision may occur
     var intersection_pt = collide_line.line_intersection(seg.seg_to_line());
+
+    console.debug(seg.seg_to_line().toString());
+    console.debug(collide_line.toString());
+    console.debug(intersection_pt.toString());
+    console.debug("---");
+    cu.draw_point(intersection_pt, 'red');
+
     // boolean value true if edge collision has occured
     var edge_collision = seg.seg_contains_v2_on_line(intersection_pt);
 
