@@ -191,12 +191,14 @@ CanvasDrawer.prototype.sequence = function(points, width, colour, transform) {
 }
 
 /* dummy methods so the interface matches that of WebGLDrawer */
-CanvasDrawer.Capture = function(){}
-CanvasDrawer.Capture.inherits_from(CanvasDrawer.Drawable);
-CanvasDrawer.prototype.capture = function(){return new CanvasDrawer.Capture()}
-CanvasDrawer.Capture.prototype.begin = function(){}
-CanvasDrawer.Capture.prototype.end = function(){}
-CanvasDrawer.Capture.prototype.draw = function(){}
+CanvasDrawer.Dummy = function(){}
+CanvasDrawer.Dummy.inherits_from(CanvasDrawer.Drawable);
+
+CanvasDrawer.prototype.capture = function(){return new CanvasDrawer.Dummy()}
+CanvasDrawer.Dummy.prototype.begin = function(){}
+CanvasDrawer.Dummy.prototype.end = function(){}
+CanvasDrawer.Dummy.prototype.set_filters = function(){return this}
+CanvasDrawer.Dummy.prototype.draw = function(){}
 CanvasDrawer.prototype.remove_filters = function(){}
 CanvasDrawer.prototype.pixelate_filter = function(){}
 CanvasDrawer.prototype.blur_filter = function(){}
@@ -205,3 +207,4 @@ CanvasDrawer.prototype.init_uniforms = function(){}
 CanvasDrawer.prototype.update_resolution = function(){}
 CanvasDrawer.prototype.sync_buffers = function(){}
 CanvasDrawer.prototype.sync_gpu = function(){}
+CanvasDrawer.prototype.filter_pipeline = function(){return new CanvasDrawer.Dummy()}
