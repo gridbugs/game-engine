@@ -58,7 +58,8 @@ $(function() {
         var demo = walk_demo.instance('still');
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
-        var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var capture1 = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         drawer.sync_buffers();
@@ -66,10 +67,6 @@ $(function() {
         agent.facing = -Math.PI/2;
         agent.move_speed = 8;
         var state = 1;
-        var fps_box = $("#fps");
-        var frame_time_box = $("#frame_time");
-        var cpu_time_box = $("#cpu_time");
-        var cpu_delta = 0;
         var tm = new TimeManager();
         
         function t() {
@@ -78,26 +75,34 @@ $(function() {
             
             drawer.clear();
 
-            if (state == 0 && agent.absolute_control_tick()) {
+            if (state == 0 && agent.control_tick()) {
                 state = 1;
                 demo.update('walk', 100, -100);
-            } else if (state == 1 && !agent.absolute_control_tick()) {
+            } else if (state == 1 && !agent.control_tick()) {
                 state = 0;
                 demo.update('still');
             }
             
-            capture.begin();
+            capture1.begin();
 
             drawer.remove_filters();
             drawer.save();
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
-            circle.draw();
+            //circle.draw();
             demo.draw();
             drawer.restore();
-            walls.map(function(w){w.draw()});
-            capture.end();
+            capture1.end();
 
-            capture.draw();
+            drawer.blur_filter(2);
+            capture2.begin();
+            capture1.draw();
+            capture2.end();
+
+            drawer.remove_filters();
+            drawer.pixelate_filter(6, 0.2);
+            capture2.draw();
+
+            walls.map(function(w){w.draw()});
 
             drawer.sync_gpu();
             

@@ -36,6 +36,7 @@ WebGLDrawer.prototype.init_uniforms = function() {
 
     this.u_pixelate = this.shader_program.uniform1i('u_pixelate');
     this.u_pixel_size = this.shader_program.uniform1i('u_pixel_size');
+    this.u_pixel_fade = this.shader_program.uniform1f('u_pixel_fade');
 
     this.u_blur = this.shader_program.uniform1i('u_blur');
     this.u_blur_radius = this.shader_program.uniform1i('u_blur_radius');

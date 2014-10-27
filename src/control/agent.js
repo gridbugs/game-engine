@@ -18,7 +18,11 @@ Agent.set_controlled_agent = function(agent) {
     });
 }
 Agent.prototype.turn_to_face = function(pt) {
-    this.facing = this.pos.v2_angle_between(Input.mouse_pos);
+//    this.facing = this.pos.v2_angle_between(Input.mouse_pos);
+    var start = this.pos;
+    var end = Input.get_mouse_pos();
+    var between = end.v2_sub(start);
+    this.facing = Math.atan2(between[1], between[0]);
 }
 Agent.prototype.draw = function() { 
     cu.circle(this.pos, this.rad, false, this.colour);
