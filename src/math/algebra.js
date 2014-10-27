@@ -254,6 +254,9 @@ var degrees_to_radians = function(d) {
 }
 var dtor = degrees_to_radians;
 
+/*
+ * Returns the anticlockwise angle between a->b->c
+ */
 var angle_through = function(a, b, c) {
     var a_shift = a.v2_sub(b);
     var c_shift = c.v2_sub(b);

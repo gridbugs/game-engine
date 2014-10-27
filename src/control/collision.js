@@ -18,8 +18,6 @@ CollisionProcessor.prototype.process_collision = function(start, end, to_ignore,
         return this.find_collision_path(start, end, s, slide);
     }.bind(this));
 
-//    console.debug(collisions[0].toString());
-
     var idx = collisions.most_idx(function(path) {
         if (path._overlap) {
             return 1;
@@ -70,6 +68,7 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
 
     // end of the segment closest to destination
     var closest_end = mid.v2_add(closest_to_end.v2_sub(mid).v2_to_length(seg_half_length));
+    var furthest_end = closest_end.v2_equals(seg[0]) ? seg[1] : seg[0];
 
     // if the closest point to the start and end are both in the line segment
     if (seg.seg_contains_v2_on_line(closest_to_end) && seg.seg_contains_v2_on_line(closest_to_start)) {
@@ -96,22 +95,28 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     
     }
 
-    // if the destination is closer to the segment end closest to the destination that the radius
+     // if the destination is closer to the segment end closest to the destination than the radius
     if (end.v2_dist(closest_end) <= this.rad) {
-        var move_line = [closest_end, end].seg_to_line();
-        var candidates = move_line.line_circle_intersections([closest_end, this.rad]);
-        var dest_mid = candidates.most(function(pt){return -pt.v2_dist(end)})
-        return [start, dest_mid];
+
+        if (angle_through(start, closest_end, furthest_end) >= Math.PI/2 &&
+            angle_through(furthest_end, closest_end, start) >= Math.PI/2) {
+            
+            // line through closest end and destination
+            var move_line = [closest_end, end].seg_to_line();
+
+            var candidates = move_line.line_circle_intersections([closest_end, this.rad]);
+            var dest_mid = candidates.most(function(pt){return -pt.v2_dist(end)})
+            return [start, dest_mid];
+        }
     }
-    
+   
     if (start.v2_dist(closest_end) <= this.rad) {
         return [start, end];
     }
 
+
     // point on start that will eventually intersect seg
     var pt_will_collide = [start, this.rad].circ_closest_pt_to_seg(seg);
-
-    cu.draw_point(pt_will_collide, 'blue');
 
     // vector from start to end
     var move_v = end.v2_sub(start);
@@ -125,15 +130,8 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     // point in line with seg at which an edge collision may occur
     var intersection_pt = collide_line.line_intersection(seg.seg_to_line());
 
-    console.debug(seg.seg_to_line().toString());
-    console.debug(collide_line.toString());
-    console.debug(intersection_pt.toString());
-    console.debug("---");
-    cu.draw_point(intersection_pt, 'red');
-
     // boolean value true if edge collision has occured
     var edge_collision = seg.seg_contains_v2_on_line(intersection_pt);
-
     // vector from pt_will_collide to centre of start
     var offset = start.v2_sub(pt_will_collide);
     var candidates = [];
@@ -180,16 +178,7 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     }
 
     var slide_centre = closest_to_end.v2_add(offset);
-
-    if (seg.seg_contains_v2_on_line(closest_to_end)) {
-        moves.push(slide_centre);
-    } else {
-        var slide_vector = slide_centre.v2_sub(stop_centre);
-        var scaled_to_half_seg = slide_vector.v2_to_length(seg.seg_length()/2 + this.rad);
-        var closest_end = seg.seg_mid().v2_add(scaled_to_half_seg);
-        moves.push(seg.seg_mid().v2_add(scaled_to_half_seg).v2_add(offset));
-    }
-
+    moves.push(slide_centre);
     return moves;
 }
 
