@@ -1,3 +1,4 @@
+var drawer;
 var game_console;
 var agent;
 $(function() {
@@ -38,28 +39,30 @@ $(function() {
 
     canvas.width = $(window).width();
     canvas.height = $(window).height();
-    var drawer;
     if (window.location.hash == '#canvas') {
         drawer = new CanvasDrawer(canvas);
     } else {
         drawer = new WebGLDrawer(canvas);
     }
 
+    var walk_demo = new WalkDemo().set_drawer(drawer);
+    Content.load();
+    Content.set_drawer(drawer);
+
     new AsyncGroup(
-        new WalkDemo(drawer),
-        new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl'])
-    ).run(function(walk_demo, shaders) {
+        new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
+        Content
+    ).run(function(shaders) {
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
         drawer.update_resolution();
 
-        var demo = walk_demo.instance('still');
+        var demo = Content.characters.walk_demo.instance('still');
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
 
-        
         var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         drawer.sync_buffers();

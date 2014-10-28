@@ -33,11 +33,11 @@ SceneGraph.parse = function(drawer, m, arr) {
             nodes.push(SceneGraph.Node.from_sequence(drawer, m, element, before_nodes, after_nodes));
         } else if (element.constructor == Object) {
             var connect_idx = element.connect_to;
-            var connect_img = element.with;
-            if (connect_img.constructor == String) {
-                connect_img = m.g(connect_img+'_i');
-            } else if (!connect_img.get_value_discrete) {
-                connect_img = CI(connect_img);
+            var connect_img;// = element.with;
+            if (element.with_seq) {
+                connect_img = m.g(element.with_seq+'_i');
+            } else if (element.with_img) {
+                connect_img = CI(element.with_img);
             }
             var body_part = m.g(connect_idx+'_t').connect(connect_img);
             nodes.push(SceneGraph.Node.from_body_part(drawer, body_part, [], []));
