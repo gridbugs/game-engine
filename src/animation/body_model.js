@@ -11,11 +11,12 @@ BodyPart.prototype.r = function() {return this.rotate}
 BodyPart.prototype.s = function() {return this.scale}
 
 BodyPart.prototype.flip_x = function() {
+    console.debug(this.image);
     return new BodyPart(
-        this.image,
+        this.image == undefined ? undefined : this.image.flip_x(),
         this.translate.flip_x(),
-        this.rotate.flip_x(),
-        this.scale.flip_x()
+        this.rotate,//.flip_x(),
+        this.scale//.flip_x()
     );
 }
 
@@ -27,16 +28,6 @@ BodyPart.prototype.clone_with_offset = function(offset) {
         this.scale.clone_with_offset(offset)
     );
 }
-
-BodyPart.prototype.connect = function(image) {
-    return new BodyPart(
-        image,
-        CV(0, 0),
-        new RotateReference(this.translate),
-        new ScaleReference(this.translate, image.get_value().size[1])
-    );
-}
-
 
 BodyPart.prototype.to_seq = function(name) {
     var o = {};

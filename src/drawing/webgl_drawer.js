@@ -189,6 +189,9 @@ WebGLDrawer.Image.prototype.draw = function() {
 
     this.after_draw();
 }
+WebGLDrawer.Image.prototype.clone = function() {
+    return new WebGLDrawer.Image(this.image, this.position, this.size, this.clip_start, this.clip_size, this.clone_transform(), this.drawer);
+}
 WebGLDrawer.prototype.image = function(image, position, size, clip_start, clip_size, transform) {
     return new WebGLDrawer.Image(image, position, size, clip_start, clip_size, transform, this);
 }

@@ -35,7 +35,7 @@ SceneGraph.parse = function(drawer, m, arr) {
             var connect_idx = element.connect_to;
             var connect_img = element.with;
             if (!connect_img.get_value_discrete) {
-                connect_img = SV(connect_img);
+                connect_img = CI(connect_img);
             }
             var body_part = m.g(connect_idx+'_t').connect(connect_img);
             nodes.push(SceneGraph.Node.from_body_part(drawer, body_part, [], []));

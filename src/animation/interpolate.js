@@ -7,6 +7,9 @@ function VectorWrapper(v) {
 function AngleWrapper(v) {
     this.v = v;
 }
+function ImageWrapper(v) {
+    this.v = v;
+}
 VectorWrapper.prototype.toString = function() {
     return "#"+this.v.toString();
 }
@@ -62,6 +65,7 @@ AngleWrapper.prototype.val = function() {
 AngleWrapper.prototype.flip_x = function() {
     return new AngleWrapper(-this.v);
 }
+
 VectorWrapper.from_arr = function(arr) {
     return arr.map(function(x){return new VectorWrapper(x)});
 }
@@ -84,10 +88,24 @@ VectorWrapper.prototype.val = function() {
 VectorWrapper.prototype.flip_x = function() {
     return new VectorWrapper([-this.v[0], this.v[1]]);
 }
+
+ImageWrapper.prototype.flip_x = function() {
+    return new ImageWrapper(this.v.clone().scale([-1, 1]));
+}
+ImageWrapper.prototype.val = function() {
+    return this.v;
+}
+
 ScalarWrapper.prototype.val = function() {
     return this.v;
 }
 
+
+/*
+ * A SimpleValue exposes the same interface
+ * as an interpolator, though its value never changes.
+ * It contains an unwrapped value.
+ */
 function SimpleValue(v, a) {
     if (a != undefined) {
         v = [v, a];
@@ -110,6 +128,10 @@ function SV(v, a) {
     return new SimpleValue(v, a);
 }
 
+/*
+ * A ConstantValue exposes the same interface as an Interpolator,
+ * though its value never changes. It contains a wrapped value.
+ */
 function ConstantValue(v) {
     this.v = v;
 }
@@ -117,6 +139,9 @@ ConstantValue.prototype.interpolate = function() {
     return this.v;
 }
 ConstantValue.prototype.get_value = function() {
+    return this.v.val();
+}
+ConstantValue.prototype.get_value_discrete = function() {
     return this.v.val();
 }
 ConstantValue.prototype.flip_x = function() {
@@ -168,6 +193,9 @@ function CS(v) {
 }
 function CA(v) {
     return new ConstantValue(new AngleWrapper(v));
+}
+function CI(v) {
+    return new ConstantValue(new ImageWrapper(v));
 }
 
 function Interpolator(seq) {
@@ -328,6 +356,13 @@ SequenceInterpolator.prototype.connect = function(image) {
     );
 }
 
+/*
+ * A device for managing a collection of sequences.
+ * It consists of a hash mapping sequence interpolator names
+ * to sequence interpolators.
+ * It facilitates the switching of multiple interplotars
+ * at once.
+ */
 function SequenceManager(model) {
     this.seqs = {};
     for (var name in model) {
@@ -337,43 +372,57 @@ function SequenceManager(model) {
     }
 }
 
+// returns the sequence interpolator associated with a given name
 SequenceManager.prototype.g = function(name) {
     return this.seqs[name];
 }
 
+/* updates all the sequence interpolators using a model, represented
+ * by a js object with keys the same as the keys of the sequence manager
+ * and values interpolators to switch the associated sequence interpolaor to.
+ */
 SequenceManager.prototype.update = function(model, duration, offset) {
     for (var name in this.seqs) {
         this.seqs[name].switch_to(model[name], duration, offset);
     }
 }
 
+// calls the tick method of all the sequence interpolators
 SequenceManager.prototype.tick = function(time_delta) {
     for (var name in this.seqs) {
         this.seqs[name].tick(time_delta);
     }
 }
 
-
-function TransformReference(si) {
-    this.si = si;
-}
-
+/*
+ * A reference to a sequence interpolator of vectors.
+ * This class implements the interpolator interface.
+ * It has an associated length.
+ * Its value is a vector with 1 as the x component,
+ * and a y component that will scale something of
+ * the associated length to end at current vector
+ * of the associated sequence interpolator.
+ */
 function ScaleReference(si, length) {
-    TransformReference.call(this, si);
+    this.si = si;
     this.length = length;
 }
-ScaleReference.prototype = new TransformReference();
-ScaleReference.prototype.constructor = ScaleReference;
 
 ScaleReference.prototype.get_value = function() {
     var v = this.si.get_value();
     return [1, v.v2_len()/this.length];
 }
+
+/*
+ * A reference to a sequence interpolator of vectors.
+ * This class implements the interpolator interface.
+ * Its value is an angle in radians that will rotate
+ * something to face the vector which is the current
+ * value of the associated sequence interpolator.
+ */
 function RotateReference(si) {
-    TransformReference.call(this, si);
+    this.si = si;
 }
-RotateReference.prototype = new TransformReference();
-RotateReference.prototype.constructor = RotateReference;
 RotateReference.prototype.get_value = function() {
     var v = this.si.get_value();
     return Math.PI/2-[v[0], -v[1]].v2_angle();

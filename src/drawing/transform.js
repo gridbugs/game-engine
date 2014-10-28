@@ -27,6 +27,11 @@ Transformable.prototype.transform = function(t) {
     mat3.multiply(transform, transform, t);
     return this;
 }
+Transformable.prototype.clone_transform = function() {
+    var t = mat3.create();
+    mat3.copy(t, this.mv_transform);
+    return t;
+}
 
 function TransformStack(stack_size) {
     stack_size = stack_size != undefined ? stack_size : 32;
