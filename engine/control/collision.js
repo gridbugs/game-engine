@@ -76,7 +76,8 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
         // if the circle as it was at the start overlaps the segment
         if (start.v2_dist(closest_to_start) <= this.rad) {
             // start by moving away from the segment until no longer overlapping
-            var path = [start, start.v2_add(start_overlap_vector)]
+            var moved_away = closest_to_start.v2_add(start_overlap_vector)
+            var path = [start, moved_away];
 
             // this is used for bookkeeping later on
             path._overlap = true;

@@ -32,7 +32,7 @@ $(function() {
 
     //console.debug(room1.polygon_to_segments().concat(room2.polygon_to_segments()));
 
-    var segs = [[[100, 100], [500, 100]], [[100, 100], [100, 500]]];
+    var segs = [[[100, 100], [500, 0]], [[100, 100], [100, 500]]];
     agent.set_segs(segs);
     
     var canvas = document.getElementById('screen');
