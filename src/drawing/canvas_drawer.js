@@ -72,6 +72,10 @@ CanvasDrawer.Image.prototype.draw = function() {
     ctx.restore();
 }
 
+CanvasDrawer.Image.prototype.clone = function() {
+    return new CanvasDrawer.Image(this.image, this.position, this.size, this.clip_start, this.clip_size, this.clone_transform(), this.drawer);
+}
+
 CanvasDrawer.prototype.rect = function(top_left, size, colour, transform) {
     return new CanvasDrawer.Rect(top_left, size, colour, transform, this);
 }
