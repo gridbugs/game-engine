@@ -27,9 +27,12 @@ $(function() {
 
     agent = new Agent([200, 200], 0);
 
-    var room1 = [[100, 100], [100, 300], [300, 300], [300, 100]];
+    //var room1 = [[100, 100], [100, 300], [300, 300], [300, 100]];
+    //var room2 = [[300, 100], [300, 300], [600, 300], [600, 100]];
 
-    var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
+    //console.debug(room1.polygon_to_segments().concat(room2.polygon_to_segments()));
+
+    var segs = [[[100, 100], [500, 100]], [[100, 100], [100, 500]]];
     agent.set_segs(segs);
     
     var canvas = document.getElementById('screen');
