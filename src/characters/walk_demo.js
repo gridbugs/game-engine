@@ -15,7 +15,8 @@ WalkDemo.prototype.run = function(then) {
             'elbow.png',
             'hand.png',
             'upper_arm.png',
-            'lower_arm.png'
+            'lower_arm.png',
+            'upper_arm_back.png'
     ]).run(function(images) {
         var drawer = this.drawer;
 
@@ -30,6 +31,7 @@ WalkDemo.prototype.run = function(then) {
         var hand_img = drawer.image(images[8], [-5, -5], [10, 10]);
         var upper_arm_img = drawer.image(images[9], [-5, -40], [10, 40]);
         var lower_arm_img = drawer.image(images[10], [-5, -40], [10, 40]);
+        var upper_arm_back_img = drawer.image(images[11], [-5, -40], [10, 40]);
 
 
         function walk() {
@@ -59,6 +61,11 @@ WalkDemo.prototype.run = function(then) {
             );
             var right_hand = left_hand.flip_x().clone_with_offset(400);
 
+            var left_upper_arm = new BodyPart(
+                ID([0, upper_arm_back_img], [200, upper_arm_img], [600, upper_arm_back_img], [800, upper_arm_back_img])
+            );
+            var right_upper_arm = left_upper_arm.clone_with_offset(400);
+
             return new HumanoidModel(
                 body,
                 left_foot, 
@@ -73,7 +80,9 @@ WalkDemo.prototype.run = function(then) {
                 left_elbow,
                 right_elbow,
                 left_hand,
-                right_hand
+                right_hand,
+                left_upper_arm,
+                right_upper_arm
             ).to_seq();
         }
 
@@ -92,6 +101,8 @@ WalkDemo.prototype.run = function(then) {
             var right_elbow = left_elbow.clone_with_offset(4);
             var left_hand = new BodyPart(CI(hand_img), CV(0, 0));
             var right_hand = left_hand.clone_with_offset(4);
+            var left_upper_arm = new BodyPart(CI(upper_arm_img));
+            var right_upper_arm = left_upper_arm.flip_x();
             
             return new HumanoidModel(
                 body,
@@ -107,7 +118,9 @@ WalkDemo.prototype.run = function(then) {
                 left_elbow,
                 right_elbow,
                 left_hand,
-                right_hand
+                right_hand,
+                left_upper_arm,
+                right_upper_arm
             ).to_seq();
         }
 
@@ -139,14 +152,14 @@ WalkDemo.prototype.run = function(then) {
             ], [
                 'head',
                 'left_shoulder', [
-                    {connect_to: 'left_elbow', with: upper_arm_img},
+                    {connect_to: 'left_elbow', with: 'left_upper_arm'},
                     'left_elbow', [
                         {connect_to: 'left_hand', with: lower_arm_img},
                         'left_hand'
                     ],
                 ],
                 'right_shoulder', [
-                    {connect_to: 'right_elbow', with: upper_arm_img},
+                    {connect_to: 'right_elbow', with: 'right_upper_arm'},
                     'right_elbow', [
                         {connect_to: 'right_hand', with: lower_arm_img},
                         'right_hand'

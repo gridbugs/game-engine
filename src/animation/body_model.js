@@ -11,7 +11,6 @@ BodyPart.prototype.r = function() {return this.rotate}
 BodyPart.prototype.s = function() {return this.scale}
 
 BodyPart.prototype.flip_x = function() {
-    console.debug(this.image);
     return new BodyPart(
         this.image == undefined ? undefined : this.image.flip_x(),
         this.translate.flip_x(),
@@ -22,7 +21,7 @@ BodyPart.prototype.flip_x = function() {
 
 BodyPart.prototype.clone_with_offset = function(offset) {
     return new BodyPart(
-        this.image,
+        this.image == undefined ? undefined : this.image.clone_with_offset_discrete(offset),
         this.translate.clone_with_offset(offset),
         this.rotate.clone_with_offset(offset),
         this.scale.clone_with_offset(offset)
@@ -55,6 +54,8 @@ function HumanoidModel() {
         'right_elbow',
         'left_hand',
         'right_hand',
+        'left_upper_arm',
+        'right_upper_arm'
     ];
 
     for (var i = 0;i<this.args.length;i++) {
@@ -68,7 +69,9 @@ HumanoidModel.prototype.part_seq = function(name) {
 HumanoidModel.prototype.part_seqs = function() {
     var objs = [];
     for (var i = 0;i<arguments.length;i++) {
-        objs.push(this.part_seq(arguments[i]));
+        if (this[arguments[i]]) {
+            objs.push(this.part_seq(arguments[i]));
+        }
     }
     return objs_merge.apply(window, objs);
 }

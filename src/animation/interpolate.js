@@ -150,6 +150,9 @@ ConstantValue.prototype.flip_x = function() {
 ConstantValue.prototype.clone_with_offset = function() {
     return new ConstantValue(this.v);
 }
+ConstantValue.prototype.clone_with_offset_discrete = function() {
+    return new ConstantValue(this.v);
+}
 ConstantValue.prototype.map = function(f) {
     return new ConstantValue(f(this.v));
 }
@@ -214,6 +217,29 @@ Interpolator.prototype.flip_x = function() {
     return new Interpolator(seq);
 }
 
+Interpolator.prototype.clone_with_offset_discrete = function(offset) {
+    var seq = this.seq.map(function(x){return [x[0]+offset, x[1]]});
+    // the index of the last element of the new sequence
+    var end_i = Interpolator.binary_search(this.max_t, seq);
+    var last = seq[end_i];
+
+    var new_tail = seq.slice(0, end_i+1);
+    var new_head = seq.slice(end_i+1, seq.length-1).map(function(x){
+        return [x[0]-this.max_t, x[1]]
+    }.bind(this));
+
+    if (last[0] != this.max_t) {
+        var new_end = new_tail[new_tail.length-1][1];
+        new_tail.push([this.max_t, new_end]);
+    }
+
+
+    new_head.unshift([0, new_tail[new_tail.length-1][1]]);
+
+    return new Interpolator(new_head.concat(new_tail));
+
+
+}
 
 Interpolator.prototype.clone_with_offset = function(offset) {
     var seq = this.seq.map(function(x){return [x[0]+offset, x[1]]});

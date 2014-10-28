@@ -34,7 +34,9 @@ SceneGraph.parse = function(drawer, m, arr) {
         } else if (element.constructor == Object) {
             var connect_idx = element.connect_to;
             var connect_img = element.with;
-            if (!connect_img.get_value_discrete) {
+            if (connect_img.constructor == String) {
+                connect_img = m.g(connect_img+'_i');
+            } else if (!connect_img.get_value_discrete) {
                 connect_img = CI(connect_img);
             }
             var body_part = m.g(connect_idx+'_t').connect(connect_img);
