@@ -404,3 +404,32 @@ WebGLDrawer.Circle.prototype.outline = function() {
 
     this.after_draw();
 }
+
+WebGLDrawer.Sequence = function(points, width, colour, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+
+    this.width = width != undefined ? width : 1;
+    this.colour = colour != undefined ? colour : [0,0,0,1];
+
+    drawer.index_buffer.add(this.plus_v_offset(Array.range(points.length)));
+    for (var i = 0;i<points.length;i++) {
+        drawer.vertex_buffer.add(points[i]);
+        drawer.texture_buffer.add([0, 0]);
+    }
+
+    this.slice = drawer.glm.slice(this.i_offset, points.length);
+}
+WebGLDrawer.Sequence.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.prototype.sequence = function(points, width, colour, transform) {
+    return new WebGLDrawer.Sequence(points, width, colour, transform, this);
+}
+
+WebGLDrawer.Sequence.prototype.draw = function() {
+    var drawer = this.before_draw();
+    drawer.u_colour.set(this.colour);
+    drawer.no_texture();
+
+    this.slice.draw_line_strip();
+    this.after_draw();
+}

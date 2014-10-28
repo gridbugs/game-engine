@@ -5,7 +5,6 @@ Array.add_method('right_half', function() {
     return this.slice(this.length/2, this.length);
 });
 
-
 Array.add_method('most_idx', function(fn, scores) {
     fn=fn||id;
     var most_i = 0;
@@ -123,4 +122,17 @@ Array.add_method('most_over_threshold', function(threshold, mostfn) {
     }
 });
 
-
+Array.range = function(start, end, step) {
+    if (step == undefined) {
+        step = 1;
+    }
+    if (end == undefined) {
+        end = start;
+        start = 0;
+    }
+    var ret = [];
+    for (var i = start;i<end;i+=step) {
+        ret.push(i);
+    }
+    return ret;
+}

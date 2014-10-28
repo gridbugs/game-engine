@@ -27,6 +27,8 @@ $(function() {
 
     agent = new Agent([200, 200], 0);
 
+    var room1 = [[100, 100], [100, 300], [300, 300], [300, 100]];
+
     var segs = [[[100, 100], [200, 400]], [[100, 100], [400, 50]], [[400, 50], [600, 50]]];
     agent.set_segs(segs);
     
@@ -59,6 +61,7 @@ $(function() {
         drawer.update_resolution();
 
         var demo = Content.characters.walk_demo.instance('still');
+
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
@@ -86,7 +89,7 @@ $(function() {
                 state = 0;
                 demo.update('still');
             }
-            
+     
             filterer.begin();
 
             drawer.remove_filters();
@@ -98,7 +101,7 @@ $(function() {
             walls.map(function(w){w.draw()});
             
             filterer.draw();
-
+            
             drawer.sync_gpu();
             
             demo.tick(time_delta);
