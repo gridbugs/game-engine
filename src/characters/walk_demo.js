@@ -62,9 +62,9 @@ WalkDemo.prototype.run = function(then) {
             var right_hand = left_hand.flip_x().clone_with_offset(400);
 
             var left_upper_arm = new BodyPart(
-                ID([0, upper_arm_back_img], [200, upper_arm_img], [600, upper_arm_back_img], [800, upper_arm_back_img])
+                II([0, upper_arm_back_img], [200, upper_arm_img], [600, upper_arm_back_img], [800, upper_arm_back_img])
             );
-            var right_upper_arm = left_upper_arm.clone_with_offset(400);
+            var right_upper_arm = left_upper_arm.flip_x().clone_with_offset(400);
 
             return new HumanoidModel(
                 body,

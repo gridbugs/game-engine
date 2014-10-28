@@ -89,6 +89,9 @@ VectorWrapper.prototype.flip_x = function() {
     return new VectorWrapper([-this.v[0], this.v[1]]);
 }
 
+ImageWrapper.from_seq = function(seq) {
+    return seq.map(function(x){return [x[0], new ImageWrapper(x[1])]});
+}
 ImageWrapper.prototype.flip_x = function() {
     return new ImageWrapper(this.v.clone().scale([-1, 1]));
 }
@@ -184,6 +187,9 @@ function ID() {
         arr[i] = arguments[i];
     }
     return new Interpolator(arr);
+}
+function II() {
+    return new Interpolator(ImageWrapper.from_seq(Array.arguments_array(arguments)));
 }
 function CV(v, a) {
     if (typeof v == 'number') {
@@ -316,7 +322,7 @@ Interpolator.prototype.interpolate = function(t) {
 Interpolator.prototype.get_value_discrete = function(t) {
     t = rem(t, this.max_t);
     var s = this.find_surrounding(t);
-    return s[0][1];
+    return s[0][1].val();
 }
 
 function SequenceInterpolator(interpolator) {
