@@ -1105,6 +1105,7 @@ else if (typeof define === 'function' && define.amd) {
 // Browser: Expose to window
 else {
     window.tinycolor = tinycolor;
+    window.tc = function(c){return tinycolor(c).toGL()};
 }
 
 })();

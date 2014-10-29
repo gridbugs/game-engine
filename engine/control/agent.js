@@ -18,15 +18,10 @@ Agent.set_controlled_agent = function(agent) {
     });
 }
 Agent.prototype.turn_to_face = function(pt) {
-//    this.facing = this.pos.v2_angle_between(Input.mouse_pos);
     var start = this.pos;
     var end = Input.get_mouse_pos();
     var between = end.v2_sub(start);
     this.facing = Math.atan2(between[1], between[0]);
-}
-Agent.prototype.draw = function() { 
-    cu.circle(this.pos, this.rad, false, this.colour);
-    cu.line_at_angle(this.pos, this.facing, this.rad);
 }
 
 Agent.prototype.control_tick = function(time_delta) {
@@ -50,6 +45,7 @@ Agent.prototype.control_tick = function(time_delta) {
 
     return true;
 }
+
 
 Agent.prototype.absolute_control_tick = function(time_delta) {
     var vec = [0, 0];

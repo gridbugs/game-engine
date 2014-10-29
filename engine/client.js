@@ -1,6 +1,10 @@
+var circle;
+var t;
 var drawer;
 var game_console;
 var agent;
+
+
 $(function() {
     game_console = new Console(
         document.getElementById("console-input"),
@@ -53,7 +57,7 @@ $(function() {
     var walk_demo = new WalkDemo().set_drawer(drawer);
     Content.load();
     Content.set_drawer(drawer);
-
+    
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
         Content
@@ -62,6 +66,8 @@ $(function() {
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
         drawer.update_resolution();
+        
+        drawer.sync_buffers();
 
         var demo = Content.characters.walk_demo.instance('still');
 
@@ -69,7 +75,7 @@ $(function() {
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
 
-        var circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
+        circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         drawer.sync_buffers();
         
@@ -79,12 +85,15 @@ $(function() {
         var tm = new TimeManager();
             
         
-        function t() {
+        t = function() {
             fps_stats.begin();
             ms_stats.begin();
             
             var time_delta = tm.get_delta();
             drawer.clear();
+            
+            filterer.begin();
+            drawer.remove_filters();
 
             if (state == 0 && agent.absolute_control_tick(time_delta)) {
                 state = 1;
@@ -94,9 +103,7 @@ $(function() {
                 demo.update('still');
             }
      
-            filterer.begin();
 
-            drawer.remove_filters();
             drawer.save();
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
             circle.draw();
@@ -106,11 +113,6 @@ $(function() {
             
             filterer.draw();
 
-            drawer.draw_point([20, 30], tinycolor('blue').toGL(), 10);
-            drawer.draw_point([40, 30], tinycolor('pink').toGL(), 10);
-            drawer.draw_line_segment([[10, 50], [100, 100]], tinycolor('red').toGL(), 4);
-            drawer.draw_line_segment([[50, 50], [10, 100]], tinycolor('green').toGL(), 4);
-            
             drawer.sync_gpu();
             
             demo.tick(time_delta);

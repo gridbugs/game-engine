@@ -1,6 +1,8 @@
-function WebGLDrawer(canvas, stack_size) {
+function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.canvas = canvas;
-    this.glm = new WebGLManager(canvas).init_2d();
+    this.glm = new WebGLManager(canvas, {
+        preserveDrawingBuffer: preserve_drawing_buffer
+    }).init_2d();
 
     // initialize buffers
     this.vertex_buffer = this.glm.array_buffer(2);

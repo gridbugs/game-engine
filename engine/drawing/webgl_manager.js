@@ -1,9 +1,9 @@
 /*
  * Creates a manager for a given canvas html element
  */
-function WebGLManager(canvas) {
+function WebGLManager(canvas, options) {
     this.canvas = canvas;
-    this.gl = canvas.getContext('webgl');
+    this.gl = canvas.getContext('webgl', options);
 }
 
 /*

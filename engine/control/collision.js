@@ -137,18 +137,16 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     var offset = start.v2_sub(pt_will_collide);
     var candidates = [];
     if (edge_collision) {
-        
         var dest_centre = intersection_pt.v2_add(offset);
         dest_centre._simple = true;
         candidates.push(dest_centre);
     }
 
-    /* closest point to centre of start in line with line through start 
-     * and end of seg in direction of movement */
-    var seg_closest = seg.map(function(s){return [s, move_v].line_closest_pt_to_v(start)});
-
     // check if closest points to centre of start is inside start
-    var close_vertices = seg.filter(function(pt){return [pt, move_v].line_closest_pt_to_v(start).v2_dist(start) <= this.rad}.bind(this));
+    var close_vertices = seg.filter(function(pt){
+        var closest = [pt, move_v].line_closest_pt_to_v(start);
+        return closest.v2_dist(start) < this.rad;
+    }.bind(this));
 
     var vertex_collision_points = close_vertices.map(function(pt){
         var circle_ints = move_line.line_circle_intersections([pt, this.rad]);
