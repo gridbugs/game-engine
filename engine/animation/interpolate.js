@@ -103,34 +103,6 @@ ScalarWrapper.prototype.val = function() {
     return this.v;
 }
 
-
-/*
- * A SimpleValue exposes the same interface
- * as an interpolator, though its value never changes.
- * It contains an unwrapped value.
- */
-function SimpleValue(v, a) {
-    if (a != undefined) {
-        v = [v, a];
-    }
-    this.v = v;
-}
-SimpleValue.prototype.get_value = function() {
-    return this.v;
-}
-SimpleValue.prototype.get_value_discrete = function() {
-    return this.v;
-}
-SimpleValue.prototype.set_value = function(v, a) {
-    if (a != undefined) {
-        v = [v, a];
-    }
-    this.v = v;
-}
-function SV(v, a) {
-    return new SimpleValue(v, a);
-}
-
 /*
  * A ConstantValue exposes the same interface as an Interpolator,
  * though its value never changes. It contains a wrapped value.
@@ -144,129 +116,51 @@ ConstantValue.prototype.interpolate = function() {
 ConstantValue.prototype.get_value = function() {
     return this.v.val();
 }
-ConstantValue.prototype.get_value_discrete = function() {
-    return this.v.val();
-}
 ConstantValue.prototype.flip_x = function() {
-    return new ConstantValue(this.v.flip_x());
+    return new this.constructor(this.v.flip_x());
 }
 ConstantValue.prototype.clone_with_offset = function() {
-    return new ConstantValue(this.v);
-}
-ConstantValue.prototype.clone_with_offset_discrete = function() {
-    return new ConstantValue(this.v);
-}
-ConstantValue.prototype.map = function(f) {
-    return new ConstantValue(f(this.v));
+    return new this.constructor(this.v);
 }
 
-function IA() {
-    var arr = new Array(arguments.length);
-    for (var i = 0;i<arguments.length;i++) {
-        arr[i] = arguments[i];
-    }
-    return new Interpolator(AngleWrapper.from_seq(arr));
+function ContinuousValue(v) {
+    ConstantValue.call(this, v);
 }
-function IV() {
-    var arr = new Array(arguments.length);
-    for (var i = 0;i<arguments.length;i++) {
-        arr[i] = arguments[i];
-    }
-    return new Interpolator(VectorWrapper.from_seq(arr));
+ContinuousValue.inherits_from(ConstantValue);
+
+/*
+ * Returns a wrapper of the interpolated value.
+ * If the number 'num_start' is associated with the wrapped value 'start', 
+ * and the number 'num_end' is associated with the wrapped value 'end',
+ * then this function returns the wrapped value that would be associated with
+ * 'num_current' by linearly interpolating.
+ */
+ContinuousValue.simple_interpolate = function(num_start, num_end, num_current, start, end) {
+    return end.sub(start).smult((num_current - num_start)/(num_end - num_start)).add(start);
 }
-function IS() {
-    var arr = new Array(arguments.length);
-    for (var i = 0;i<arguments.length;i++) {
-        arr[i] = arguments[i];
-    }
-    return new Interpolator(ScalarWrapper.from_seq(arr));
+ContinuousValue.prototype.simple_interpolate = ContinuousValue.simple_interpolate;
+
+function DiscreteValue(v) {
+    ConstantValue.call(this, v);
 }
-function ID() {
-    var arr = new Array(arguments.length);
-    for (var i = 0;i<arguments.length;i++) {
-        arr[i] = arguments[i];
-    }
-    return new Interpolator(arr);
-}
-function II() {
-    return new Interpolator(ImageWrapper.from_seq(Array.arguments_array(arguments)));
-}
-function CV(v, a) {
-    if (typeof v == 'number') {
-        v = [v, a];
-    }
-    return new ConstantValue(new VectorWrapper(v));
-}
-function CS(v) {
-    return new ConstantValue(new ScalarWrapper(v));
-}
-function CA(v) {
-    return new ConstantValue(new AngleWrapper(v));
-}
-function CI(v) {
-    return new ConstantValue(new ImageWrapper(v));
+DiscreteValue.inherits_from(ConstantValue);
+DiscreteValue.prototype.simple_interpolate = function(num_start, num_end, num_current, start, end) {
+    return start;
 }
 
 function Interpolator(seq) {
+    if (seq == undefined) {
+        return;
+    }
     // seq is of the form [[t0, x0], [t1, x1], ..., [tn, x0]]
     this.seq = seq;
     this.length = seq.length;
     this.max_t = this.seq[this.length-1][0];
 }
 
-Interpolator.prototype.map = function(f) {
-    return new Interpolator(this.seq.map(function(x){return [x[0], f(x[1])]}));
-}
-
 Interpolator.prototype.flip_x = function() {
     var seq = this.seq.map(function(x){return [x[0], x[1].flip_x()]});
-    return new Interpolator(seq);
-}
-
-Interpolator.prototype.clone_with_offset_discrete = function(offset) {
-    var seq = this.seq.map(function(x){return [x[0]+offset, x[1]]});
-    // the index of the last element of the new sequence
-    var end_i = Interpolator.binary_search(this.max_t, seq);
-    var last = seq[end_i];
-
-    var new_tail = seq.slice(0, end_i+1);
-    var new_head = seq.slice(end_i+1, seq.length-1).map(function(x){
-        return [x[0]-this.max_t, x[1]]
-    }.bind(this));
-
-    if (last[0] != this.max_t) {
-        var new_end = new_tail[new_tail.length-1][1];
-        new_tail.push([this.max_t, new_end]);
-    }
-
-
-    new_head.unshift([0, new_tail[new_tail.length-1][1]]);
-
-    return new Interpolator(new_head.concat(new_tail));
-
-
-}
-
-Interpolator.prototype.clone_with_offset = function(offset) {
-    var seq = this.seq.map(function(x){return [x[0]+offset, x[1]]});
-    // the index of the last element of the new sequence
-    var end_i = Interpolator.binary_search(this.max_t, seq);
-    var last = seq[end_i];
-
-    var new_tail = seq.slice(0, end_i+1);
-    var new_head = seq.slice(end_i+1, seq.length-1).map(function(x){
-        return [x[0]-this.max_t, x[1]]
-    }.bind(this));
-
-    if (last[0] != this.max_t) {
-        var new_end = this.interpolate(this.max_t - offset);
-        new_tail.push([this.max_t, new_end]);
-    }
-    
-    new_head.unshift([0, new_tail[new_tail.length-1][1]]);
-
-    return new Interpolator(new_head.concat(new_tail));
-
+    return new this.constructor(seq);
 }
 
 Interpolator.binary_search = function(t, seq) {
@@ -296,6 +190,12 @@ Interpolator.binary_search_rec = function(t, seq, lo, hi) {
     }
 }
 
+Interpolator.prototype.interpolate = function(t) {
+    t = rem(t, this.max_t);
+    var s = this.find_surrounding(t);
+    return this.simple_interpolate(s[0][0], s[1][0], t, s[0][1], s[1][1]);
+}
+
 Interpolator.prototype.binary_search = function(t) {
     return Interpolator.binary_search(t, this.seq);
 }
@@ -309,21 +209,66 @@ Interpolator.prototype.find_surrounding = function(t) {
     return Interpolator.find_surrounding(t, this.seq);   
 }
 
-Interpolator.simple_interpolate = function(num_start, num_end, num_current, start, end) {
-    return end.sub(start).smult((num_current - num_start)/(num_end - num_start)).add(start);
+function ContinuousInterpolator(seq) {
+    Interpolator.call(this, seq);
+}
+ContinuousInterpolator.inherits_from(Interpolator);
+
+ContinuousInterpolator.prototype.clone_with_offset = function(offset) {
+    var seq = this.seq.map(function(x){return [x[0]+offset, x[1]]});
+    // the index of the last element of the new sequence
+    var end_i = Interpolator.binary_search(this.max_t, seq);
+    var last = seq[end_i];
+
+    var new_tail = seq.slice(0, end_i+1);
+    var new_head = seq.slice(end_i+1, seq.length-1).map(function(x){
+        return [x[0]-this.max_t, x[1]]
+    }.bind(this));
+
+    if (last[0] != this.max_t) {
+        var new_end = this.interpolate(this.max_t - offset);
+        new_tail.push([this.max_t, new_end]);
+    }
+    
+    new_head.unshift([0, new_tail[new_tail.length-1][1]]);
+
+    return new ContinuousInterpolator(new_head.concat(new_tail));
 }
 
-Interpolator.prototype.interpolate = function(t) {
-    t = rem(t, this.max_t);
-    var s = this.find_surrounding(t);
-    return Interpolator.simple_interpolate(s[0][0], s[1][0], t, s[0][1], s[1][1]);
+ContinuousInterpolator.prototype.simple_interpolate = ContinuousValue.simple_interpolate;
+
+function DiscreteInterpolator(seq) {
+    Interpolator.call(this, seq);
+}
+DiscreteInterpolator.inherits_from(Interpolator);
+
+DiscreteInterpolator.prototype.clone_with_offset = function(offset) {
+    var seq = this.seq.map(function(x){return [x[0]+offset, x[1]]});
+    // the index of the last element of the new sequence
+    var end_i = Interpolator.binary_search(this.max_t, seq);
+    var last = seq[end_i];
+
+    var new_tail = seq.slice(0, end_i+1);
+    var new_head = seq.slice(end_i+1, seq.length-1).map(function(x){
+        return [x[0]-this.max_t, x[1]]
+    }.bind(this));
+
+    if (last[0] != this.max_t) {
+        var new_end = new_tail[new_tail.length-1][1];
+        new_tail.push([this.max_t, new_end]);
+    }
+
+
+    new_head.unshift([0, new_tail[new_tail.length-1][1]]);
+
+    return new DiscreteInterpolator(new_head.concat(new_tail));
 }
 
-Interpolator.prototype.get_value_discrete = function(t) {
-    t = rem(t, this.max_t);
-    var s = this.find_surrounding(t);
-    return s[0][1].val();
+DiscreteInterpolator.prototype.simple_interpolate = 
+function(num_start, num_end, num_current, start, end) {
+    return start;
 }
+
 
 function SequenceInterpolator(interpolator) {
     this.current = interpolator;
@@ -363,7 +308,7 @@ SequenceInterpolator.prototype.get = function() {
     var current_value = this.current.interpolate(this.time);
     if (this.next) {
         var next_value = this.next.interpolate(this.switch_progress + this.switch_offset);
-        return Interpolator.simple_interpolate(
+        return this.current.simple_interpolate(
             0, this.switch_duration, this.switch_progress, current_value, next_value
         );
     } else {
@@ -382,7 +327,7 @@ SequenceInterpolator.prototype.get_value_discrete = function() {
 SequenceInterpolator.prototype.connect = function(image) {
     return new BodyPart(
             image,
-            CV(0, 0),
+            new ContinuousValue(new VectorWrapper([0, 0])),
             new RotateReference(this),
             new ScaleReference(this, image.get_value().size[1])
     );

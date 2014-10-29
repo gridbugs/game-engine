@@ -53,7 +53,7 @@ Character.prototype.body_part_from_description = function(desc, state_name) {
         case String:
             // an image key only - use a constant image with no movement
             return new BodyPart(
-                new ConstantValue(new ImageWrapper(this.image_closures[desc]))
+                new DiscreteValue(new ImageWrapper(this.image_closures[desc]))
             );
         case Object:
             if (desc.copy) {
@@ -72,37 +72,37 @@ Character.prototype.body_part_from_description = function(desc, state_name) {
                 if (desc.image == undefined) {
                     image = null;
                 } else if (desc.image.constructor == String) {
-                    image = new ConstantValue(new ImageWrapper(this.image_closures[desc.image]));
+                    image = new DiscreteValue(new ImageWrapper(this.image_closures[desc.image]));
                 } else if (desc.image.constructor == Array) {
                     var images = desc.image.map(function(x){return [x[0], this.image_closures[x[1]]]}.bind(this));
-                    image = new Interpolator(ImageWrapper.from_seq(images));
+                    image = new DiscreteInterpolator(ImageWrapper.from_seq(images));
                 }
                 
                 var translate;
                 if (desc.translate == undefined) {
                     translate = null;
                 } else if (desc.translate[0].constructor == Array) {
-                    translate = new Interpolator(VectorWrapper.from_seq(desc.translate));
+                    translate = new ContinuousInterpolator(VectorWrapper.from_seq(desc.translate));
                 } else {
-                    translate = new ConstantValue(new VectorWrapper(desc.translate));
+                    translate = new ContinuousValue(new VectorWrapper(desc.translate));
                 }
                 
                 var rotate;
                 if (desc.rotate == undefined) {
                     rotate = null;
                 } else if (desc.rotate.constructor == Array) {
-                    rotate = new Interpolator(AngleWrapper.from_seq(desc.rotate));
+                    rotate = new ContinuousInterpolator(AngleWrapper.from_seq(desc.rotate));
                 } else {
-                    rotate = new ConstantValue(new AngleWrapper(desc.rotate));
+                    rotate = new ContinuousValue(new AngleWrapper(desc.rotate));
                 }
                 
                 var scale;
                 if (desc.scale == undefined) {
                     scale = null;
                 } else if (desc.scale[0].constructor == Array) {
-                    scale = new Interpolator(VectorWrapper.from_seq(desc.scale));
+                    scale = new ContinuousInterpolator(VectorWrapper.from_seq(desc.scale));
                 } else {
-                    scale = new ConstantValue(new VectorWrapper(desc.scale));
+                    scale = new ContinuousValue(new VectorWrapper(desc.scale));
                 }
 
                 return new BodyPart(image, translate, rotate, scale);

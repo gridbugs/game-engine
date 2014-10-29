@@ -1,8 +1,8 @@
 function BodyPart(image, translate, rotate, scale) {
     this.image = image;
-    this.translate = translate || CV(0, 0);
-    this.rotate = rotate || CS(0);
-    this.scale = scale || CV(1, 1);
+    this.translate = translate || new ContinuousValue(new VectorWrapper([0, 0]));
+    this.rotate = rotate || new ContinuousValue(new AngleWrapper(0));
+    this.scale = scale || new ContinuousValue(new VectorWrapper([1, 1]));
 }
 
 BodyPart.prototype.i = function() {return this.image}
@@ -21,7 +21,7 @@ BodyPart.prototype.flip_x = function() {
 
 BodyPart.prototype.clone_with_offset = function(offset) {
     return new BodyPart(
-        this.image == undefined ? undefined : this.image.clone_with_offset_discrete(offset),
+        this.image == undefined ? undefined : this.image.clone_with_offset(offset),
         this.translate.clone_with_offset(offset),
         this.rotate.clone_with_offset(offset),
         this.scale.clone_with_offset(offset)
