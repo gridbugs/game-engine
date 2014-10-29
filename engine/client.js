@@ -77,6 +77,7 @@ $(function() {
         agent.move_speed = 400;
         var state = 1;
         var tm = new TimeManager();
+            
         
         function t() {
             fps_stats.begin();
@@ -104,6 +105,11 @@ $(function() {
             walls.map(function(w){w.draw()});
             
             filterer.draw();
+
+            drawer.draw_point([20, 30], tinycolor('blue').toGL(), 10);
+            drawer.draw_point([40, 30], tinycolor('pink').toGL(), 10);
+            drawer.draw_line_segment([[10, 50], [100, 100]], tinycolor('red').toGL(), 4);
+            drawer.draw_line_segment([[50, 50], [10, 100]], tinycolor('green').toGL(), 4);
             
             drawer.sync_gpu();
             

@@ -33,7 +33,7 @@ SceneGraph.parse = function(drawer, m, arr) {
             nodes.push(SceneGraph.Node.from_sequence(drawer, m, element, before_nodes, after_nodes));
         } else if (element.constructor == Object) {
             var connect_idx = element.connect_to;
-            var connect_img;// = element.with;
+            var connect_img;
             if (element.with_seq) {
                 connect_img = m.g(element.with_seq+'_i');
             } else if (element.with_img) {

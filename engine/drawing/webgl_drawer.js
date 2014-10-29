@@ -7,9 +7,33 @@ function WebGLDrawer(canvas, stack_size) {
     this.index_buffer = this.glm.element_buffer();
     this.texture_buffer = this.glm.array_buffer(2);
 
+    this.dynamic_vertex_buffer = this.glm.array_buffer(2);
+    this.dynamic_index_buffer = this.glm.element_buffer();
+
+    this.init_presets();
+
+    this.line_width_stack = [];
+    this.push_line_width();
+    this.set_line_width(1);
+
     TransformStack.call(this, stack_size);
 }
 WebGLDrawer.inherits_from(TransformStack);
+
+WebGLDrawer.prototype.get_line_width = function() {
+    return this.line_width_stack[this.line_width_stack.length-1];
+}
+WebGLDrawer.prototype.set_line_width = function(width) {
+    this.line_width_stack[this.line_width_stack.length-1] = width;
+    this.glm.line_width(width);
+}
+WebGLDrawer.prototype.push_line_width = function() {
+    this.line_width_stack.push(this.get_line_width());
+}
+WebGLDrawer.prototype.pop_line_width = function() {
+    this.line_width_stack.pop();
+    this.glm.line_width(this.get_line_width());
+}
 
 /*
  * Sync the cpu to the gpu
@@ -40,6 +64,8 @@ WebGLDrawer.prototype.init_uniforms = function() {
 
     this.u_blur = this.shader_program.uniform1i('u_blur');
     this.u_blur_radius = this.shader_program.uniform1i('u_blur_radius');
+    
+    this.u_point_size = this.shader_program.uniform1f('u_point_size');
 
     this.u_flip_y.set(-1);
 }
@@ -59,15 +85,67 @@ WebGLDrawer.prototype.standard_shaders = function(vertex, fragment) {
 WebGLDrawer.prototype.update_resolution = function() {
     this.u_resolution.set([this.canvas.width, this.canvas.height]);
 }
-WebGLDrawer.prototype.sync_buffers = function() {
-    this.vertex_buffer.bind().upload();
-    this.shader_program.attribute('a_position').set(this.vertex_buffer);
+WebGLDrawer.prototype.init_presets = function() {
+    this.vertex_buffer.add([0,0]);
+    this.texture_buffer.add([0,0]);
+    this.index_buffer.add([0, 1]);
 
-    this.texture_buffer.bind().upload();
+    this.point_slice = this.glm.slice(0, 1);
+    this.line_segment_slice = this.glm.slice(0, 2);
+
+    this.dynamic_vertex_buffer.add([200,200,100,150]);
+}
+WebGLDrawer.prototype.sync_buffers = function() {
+
+    this.dynamic_vertex_buffer.bind().upload_static();
+    this.shader_program.attribute('a_position').set(this.dynamic_vertex_buffer);
+
+    this.vertex_buffer.bind().upload_static();
+    this.shader_program.attribute('a_position').set(this.vertex_buffer);
+    
+
+    this.texture_buffer.bind().upload_static();
     this.shader_program.attribute('a_tex_coord').set(this.texture_buffer);
 
-    this.index_buffer.bind().upload();
+    this.index_buffer.bind().upload_static();
+}
 
+WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
+    var mv_transform = mat3.create();
+    mat3.translate(mv_transform, mv_transform, pt);
+    this.u_model_view.set(mv_transform);
+    this.index_buffer.bind();
+    
+    this.u_point_size.set(width || 2);
+    this.u_colour.set(colour || [0,0,0,1]);
+    this.no_texture();
+    
+    this.point_slice.draw_points();
+}
+
+WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {
+    this.dynamic_vertex_buffer.bind();
+    this.shader_program.attribute('a_position').set(this.dynamic_vertex_buffer);
+    this.dynamic_vertex_buffer.bind().update(0, [
+        seg[0][0], seg[0][1], seg[1][0], seg[1][1]
+    ]);
+
+    var mv_transform = mat3.create();
+    this.u_model_view.set(mv_transform);
+    this.index_buffer.bind();
+    
+    this.push_line_width();
+    this.set_line_width(width != undefined ? width : 1);
+    
+    this.u_colour.set(colour || [0,0,0,1]);
+    this.no_texture();
+    
+    this.line_segment_slice.draw_lines();
+
+    this.pop_line_width();
+
+    this.vertex_buffer.bind();
+    this.shader_program.attribute('a_position').set(this.vertex_buffer);
 }
 
 WebGLDrawer.prototype.clear = function() {

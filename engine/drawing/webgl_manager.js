@@ -178,9 +178,19 @@ WebGLManager.ArrayBuffer.prototype.bind = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     return this;
 }
-WebGLManager.ArrayBuffer.prototype.upload = function() {
+WebGLManager.ArrayBuffer.prototype.upload_static = function() {
     var gl = this.gl;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
+    return this;
+}
+WebGLManager.ArrayBuffer.prototype.upload_dynamic = function() {
+    var gl = this.gl;
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.DYNAMIC_DRAW);
+    return this;
+}
+WebGLManager.ArrayBuffer.prototype.update = function(offset, data) {
+    var gl = this.gl;
+    gl.bufferSubData(gl.ARRAY_BUFFER, offset, new Float32Array(data));
     return this;
 }
 
@@ -198,9 +208,20 @@ WebGLManager.ElementBuffer = function(indices, gl) {
 WebGLManager.ElementBuffer.prototype = new WebGLManager.AbstractBuffer();
 WebGLManager.ElementBuffer.prototype.constructor = WebGLManager.ElementBuffer;
 
-WebGLManager.ElementBuffer.prototype.upload = function() {
+WebGLManager.ElementBuffer.prototype.upload_static = function() {
     var gl = this.gl;
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.data), gl.STATIC_DRAW);
+    return this;
+}
+WebGLManager.ElementBuffer.prototype.upload_dynamic = function() {
+    var gl = this.gl;
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.data), gl.DYNAMIC_DRAW);
+    return this;
+}
+
+WebGLManager.ElementBuffer.prototype.update = function(offset, data) {
+    var gl = this.gl;
+    gl.bufferSubData(gl.ELEMENT_BUFFER, offset, new Float16Array(data));
     return this;
 }
 
@@ -284,6 +305,10 @@ WebGLManager.Slice.prototype.draw_line_strip = function() {
     var gl = this.gl;
     gl.drawElements(gl.LINE_STRIP, this.length, gl.UNSIGNED_SHORT, this.offset);
 }
+WebGLManager.Slice.prototype.draw_points = function() {
+    var gl = this.gl;
+    gl.drawElements(gl.POINTS, this.length, gl.UNSIGNED_SHORT, this.offset);
+}
 
 WebGLManager.prototype.slice = function(offset, length) {
     return new WebGLManager.Slice(offset, length, this.gl);
@@ -347,7 +372,11 @@ WebGLManager.prototype.draw_element_triangles = function(length, offset) {
     var gl = this.gl;
     gl.drawElements(gl.TRIANGLES, length, gl.UNSIGNED_SHORT, offset);
 }
-WebGLManager.prototype.draw_element_lines = function(length, offset) {
+WebGLManager.prototype.draw_element_points = function(length, offset) {
     var gl = this.gl;
+    console.debug(offset, length);
     gl.drawElements(gl.POINTS, length, gl.UNSIGNED_SHORT, offset);
+}
+WebGLManager.prototype.line_width = function(width) {
+    this.gl.lineWidth(width);
 }
