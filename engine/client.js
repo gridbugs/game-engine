@@ -36,7 +36,7 @@ $(function() {
 
     //console.debug(room1.polygon_to_segments().concat(room2.polygon_to_segments()));
 
-    var segs = [[[100, 100], [500, 0]], [[100, 100], [100, 500]]];
+    var segs = [[[100, 100], [500, 100]], [[100, 100], [100, 500]]];
     agent.set_segs(segs);
     
     var canvas = document.getElementById('screen');
@@ -60,8 +60,9 @@ $(function() {
     
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
+        new ImageLoader('images/fonttest.png'),
         Content
-    ).run(function(shaders) {
+    ).run(function(shaders, images) {
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
@@ -74,6 +75,12 @@ $(function() {
         var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
+        
+        var font = drawer.font(images[0], 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ', [8, 8], [1, 1], 2, 26);
+        console.debug(font);
+        var msg = font.text('HELLO WORLD');
+        console.debug(msg);
+
 
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
@@ -112,6 +119,12 @@ $(function() {
             walls.map(function(w){w.draw()});
             
             filterer.draw();
+            
+            
+            drawer.save();
+            drawer.scale([5,5]);
+            msg.draw();
+            drawer.restore();
 
             drawer.sync_gpu();
             

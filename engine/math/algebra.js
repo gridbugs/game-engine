@@ -70,6 +70,8 @@ Array.add_method('v2_dist', function(v) {return this.v2_sub(v).v2_len()});
 // dot product of this and v
 Array.add_method('v2_dot', function(v) {return this[0]*v[0] + this[1]*v[1]});
 
+Array.add_method('v2_mult', function(v) {return [this[0]*v[0], this[1]*v[1]]});
+
 // scalar multiple of this and s
 Array.add_method('v2_smult', function(s) {return [this[0]*s, this[1]*s]});
 

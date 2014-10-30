@@ -12,6 +12,10 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.dynamic_vertex_buffer = this.glm.array_buffer(2);
     this.dynamic_index_buffer = this.glm.element_buffer();
 
+    this.text_vertex_buffer = this.glm.array_buffer(2);//.bind().allocate_dynamic(1024);
+    this.text_texture_buffer = this.glm.array_buffer(2);//.bind().allocate_dynamic(1024);
+    this.text_index_buffer = this.glm.element_buffer();//.bind().allocate_dynamic(512);
+
     this.init_presets();
 
     this.line_width_stack = [];
@@ -99,15 +103,18 @@ WebGLDrawer.prototype.init_presets = function() {
 }
 WebGLDrawer.prototype.sync_buffers = function() {
 
+    this.text_vertex_buffer.bind().upload_static();
+    this.text_texture_buffer.bind().upload_static();
+    this.text_index_buffer.bind().upload_static();
+
     this.dynamic_vertex_buffer.bind().upload_static();
     this.shader_program.attribute('a_position').set(this.dynamic_vertex_buffer);
 
     this.vertex_buffer.bind().upload_static();
     this.shader_program.attribute('a_position').set(this.vertex_buffer);
-    
-
     this.texture_buffer.bind().upload_static();
     this.shader_program.attribute('a_tex_coord').set(this.texture_buffer);
+    
 
     this.index_buffer.bind().upload_static();
 }
@@ -208,6 +215,10 @@ WebGLDrawer.Rect = function(top_left, size, colour, transform, drawer) {
 WebGLDrawer.Rect.inherits_from(WebGLDrawer.Drawable);
 
 WebGLDrawer.Rect.indices = [0,1,2,0,2,3];
+
+WebGLDrawer.Rect.prototype.set_colour = function(colour) {
+    this.colour = colour;
+}
 
 WebGLDrawer.Rect.prototype.draw = function() {
     var drawer = this.before_draw();

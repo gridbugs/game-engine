@@ -188,6 +188,11 @@ WebGLManager.ArrayBuffer.prototype.upload_dynamic = function() {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.DYNAMIC_DRAW);
     return this;
 }
+WebGLManager.ArrayBuffer.prototype.allocate_dynamic = function(n) {
+    var gl = this.gl;
+    gl.bufferData(gl.ARRAY_BUFFER, n, gl.DYNAMIC_DRAW);
+    return this;
+}
 WebGLManager.ArrayBuffer.prototype.update = function(offset, data) {
     var gl = this.gl;
     gl.bufferSubData(gl.ARRAY_BUFFER, offset, new Float32Array(data));
@@ -218,10 +223,15 @@ WebGLManager.ElementBuffer.prototype.upload_dynamic = function() {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.data), gl.DYNAMIC_DRAW);
     return this;
 }
+WebGLManager.ElementBuffer.prototype.allocate_dynamic = function(n) {
+    var gl = this.gl;
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, n, gl.DYNAMIC_DRAW);
+    return this;
+}
 
 WebGLManager.ElementBuffer.prototype.update = function(offset, data) {
     var gl = this.gl;
-    gl.bufferSubData(gl.ELEMENT_BUFFER, offset, new Float16Array(data));
+    gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, offset, new Uint16Array(data));
     return this;
 }
 
