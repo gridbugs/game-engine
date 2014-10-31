@@ -9,12 +9,12 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.index_buffer = this.glm.element_buffer();
     this.texture_buffer = this.glm.array_buffer(2);
 
-    this.dynamic_vertex_buffer = this.glm.array_buffer(2);
+    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(16);
     this.dynamic_index_buffer = this.glm.element_buffer();
 
-    this.text_vertex_buffer = this.glm.array_buffer(2);//.bind().allocate_dynamic(1024);
-    this.text_texture_buffer = this.glm.array_buffer(2);//.bind().allocate_dynamic(1024);
-    this.text_index_buffer = this.glm.element_buffer();//.bind().allocate_dynamic(512);
+    this.text_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
+    this.text_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
+    this.text_index_buffer = this.glm.element_buffer().bind().allocate_dynamic(512);
 
     this.init_presets();
 
@@ -22,9 +22,31 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.push_line_width();
     this.set_line_width(1);
 
+    this.vertex_position_attribute = 'a_position';
+    this.texture_coord_attribute = 'a_tex_coord';
+
     TransformStack.call(this, stack_size);
 }
 WebGLDrawer.inherits_from(TransformStack);
+
+WebGLDrawer.prototype.select_attribute = function(attr_name, array_buffer) {
+    this.shader_program.attribute(attr_name).set(array_buffer.bind());
+}
+WebGLDrawer.prototype.select_text = function() {
+    this.select_attribute(this.vertex_position_attribute, this.text_vertex_buffer);
+    this.select_attribute(this.texture_coord_attribute, this.text_texture_buffer);
+    this.text_index_buffer.bind();
+}
+WebGLDrawer.prototype.select_static = function() {
+    this.select_attribute(this.vertex_position_attribute, this.vertex_buffer);
+    this.select_attribute(this.texture_coord_attribute, this.texture_buffer);
+    this.index_buffer.bind();
+}
+WebGLDrawer.prototype.select_dynamic = function() {
+    this.select_attribute(this.vertex_position_attribute, this.dynamic_vertex_buffer);
+    this.dynamic_index_buffer.bind();
+}
+
 
 WebGLDrawer.prototype.get_line_width = function() {
     return this.line_width_stack[this.line_width_stack.length-1];
@@ -99,24 +121,13 @@ WebGLDrawer.prototype.init_presets = function() {
     this.point_slice = this.glm.slice(0, 1);
     this.line_segment_slice = this.glm.slice(0, 2);
 
-    this.dynamic_vertex_buffer.add([200,200,100,150]);
 }
 WebGLDrawer.prototype.sync_buffers = function() {
-
-    this.text_vertex_buffer.bind().upload_static();
-    this.text_texture_buffer.bind().upload_static();
-    this.text_index_buffer.bind().upload_static();
-
-    this.dynamic_vertex_buffer.bind().upload_static();
-    this.shader_program.attribute('a_position').set(this.dynamic_vertex_buffer);
-
     this.vertex_buffer.bind().upload_static();
-    this.shader_program.attribute('a_position').set(this.vertex_buffer);
     this.texture_buffer.bind().upload_static();
-    this.shader_program.attribute('a_tex_coord').set(this.texture_buffer);
-    
-
     this.index_buffer.bind().upload_static();
+
+    this.select_static();
 }
 
 WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
@@ -133,9 +144,9 @@ WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
 }
 
 WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {
-    this.dynamic_vertex_buffer.bind();
-    this.shader_program.attribute('a_position').set(this.dynamic_vertex_buffer);
-    this.dynamic_vertex_buffer.bind().update(0, [
+    this.select_dynamic();
+    
+    this.dynamic_vertex_buffer.update(0, [
         seg[0][0], seg[0][1], seg[1][0], seg[1][1]
     ]);
 
@@ -154,7 +165,8 @@ WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {
     this.pop_line_width();
 
     this.vertex_buffer.bind();
-    this.shader_program.attribute('a_position').set(this.vertex_buffer);
+    
+    this.select_static();
 }
 
 WebGLDrawer.prototype.clear = function() {

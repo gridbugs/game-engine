@@ -93,14 +93,10 @@ WebGLDrawer.Text = function(message, char_size, length, transform, font) {
     }
 
 
-    drawer.text_vertex_buffer.add(this.v_data);
-    drawer.text_texture_buffer.add(this.t_data);
-    drawer.text_index_buffer.add(this.i_data);
-/*
     drawer.text_vertex_buffer.bind().update(this.v_offset, this.v_data);
     drawer.text_texture_buffer.bind().update(this.v_offset, this.t_data);
     drawer.text_index_buffer.bind().update(this.i_offset, this.i_data);
-*/
+    
     this.slice = drawer.glm.slice(this.i_offset, this.i_data.length);
 }
 WebGLDrawer.Text.inherits_from(WebGLDrawer.Drawable);
@@ -108,23 +104,15 @@ WebGLDrawer.Text.inherits_from(WebGLDrawer.Drawable);
 WebGLDrawer.Text.prototype.draw = function() {
     var drawer = this.before_draw();
  
-    drawer.shader_program.attribute('a_position').set(drawer.text_vertex_buffer);
-    drawer.shader_program.attribute('a_tex_coord').set(drawer.text_texture_buffer);
-    
-    drawer.text_vertex_buffer.bind();
-    drawer.text_index_buffer.bind();
+    drawer.select_text();
 
     drawer.use_texture(this.font.image.width, this.font.image.height);
     this.font.texture.bind();
     this.slice.draw_triangles();
 
+    drawer.select_static();
+
     this.after_draw();
-
-
-    drawer.vertex_buffer.bind();
-    drawer.shader_program.attribute('a_position').set(drawer.vertex_buffer);
-    drawer.texture_buffer.bind();
-    drawer.shader_program.attribute('a_tex_coord').set(drawer.texture_buffer);
 }
 
 WebGLDrawer.prototype.font = function(image, chars, char_size, char_separation, num_rows, num_cols, spacing) {

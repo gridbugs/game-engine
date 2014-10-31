@@ -126,6 +126,8 @@ $(function() {
             msg.draw();
             drawer.restore();
 
+            drawer.draw_line_segment([[20, 30], [200, 400]]);
+
             drawer.sync_gpu();
             
             demo.tick(time_delta);
