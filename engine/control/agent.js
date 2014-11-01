@@ -1,5 +1,6 @@
 function Agent(pos, facing) {
     this.facing = facing;
+    this.last_pos = pos;
     this.pos = pos;
     this.move_speed = 10;
     this.turn_speed = Math.PI/12;
@@ -41,6 +42,7 @@ Agent.prototype.control_tick = function(time_delta) {
     }
     
     var dest = this.pos.v2_add(angle_to_unit_vector(angle).v2_smult(this.move_speed));
+    this.last_pos = this.pos;
     this.pos = this.collision_processor.process_collision(this.pos, dest);
 
     return true;
@@ -69,9 +71,14 @@ Agent.prototype.absolute_control_tick = function(time_delta) {
     this.facing = vec.v2_angle();
 
     var dest = this.pos.v2_add(vec.v2_smult(this.move_speed*time_delta/1000));
+    this.last_pos = this.pos;
     this.pos = this.collision_processor.process_collision(this.pos, dest);
 
     return true;
+}
+
+Agent.prototype.last_move_seg = function() {
+    return [this.last_pos, this.pos];
 }
 
 Agent.prototype.turn_towards = function(pt) {

@@ -194,6 +194,24 @@ CanvasDrawer.prototype.sequence = function(points, width, colour, transform) {
     return new CanvasDrawer.Sequence(points, width, colour, transform, this);
 }
 
+CanvasDrawer.prototype.draw_point = function(pt, colour, width) {
+    var ctx = this.ctx;
+    ctx.beginPath();
+    ctx.fillStyle = CanvasDrawer.convert_colour(colour);
+    ctx.fillRect(pt[0]-width/2, pt[1]-width/2, width, width);
+    ctx.fill();
+}
+
+CanvasDrawer.prototype.draw_line_segment = function(seg, colour, width) {
+    var ctx = this.ctx;
+    ctx.beginPath();
+    ctx.strokeStyle = CanvasDrawer.convert_colour(colour);
+    ctx.lineWidth = width;
+    ctx.moveTo(seg[0][0], seg[0][1]);
+    ctx.lineTo(seg[1][0], seg[1][1]);
+    ctx.stroke();
+}
+
 /* dummy methods so the interface matches that of WebGLDrawer */
 CanvasDrawer.Dummy = function(){}
 CanvasDrawer.Dummy.inherits_from(CanvasDrawer.Drawable);
