@@ -53,28 +53,13 @@ $(function() {
         [[500, 50], [500, 250]],
         [[500, 250], [300, 250]]
     ]);
-    
-    var detector1 = new DetectorSegment([[400, 300], [550, 300]], 
-        function() {
-            agent.enter_region(room2);
-        }, 
-        function() {
-            agent.enter_region(room1);
-        }
-    );
 
-    var detector2 = new DetectorSegment([[150, 350], [300, 350]],
-        function() {
-            agent.enter_region(room2);
-        }, 
-        function() {
-            agent.enter_region(room3);
-        }
-    );
+    room2.connect(room1, [[400, 300], [550, 300]]);
+    room2.connect(room3, [[150, 350], [300, 350]]);
 
-
- 
-    //console.debug(room1.polygon_to_segments().concat(room2.polygon_to_segments()));
+    room1.create_collision_processor(agent.rad);
+    room2.create_collision_processor(agent.rad);
+    room3.create_collision_processor(agent.rad);
 
     agent.enter_region(room1);
     
@@ -148,11 +133,9 @@ $(function() {
             
             circle.outline();
             drawer.draw_point(agent.pos, tc('black'), 4);
-            detector1.draw(drawer);
-            detector2.draw(drawer);
-            detector1.detect(agent.last_move_seg());
-            detector2.detect(agent.last_move_seg());
-            
+            agent.detect();
+
+
             demo.draw();
             drawer.restore();
             walls.map(function(w){w.draw()});

@@ -14,7 +14,11 @@ Agent.prototype.set_segs = function(segs) {
 
 Agent.prototype.enter_region = function(region) {
     this.region = region;
-    this.collision_processor = new CollisionProcessor(this.rad, region.segs);
+    this.collision_processor = region.collision_processor;
+}
+
+Agent.prototype.detect = function() {
+    this.region.detect(this);
 }
 
 Agent.set_controlled_agent = function(agent) {

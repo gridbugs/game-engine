@@ -27,9 +27,9 @@ DetectorSegment.prototype.detect = function(path) {
     if (this.seg.seg_intersects(path)) {
         var dot = this.seg.seg_direction().v2_norm().v2_dot(path.seg_direction());
         if (dot > 0) {
-            this.left_callback();
+            this.left_callback.apply(window, arguments);
         } else {
-            this.right_callback();
+            this.right_callback.apply(window, arguments);
         }
     }
 }
