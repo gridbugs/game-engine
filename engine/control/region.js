@@ -4,7 +4,7 @@
 function Region(segs) {
     this.segs = segs;
     this.neighbours = [];
-    this.detectors = [];
+    this.border_detectors = [];
 }
 
 Region.prototype.connect = function(region, segment) {
@@ -19,16 +19,16 @@ Region.prototype.connect = function(region, segment) {
     );
 
     this.neighbours.push(region);
-    this.detectors.push(detector);
+    this.border_detectors.push(detector);
     region.neighbours.push(this);
-    region.detectors.push(detector);
+    region.border_detectors.push(detector);
 }
 
 Region.prototype.detect = function(agent) {
     
     var path = agent.last_move_seg();
 
-    this.detectors.map(function(d) {
+    this.border_detectors.map(function(d) {
         d.detect(path, agent);    
     });
 }

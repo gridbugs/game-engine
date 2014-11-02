@@ -25,9 +25,9 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.vertex_position_attribute = 'a_position';
     this.texture_coord_attribute = 'a_tex_coord';
 
-    TransformStack.call(this, stack_size);
+    Drawer.call(this, stack_size);
 }
-WebGLDrawer.inherits_from(TransformStack);
+WebGLDrawer.inherits_from(Drawer);
 
 WebGLDrawer.prototype.select_attribute = function(attr_name, array_buffer) {
     this.shader_program.attribute(attr_name).set(array_buffer.bind());

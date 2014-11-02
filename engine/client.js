@@ -94,8 +94,10 @@ $(function() {
         drawer.sync_buffers();
 
         var demo = Content.characters.walk_demo.instance('still');
-
-        var walls = room1.segs.concat(room2.segs).concat(room3.segs).map(function(s){return drawer.line_segment(s[0], s[1], 1)});
+        
+        var walls1 = drawer.group(room1.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)}));
+        var walls2 = drawer.group(room2.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)}));
+        var walls3 = drawer.group(room3.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)}));
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         
@@ -138,7 +140,9 @@ $(function() {
 
             demo.draw();
             drawer.restore();
-            walls.map(function(w){w.draw()});
+            walls1.draw();
+            walls2.draw();
+            walls3.draw();
             
             filterer.draw();
             

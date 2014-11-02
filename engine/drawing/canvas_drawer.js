@@ -9,9 +9,9 @@ Float32Array.add_method('canvas_transform', function(ctx) {
 function CanvasDrawer(canvas, stack_size) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    TransformStack.call(this, stack_size);
+    Drawer.call(this, stack_size);
 }
-CanvasDrawer.inherits_from(TransformStack);
+CanvasDrawer.inherits_from(Drawer);
 
 CanvasDrawer.prototype.clear = function() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
