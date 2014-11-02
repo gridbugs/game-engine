@@ -12,6 +12,11 @@ Agent.prototype.set_segs = function(segs) {
     this.collision_processor = new CollisionProcessor(this.rad, segs);
 }
 
+Agent.prototype.enter_region = function(region) {
+    this.region = region;
+    this.collision_processor = new CollisionProcessor(this.rad, region.segs);
+}
+
 Agent.set_controlled_agent = function(agent) {
     Agent.controlled_agent = agent;
     Input.register_mousemove_callback("turn_agent", function(mouse_pos) {

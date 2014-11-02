@@ -31,13 +31,52 @@ $(function() {
 
     agent = new Agent([200, 200], 0);
 
-    //var room1 = [[100, 100], [100, 300], [300, 300], [300, 100]];
-    //var room2 = [[300, 100], [300, 300], [600, 300], [600, 100]];
+    var room1 = new Region([
+        [[100, 100], [100, 300]],
+        [[100, 300], [400, 300]],
+        [[550, 300], [600, 300]],
+        [[600, 300], [600, 100]],
+        [[600, 100], [100, 100]]
+    ]);
+    var room2 = new Region([
+        [[400, 300], [400, 350]],
+        [[400, 350], [350, 400]],
+        [[350, 400], [300, 350]],
+        [[550, 300], [550, 350]],
+        [[550, 350], [350, 550]],
+        [[350, 550], [150, 350]]
+    ]);
+    var room3 = new Region([
+        [[150, 350], [150, 50]],
+        [[300, 350], [300, 250]],
+        [[150, 50], [500, 50]],
+        [[500, 50], [500, 250]],
+        [[500, 250], [300, 250]]
+    ]);
+    
+    var detector1 = new DetectorSegment([[400, 300], [550, 300]], 
+        function() {
+            agent.enter_region(room2);
+        }, 
+        function() {
+            agent.enter_region(room1);
+        }
+    );
 
+    var detector2 = new DetectorSegment([[150, 350], [300, 350]],
+        function() {
+            agent.enter_region(room2);
+        }, 
+        function() {
+            agent.enter_region(room3);
+        }
+    );
+
+
+ 
     //console.debug(room1.polygon_to_segments().concat(room2.polygon_to_segments()));
 
-    var segs = [[[100, 100], [500, 100]], [[100, 100], [100, 500]]];
-    agent.set_segs(segs);
+    agent.enter_region(room1);
     
     var canvas = document.getElementById('screen');
     
@@ -71,7 +110,7 @@ $(function() {
 
         var demo = Content.characters.walk_demo.instance('still');
 
-        var walls = segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)});
+        var walls = room1.segs.concat(room2.segs).concat(room3.segs).map(function(s){return drawer.line_segment(s[0], s[1], 1)});
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         
@@ -83,14 +122,7 @@ $(function() {
         agent.move_speed = 400;
         var state = 1;
         var tm = new TimeManager();
-        var detector = new DetectorSegment([[500, 100], [500, 200]], 
-        function() {
-            console.debug("left")
-        }, 
-        function() {
-            console.debug("right")
-        });
-        
+       
         t = function() {
             fps_stats.begin();
             ms_stats.begin();
@@ -114,14 +146,14 @@ $(function() {
             drawer.save();
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
             
-            circle.draw();
+            circle.outline();
             drawer.draw_point(agent.pos, tc('black'), 4);
-            detector.draw(drawer);
-            var a = agent.last_move_seg();
-            var b = detector.seg;
-            detector.detect(agent.last_move_seg());
+            detector1.draw(drawer);
+            detector2.draw(drawer);
+            detector1.detect(agent.last_move_seg());
+            detector2.detect(agent.last_move_seg());
             
-            //demo.draw();
+            demo.draw();
             drawer.restore();
             walls.map(function(w){w.draw()});
             

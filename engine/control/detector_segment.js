@@ -35,5 +35,5 @@ DetectorSegment.prototype.detect = function(path) {
 }
 
 DetectorSegment.prototype.draw = function(drawer) {
-    drawer.draw_line_segment(this.seg);
+    drawer.draw_line_segment(this.seg, tc('lightgrey'), 2);
 }
