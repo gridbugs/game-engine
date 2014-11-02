@@ -30,6 +30,25 @@ Array.add_method('v2_len', function(){return Math.sqrt(this.v2_len_squared())});
 // true iff this is identical to v
 Array.add_method('v2_equals', function(v){return this[0]==v[0] && this[1]==v[1]});
 
+Array.add_method('v2_aligned', function(v) {
+    return this[0]*v[1] == this[1]*v[0];
+});
+
+Array.add_method('v2_aligned_ratio', function(v) {
+    if (this[0] != 0) {
+        return v[0]/this[0];
+    } else {
+        return v[1]/this[1];
+    }
+});
+
+Array.add_method('seg_aligned', function(v) {
+    return this[1].v2_sub(this[0]).v2_aligned(v.v2_sub(this[0]));
+});
+Array.add_method('seg_aligned_ratio', function(v) {
+    return this[1].v2_sub(this[0]).v2_aligned_ratio(v.v2_sub(this[0]));
+});
+
 // returns this rotated 90 degrees anticlockwise
 Array.add_method('v2_norm', function() {return [-this[1], this[0]]});
 
@@ -47,6 +66,10 @@ Array.add_method('v2_unit', function() {
 
 Array.add_method('v2_to_length', function(s) {
     return this.v2_unit().v2_smult(s);
+});
+
+Array.add_method('seg_direction', function() {
+    return this[1].v2_sub(this[0]);
 });
 
 Array.add_method('seg_unit_up', function() {
@@ -184,6 +207,12 @@ Array.add_method('seg_perpendicular_bisector_line', function() {
 // (ie. line = p + av for all real numbers 'a'
 
 Array.add_method('line_intersection', function(l) {
+
+    // if the lines are parallel there's no intersection
+    if (this[1].v2_aligned(l[1])) {
+        return null;
+    }
+
     var r = this[0].v2_sub(l[0]);
     var matrix = [
         -this[1][0], -this[1][1],
@@ -203,8 +232,7 @@ Array.add_method('seg_to_line', function() {
 });
 
 Array.add_method('seg_contains_v2_on_line', function(v) {
-    return between(this[0][0], v[0], this[1][0]) &&
-           between(this[0][1], v[1], this[1][1]);
+    return Math.between_inclusive(0, this.seg_aligned_ratio(v), 1);
 });
 
 Array.add_method('seg_intersects', function(s) {
@@ -218,6 +246,11 @@ Array.add_method('seg_intersection', function(s) {
     // find the interesction of the two lines
     var intersection = this.seg_to_line().line_intersection(
                             s.seg_to_line());
+
+    // case where segments are parallel
+    if (intersection == null) {
+        return null;
+    }
 
     // check if it's on both segments
     if (this.seg_contains_v2_on_line(intersection) &&

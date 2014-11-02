@@ -130,7 +130,10 @@ CollisionProcessor.prototype.find_collision_path = function(start, end, seg, sli
     
     // point in line with seg at which an edge collision may occur
     var intersection_pt = collide_line.line_intersection(seg.seg_to_line());
-
+    
+    if (intersection_pt == null) {
+        return [start, end];
+    }
     // boolean value true if edge collision has occured
     var edge_collision = seg.seg_contains_v2_on_line(intersection_pt);
     // vector from pt_will_collide to centre of start

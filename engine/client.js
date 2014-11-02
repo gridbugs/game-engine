@@ -83,7 +83,13 @@ $(function() {
         agent.move_speed = 400;
         var state = 1;
         var tm = new TimeManager();
-        var detector = new DetectorSegment([[500, 100], [500, 200]]);
+        var detector = new DetectorSegment([[500, 100], [500, 200]], 
+        function() {
+            console.debug("left")
+        }, 
+        function() {
+            console.debug("right")
+        });
         
         t = function() {
             fps_stats.begin();
@@ -101,6 +107,7 @@ $(function() {
             } else if (state == 1 && !agent.absolute_control_tick(time_delta)) {
                 state = 0;
                 demo.update('still');
+                agent.stop();
             }
      
 

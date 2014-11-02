@@ -157,10 +157,6 @@ function maybe_function(f, v) {
 }
 function do_nothing() {}
 
-function between(a, b, c) {
-    return (a <= b && b <= c) || (c <= b && b <= a);
-}
-
 function Counter(what) {
     this.what = what;
     this.count = 0;

@@ -77,6 +77,10 @@ Agent.prototype.absolute_control_tick = function(time_delta) {
     return true;
 }
 
+Agent.prototype.stop = function() {
+    this.last_pos = this.pos;
+}
+
 Agent.prototype.last_move_seg = function() {
     return [this.last_pos, this.pos];
 }
