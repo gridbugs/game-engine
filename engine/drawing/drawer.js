@@ -21,7 +21,9 @@ DrawableGroup.prototype.draw = function() {
 }
 DrawableGroup.prototype.show = function() {
     this.visible = true;
+    return this;
 }
 DrawableGroup.prototype.hide = function() {
     this.visible = false;
+    return this;
 }

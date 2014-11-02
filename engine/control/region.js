@@ -5,6 +5,7 @@ function Region(segs) {
     this.segs = segs;
     this.neighbours = [];
     this.border_detectors = [];
+    this.display_detectors = [];
 }
 
 Region.prototype.connect = function(region, segment) {
@@ -24,12 +25,41 @@ Region.prototype.connect = function(region, segment) {
     region.border_detectors.push(detector);
 }
 
-Region.prototype.detect = function(agent) {
+Region.prototype.border_detect = function(agent) {
     
     var path = agent.last_move_seg();
 
     this.border_detectors.map(function(d) {
         d.detect(path, agent);    
+    });
+
+}
+
+Region.prototype.add_display_detector = function(left, right, segment) {
+    if (left.constructor != Array) {
+        left = [left];
+    }
+    if (right.constructor != Array) {
+        right = [right];
+    }
+
+    this.display_detectors.push(new DetectorSegment(segment, 
+        function() {
+            left.map(function(d){d.show()});
+            right.map(function(d){d.hide()});
+        },
+        function() {
+            left.map(function(d){d.hide()});
+            right.map(function(d){d.show()});
+        }
+    ));
+}
+
+Region.prototype.display_detect = function(agent) {
+    var path = agent.last_move_seg();
+
+    this.display_detectors.map(function(d) {
+        d.detect(path);
     });
 }
 
@@ -40,3 +70,4 @@ Region.prototype.create_collision_processor = function(rad) {
     }
     this.collision_processor = new CollisionProcessor(rad, segs);
 }
+

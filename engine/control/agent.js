@@ -17,8 +17,11 @@ Agent.prototype.enter_region = function(region) {
     this.collision_processor = region.collision_processor;
 }
 
-Agent.prototype.detect = function() {
-    this.region.detect(this);
+Agent.prototype.border_detect = function() {
+    this.region.border_detect(this);
+}
+Agent.prototype.display_detect = function() {
+    this.region.display_detect(this);
 }
 
 Agent.set_controlled_agent = function(agent) {

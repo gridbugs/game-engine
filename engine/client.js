@@ -44,7 +44,8 @@ $(function() {
         [[350, 400], [300, 350]],
         [[550, 300], [550, 350]],
         [[550, 350], [350, 550]],
-        [[350, 550], [150, 350]]
+        [[350, 550], [150, 350]],
+        
     ]);
     var room3 = new Region([
         [[150, 350], [150, 50]],
@@ -97,7 +98,9 @@ $(function() {
         
         var walls1 = drawer.group(room1.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)}));
         var walls2 = drawer.group(room2.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)}));
-        var walls3 = drawer.group(room3.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)}));
+        var walls3 = drawer.group(room3.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)})).hide();
+
+        room2.add_display_detector(walls3, walls1, [[350, 400], [350, 550]]);
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         
@@ -135,7 +138,8 @@ $(function() {
             
             circle.outline();
             drawer.draw_point(agent.pos, tc('black'), 4);
-            agent.detect();
+            agent.border_detect();
+            agent.display_detect();
 
 
             demo.draw();
