@@ -57,3 +57,13 @@ TransformStack.prototype.restore = function() {
     --this.idx;
     this.mv_transform = this.stack[this.idx];
 }
+
+/*
+ * Returns the screen-space coordinate that corresponds to
+ * a point drawn at (0, 0) with the current transformation applied
+ */
+TransformStack.prototype.global_centre = function() {
+    var ret = vec3.fromValues(0, 0, 1);
+    mat3.multiply(ret, this.mv_transform, ret);
+    return ret;
+}

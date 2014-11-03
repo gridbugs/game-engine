@@ -131,7 +131,8 @@ WebGLDrawer.prototype.sync_buffers = function() {
 }
 
 WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
-    var mv_transform = mat3.create();
+    this.save();
+    var mv_transform = this.mv_transform;
     mat3.translate(mv_transform, mv_transform, pt);
     this.u_model_view.set(mv_transform);
     this.index_buffer.bind();
@@ -141,6 +142,7 @@ WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
     this.no_texture();
     
     this.point_slice.draw_points();
+    this.restore();
 }
 
 WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {

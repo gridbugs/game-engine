@@ -66,7 +66,6 @@ $(function() {
         
         agent.enter_region(map_demo.region_hash.r1);
         
-        console.debug(map_demo);
         
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         
@@ -84,10 +83,6 @@ $(function() {
             ms_stats.begin();
             
             var time_delta = tm.get_delta();
-            drawer.clear();
-            
-            filterer.begin();
-            drawer.remove_filters();
 
             if (state == 0 && agent.absolute_control_tick(time_delta)) {
                 state = 1;
@@ -98,35 +93,54 @@ $(function() {
                 agent.stop();
             }
      
-
-            drawer.save();
-            drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
-            
-            circle.draw();
-            drawer.draw_point(agent.pos, tc('black'), 4);
-            
+            // switch current region if necessary
             agent.border_detect();
+
+            // show/hide regions if necessary
             agent.display_detect();
 
-
-            demo.draw();
-            drawer.restore();
+            // reset the drawer
+            drawer.clear();
+            drawer.remove_filters();
+            
+            // set up gl to draw to a framebuffer
+            filterer.begin();
+ 
+            // apply global translation (for scrolling)
+            drawer.save();
+            drawer.translate([-100, 0]);
            
+            // apply local transformation (for moving the character)
+            drawer.save();
+            drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
+ 
+            // draw the character
+            circle.draw();
+            demo.draw();
+            drawer.draw_point([0, 0], tc('black'), 4);
+            
+            var centre = drawer.global_centre();
+
+            drawer.restore();
+            
+            // draw the map
             map_demo.draw();
 
-            filterer.draw();
-            
-            
-            drawer.save();
-            drawer.scale([5,5]);
             drawer.restore();
 
+            // draw the buffered session with any filters applied
+            filterer.draw();
+
+            // sync the cpu for smooth animation
             drawer.sync_gpu();
             
+            // progress the time
             demo.tick(time_delta);
             
+            // repeat on the next frame
             requestAnimationFrame(t);
 
+            // record some stats
             fps_stats.end();
             ms_stats.end();
         }

@@ -39,7 +39,6 @@ Map.prototype.load_visible = function() {
         var group = drawer.group(this.region_hash[name].segs.map(function(s) {
             return drawer.line_segment(s[0], s[1], 1)
         }));
-        console.debug(name);
         this.group_hash[name] = group;
         this.group_arr.push(group);
 
