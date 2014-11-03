@@ -168,6 +168,7 @@ $(function() {
                 cu.draw_segment([start[0], end[0]]);
 
                 cp.edge_intersection(start[0], end[0], rad, segs[0]);
+                cp.vertex_intersection(start[0], end[0], rad, segs[0]);
 
             }
 

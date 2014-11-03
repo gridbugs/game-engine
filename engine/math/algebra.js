@@ -451,6 +451,13 @@ Array.add_method('line_circle_intersections', function(circle) {
         .map(function(x){return x.v2_add(this[0])}.bind(this));
 });
 
+Array.add_method('seg_circle_intersections', function(circle) {
+    var line_intersections = this.seg_to_line().line_circle_intersections(circle);
+    return line_intersections.filter(function(v) {
+        return this.seg_contains_v2_on_line(v);
+    }.bind(this));
+});
+
 function solve_quadratic(a, b, c) {
     var to_root = approx_non_negative(b*b-4*a*c);
     var roots;

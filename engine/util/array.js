@@ -136,3 +136,14 @@ Array.range = function(start, end, step) {
     }
     return ret;
 }
+
+Array.add_method('flatten', function() {
+    var ret = [];
+    for (var i = 0;i<this.length;i++) {
+        var sub = this[i];
+        for (var j = 0;j<sub.length;j++) {
+            ret.push(sub[j]);
+        }
+    }
+    return ret;
+});
