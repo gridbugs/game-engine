@@ -29,7 +29,7 @@ $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
 
-    agent = new Agent([384, 444], 0);
+    agent = new Agent([200, 200], 0);
 
     var room1 = new Region([
         [[100, 100], [100, 300]],
