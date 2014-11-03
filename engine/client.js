@@ -3,7 +3,7 @@ var t;
 var drawer;
 var game_console;
 var agent;
-
+var cu;
 
 $(function() {
     game_console = new Console(
@@ -42,6 +42,7 @@ $(function() {
     canvas.height = $(window).height();
     if (window.location.hash == '#canvas') {
         drawer = new CanvasDrawer(canvas);
+        cu = new CanvasUtil(canvas);
     } else {
         drawer = new WebGLDrawer(canvas);
     }

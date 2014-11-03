@@ -196,10 +196,15 @@ CanvasDrawer.prototype.sequence = function(points, width, colour, transform) {
 
 CanvasDrawer.prototype.draw_point = function(pt, colour, width) {
     var ctx = this.ctx;
+    ctx.save();
+    this.mv_transform.canvas_transform(ctx);
+    
     ctx.beginPath();
     ctx.fillStyle = CanvasDrawer.convert_colour(colour);
     ctx.fillRect(pt[0]-width/2, pt[1]-width/2, width, width);
     ctx.fill();
+
+    ctx.restore();
 }
 
 CanvasDrawer.prototype.draw_line_segment = function(seg, colour, width) {
