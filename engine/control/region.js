@@ -12,11 +12,11 @@ Region.prototype.connect = function(region, segment) {
     var detector = new DetectorSegment(
         segment,
         function(path, agent) {
-            agent.enter_region(this);    
+            agent.enter_region(region);    
         }.bind(this),
         function(path, agent) {
-            agent.enter_region(region);
-        }
+            agent.enter_region(this);
+        }.bind(this)
     );
 
     this.neighbours.push(region);
@@ -45,12 +45,12 @@ Region.prototype.add_display_detector = function(left, right, segment) {
 
     this.display_detectors.push(new DetectorSegment(segment, 
         function() {
-            left.map(function(d){d.show()});
-            right.map(function(d){d.hide()});
-        },
-        function() {
             left.map(function(d){d.hide()});
             right.map(function(d){d.show()});
+        },
+        function() {
+            left.map(function(d){d.show()});
+            right.map(function(d){d.hide()});
         }
     ));
 }

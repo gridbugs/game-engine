@@ -80,11 +80,11 @@ $(function() {
         [[1000, 750], [800, 750]]
     ]);
 
-    room2.connect(room1, [[400, 300], [550, 300]]);
-    room2.connect(room3, [[150, 350], [300, 350]]);
-    room4.connect(room1, [[600, 250], [600, 150]]);
-    room5.connect(room4, [[700, 600], [800, 600]]);
-    room6.connect(room5, [[700, 750], [800, 750]]);
+    room1.connect(room2, [[400, 300], [550, 300]]);
+    room3.connect(room2, [[150, 350], [300, 350]]);
+    room1.connect(room4, [[600, 250], [600, 150]]);
+    room4.connect(room5, [[700, 600], [800, 600]]);
+    room5.connect(room6, [[700, 750], [800, 750]]);
 
     room1.create_collision_processor(agent.rad);
     room2.create_collision_processor(agent.rad);
@@ -134,8 +134,8 @@ $(function() {
         var walls5 = drawer.group(room5.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)}));
         var walls6 = drawer.group(room6.segs.map(function(s){return drawer.line_segment(s[0], s[1], 1)})).hide();
 
-        room2.add_display_detector(walls3, [walls1, walls4, walls5], [[350, 400], [350, 550]]);
-        room5.add_display_detector(walls6, [walls1, walls4, walls2], [[700, 675], [800, 675]]);
+        room2.add_display_detector([walls1, walls4, walls5], walls3, [[350, 400], [350, 550]]);
+        room5.add_display_detector([walls1, walls4, walls2], walls6, [[700, 675], [800, 675]]);
 
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         
@@ -173,10 +173,6 @@ $(function() {
             
             circle.draw();
             drawer.draw_point(agent.pos, tc('black'), 4);
-            
-            if (!agent.last_pos.v2_equals(agent.pos)) {
-                console.debug(agent.last_move_seg().toString());
-            }
             
             agent.border_detect();
             agent.display_detect();
