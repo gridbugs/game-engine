@@ -29,7 +29,7 @@ $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
 
-    agent = new Agent([200, 200], 0);
+    agent = new Agent([384, 444], 0);
 
     var room1 = new Region([
         [[100, 100], [100, 300]],
@@ -93,7 +93,7 @@ $(function() {
     room5.create_collision_processor(agent.rad);
     room6.create_collision_processor(agent.rad);
 
-    agent.enter_region(room1);
+    agent.enter_region(room2);
     
     var canvas = document.getElementById('screen');
     
@@ -173,6 +173,11 @@ $(function() {
             
             circle.draw();
             drawer.draw_point(agent.pos, tc('black'), 4);
+            
+            if (!agent.last_pos.v2_equals(agent.pos)) {
+                console.debug(agent.last_move_seg().toString());
+            }
+            
             agent.border_detect();
             agent.display_detect();
 
