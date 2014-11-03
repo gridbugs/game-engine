@@ -145,7 +145,34 @@ $(function() {
             fps_stats.end();
             ms_stats.end();
         }
-        t();
+        //t();
+
+        var count = 0;
+        var start, end;
+        var rad = 20;
+        var segs = [ [[100, 100], [200, 300]] ];
+        var cp = new CollisionProcessor2(segs);
+        segs.map(function(s){cu.draw_segment(s)});
+        $(window).click(function(e) {
+            var x = e.clientX;
+            var y = e.clientY;
+            cu.clear();
+            segs.map(function(s){cu.draw_segment(s)});
+            if (count % 2 == 0) {
+                start = [[x, y], rad];
+                cu.draw_circle(start);
+            } else {
+                end = [[x, y], rad];
+                cu.draw_circle(start);
+                cu.draw_circle(end);
+                cu.draw_segment([start[0], end[0]]);
+
+                cp.edge_intersection(start[0], end[0], rad, segs[0]);
+
+            }
+
+            count++;
+        });
 
     }.arr_args());
 });
