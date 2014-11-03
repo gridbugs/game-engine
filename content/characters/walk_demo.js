@@ -110,6 +110,4 @@ function WalkDemo() {
             ]
         ]
     ]);
-
 }
-WalkDemo.inherits_from(Character);
