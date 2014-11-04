@@ -2,7 +2,14 @@ function CollisionProcessor(segs) {
     this.segs = segs;
 }
 
-CollisionProcessor.prototype.process = function(start, end, rad) {
+CollisionProcessor.Result = function(start, end, collision) {
+    this.start = start;
+    this.end = end;
+    this.seg = [start, end];
+    this.collision = collision;
+}
+
+CollisionProcessor.prototype.get_collision = function(start, end, rad) {
     var candidates = this.segs.map(function(s) {
         return this.edge_intersection(start, end, rad, s)
     }.bind(this)).concat(this.segs.map(function(s) {
@@ -11,8 +18,52 @@ CollisionProcessor.prototype.process = function(start, end, rad) {
         return c != null;  
     });
 
-    console.debug(candidates);
+    if (candidates.length == 0) {
+        // no collision occured
+        return null;
+    }
+    
+    // closest collision to start
+    var first = candidates.most(function(c) {
+        return -c.path[0].v2_dist(start);
+    });
+ 
+    return first;
+}
 
+CollisionProcessor.prototype.process = function(start, end, rad) {
+    var collision = this.get_collision(start, end, rad);
+    if (collision == null) {
+        console.debug('no collision');
+        return end;
+    }
+
+    // compute the path for resolving the collision
+    var path = collision.slide();
+
+    console.debug('checking path for collisions');
+    for (var i = 1;i<path.length;i++) {
+        var seg_start = path[i-1];
+        var seg_end = path[i];
+
+        var seg_collision = this.get_collision(seg_start, seg_end, rad);
+        
+        cu.draw_circle([seg_start, rad], 'grey', 1);
+        if (seg_collision != null) {
+            cu.draw_circle([seg_end, rad], 'orange', 4);
+            cu.draw_circle([seg_start, rad], 'red', 4);
+            // the slide has collided with another segment
+            console.debug('slide collision');
+            console.debug(seg_collision);
+            cu.draw_point(seg_collision.end, 'green', 4);
+            //return path[i];
+        }
+    }
+    
+    console.debug('collision');
+    console.debug(path);
+
+    return path[path.length-1];
 }
 
 CollisionProcessor.Collision = function(start, end, rad, seg, centre) {
@@ -72,6 +123,14 @@ CollisionProcessor.prototype.edge_intersection = function(start, end, rad, seg) 
         return null;
     }
     //cu.draw_point(seg_edge_collision_point, 'red', 6);
+    var test = [start, end].seg_closest_pt_to_v(seg_edge_collision_point);
+    //cu.draw_point(test, 'red', 6);
+    //console.debug(seg_edge_collision_point.v2_dist(test));
+
+    if (seg_edge_collision_point.v2_dist(test) >= (rad - 0.01)) {
+        return null;
+    }
+
 
     /* vector from centre of start circle to the circle edge collision point
      */
@@ -99,11 +158,17 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
      */
     var path_seg = [start, end];
 
+
+    //cu.draw_line(path_seg.seg_to_line());
+    //cu.draw_segment(path_seg, 'black', 4);
+    //console.debug(path_seg.seg_to_line().line_circle_intersections(vertex_circles[1]));
+
     /* points of interesction between the path segment and both the circles
      */
-    var circle_intersection_points = vertex_circles.map(function(c) {
+    var circle_intersection_points = vertex_circles.map(function(c, i) {
         return path_seg.seg_circle_intersections_exclusive(c);
     });
+    //console.debug(circle_intersection_points);
     //circle_intersection_points.map(function(arr){arr.map(function(v){cu.draw_point(v, 'green', 4)})});
 
     /* early exit if there are no circle intersection points */
@@ -126,6 +191,16 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
         }
     }
 
+    var closest_circle = [closest_vertex, rad];
+//    cu.draw_circle(closest_circle, 'green', 1);
+    var path_line = path_seg.seg_to_line();
+    var circle_points = path_line.line_circle_intersections_exclusive(closest_circle);
+    if (circle_points[0].v2_dist(circle_points[1]) < 0.01) {
+        return null;
+    }
+
+    //console.debug(closest_intersection_point.v2_dist(seg[1]));
+    //cu.draw_point(closest_intersection_point, 'black', 8);
     //cu.draw_circle([closest_intersection_point, rad], 'blue', 2);
 
     return new CollisionProcessor.VertexCollision(start, end, rad, seg, closest_intersection_point, closest_vertex);
@@ -148,7 +223,7 @@ CollisionProcessor.EdgeCollision.prototype.slide = function() {
 
         this.path.push(projected_centre);
 
-        return this;
+        return this.path;
     }
     
     var mid = seg.seg_mid();
@@ -243,6 +318,7 @@ CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centr
     //console.debug(move_distance);
 
     if (move_distance < remaining_distance) {
+        console.debug('simple case');
         this.path.push(vertex_adjusted_centre);
         this.path.push(current_adjusted_centre);
         //cu.draw_circle([vertex_adjusted_centre, this.rad], 'black', 1);
@@ -254,8 +330,10 @@ CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centr
         this.path.push(adjusted_end);
         //cu.draw_circle([adjusted_end, this.rad], 'black', 1);
 
-        return this;
+        return this.path;
     }
+    console.debug('complex case');
+
 
     var ratio = remaining_distance / move_distance;
     //console.debug(ratio);
@@ -286,5 +364,5 @@ CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centr
     this.path.push(y_moved);
 
  
-    return this;
+    return this.path;
 }

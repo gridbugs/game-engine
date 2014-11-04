@@ -147,15 +147,14 @@ $(function() {
         }
         //t();
 
-        var count = 0;
-        var start, end;
+        var count = 2;
         var rad = 100;
+        var start;
+        var end;
         var segs = [ [[100, 100], [200, 300]] ];
         var cp = new CollisionProcessor(segs);
         segs.map(function(s){cu.draw_segment(s)});
-        $(window).click(function(e) {
-            var x = e.clientX;
-            var y = e.clientY;
+        function click(x, y) {
             cu.clear();
             segs.map(function(s){cu.draw_segment(s)});
             if (count % 2 == 0) {
@@ -163,16 +162,28 @@ $(function() {
                 cu.draw_circle(start);
             } else {
                 end = [[x, y], rad];
+                console.debug(start, end);
                 cu.draw_circle(start);
                 //cu.draw_circle(end);
                 //cu.draw_segment([start[0], end[0]]);
 
-                cp.process(start[0], end[0], rad);
+                var dest = cp.process(start[0], end[0], rad);
+                cu.draw_circle([dest, rad]);
 
             }
 
             count++;
-        });
+ 
+        }
+
+        click(110, 440);
+        click(305, 181);
+//        click(150.14138041849282, 386.68401267492493);
+//        click(226.73933810366054, 430.74136898660277);
+
+        $(window).click(function(e) {
+            click(e.clientX, e.clientY);
+       });
 
     }.arr_args());
 });

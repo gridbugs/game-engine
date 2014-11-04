@@ -509,9 +509,11 @@ Array.add_method('seg_circle_intersections', function(circle) {
 
 Array.add_method('seg_circle_intersections_exclusive', function(circle) {
     var line_intersections = this.seg_to_line().line_circle_intersections_exclusive(circle);
-    return line_intersections.filter(function(v) {
+    var ret = line_intersections.filter(function(v) {
         return this.seg_contains_v2_on_line_exclusive(v);
     }.bind(this));
+
+    return ret;
 });
 
 function solve_quadratic(a, b, c) {
