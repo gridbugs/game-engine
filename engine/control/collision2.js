@@ -2,13 +2,6 @@ function CollisionProcessor(segs) {
     this.segs = segs;
 }
 
-CollisionProcessor.Result = function(start, end, collision) {
-    this.start = start;
-    this.end = end;
-    this.seg = [start, end];
-    this.collision = collision;
-}
-
 CollisionProcessor.prototype.get_collision = function(start, end, rad) {
     var candidates = this.segs.map(function(s) {
         return this.edge_intersection(start, end, rad, s)
@@ -31,13 +24,7 @@ CollisionProcessor.prototype.get_collision = function(start, end, rad) {
     return first;
 }
 
-CollisionProcessor.prototype.process = function(start, end, rad) {
-    var collision = this.get_collision(start, end, rad);
-    if (collision == null) {
-        console.debug('no collision');
-        return end;
-    }
-
+CollisionProcessor.prototype.check_slide = function(collision) {
     // compute the path for resolving the collision
     var path = collision.slide();
 
@@ -46,17 +33,17 @@ CollisionProcessor.prototype.process = function(start, end, rad) {
         var seg_start = path[i-1];
         var seg_end = path[i];
 
-        var seg_collision = this.get_collision(seg_start, seg_end, rad);
+        var seg_collision = this.get_collision(seg_start, seg_end, collision.rad);
         
-        cu.draw_circle([seg_start, rad], 'grey', 1);
+        cu.draw_circle([seg_start, collision.rad], 'grey', 1);
         if (seg_collision != null) {
-            cu.draw_circle([seg_end, rad], 'orange', 4);
-            cu.draw_circle([seg_start, rad], 'red', 4);
+            //cu.draw_circle([seg_end, collision.rad], 'orange', 4);
+            //cu.draw_circle([seg_start, collision.rad], 'red', 4);
+            //cu.draw_circle([seg_collision.centre, collision.rad], 'blue', 4);
             // the slide has collided with another segment
             console.debug('slide collision');
             console.debug(seg_collision);
-            cu.draw_point(seg_collision.end, 'green', 4);
-            //return path[i];
+            return seg_collision.centre;
         }
     }
     
@@ -64,6 +51,17 @@ CollisionProcessor.prototype.process = function(start, end, rad) {
     console.debug(path);
 
     return path[path.length-1];
+
+}
+
+CollisionProcessor.prototype.process = function(start, end, rad) {
+    var collision = this.get_collision(start, end, rad);
+    if (collision == null) {
+        console.debug('no collision');
+        return end;
+    }
+
+    return this.check_slide(collision);
 }
 
 CollisionProcessor.Collision = function(start, end, rad, seg, centre) {
