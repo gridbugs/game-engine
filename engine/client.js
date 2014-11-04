@@ -149,7 +149,7 @@ $(function() {
 
         var count = 0;
         var start, end;
-        var rad = 20;
+        var rad = 100;
         var segs = [ [[100, 100], [200, 300]] ];
         var cp = new CollisionProcessor(segs);
         segs.map(function(s){cu.draw_segment(s)});
@@ -164,17 +164,19 @@ $(function() {
             } else {
                 end = [[x, y], rad];
                 cu.draw_circle(start);
-                cu.draw_circle(end);
-                cu.draw_segment([start[0], end[0]]);
-/*
+                //cu.draw_circle(end);
+                //cu.draw_segment([start[0], end[0]]);
+
                 var edge = cp.edge_intersection(start[0], end[0], rad, segs[0]);
                 if (edge != null) {
                     edge.slide(start[0], end[0], rad, segs[0]);
+                    edge.draw_path();
                 }
-                */
+                
                 var vertex = cp.vertex_intersection(start[0], end[0], rad, segs[0]);
                 if (vertex != null) {
-                    vertex.slide(start[0], end[0], rad, segs[0]);
+                    vertex.slide();
+                    //vertex.draw_path();
                 }
 
             }

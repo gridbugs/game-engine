@@ -11,6 +11,9 @@
  *      the order in which they appear in the array, forms the shape of the polyon
  */
 
+// namespace for some algebra utils
+function Algebra(){}
+
 Array.add_method('toString', function() {
     return ["[", this.map(function(x){return x.toString()}).join(", "), "]"].join('');
 });
@@ -231,6 +234,9 @@ Array.add_method('seg_to_line', function() {
     return [this[0], this.seg_to_dir_v2()];
 });
 
+Array.add_method('seg_contains_v2_on_line_exclusive', function(v) {
+    return Math.between_exclusive(0, this.seg_aligned_ratio(v), 1);
+});
 Array.add_method('seg_contains_v2_on_line', function(v) {
     return Math.between_inclusive(0, this.seg_aligned_ratio(v), 1);
 });
@@ -260,6 +266,30 @@ Array.add_method('seg_intersection', function(s) {
     }
 
     return null;
+});
+
+Array.add_method('seg_intersection_exclusive', function(s) {
+    if (this.seg_length() == 0 || s.seg_length() == 0) {
+        return null;
+    }
+    // find the interesction of the two lines
+    var intersection = this.seg_to_line().line_intersection(
+                            s.seg_to_line());
+
+    // case where segments are parallel
+    if (intersection == null) {
+        return null;
+    }
+
+    // check if it's on both segments
+    if (this.seg_contains_v2_on_line_exclusive(intersection) &&
+        s.seg_contains_v2_on_line_exclusive(intersection)) {
+
+        return intersection;
+    }
+
+    return null;
+
 });
 
 Array.add_method('circ_contains', function(v) {
@@ -446,8 +476,27 @@ Array.add_method('v2_circle_intersections', function(circle) {
     return xs.map(function(x) {return this.v2_smult(x)}.bind(this));
 });
 
+/*
+ * If there was only one solution to the quadratic, then the circle
+ * was just touching the line. In this case, act as though no intersection
+ * occured. Otherwise, behave as normal.
+ */
+Array.add_method('v2_circle_intersections_exclusive', function(circle) {
+    var ret = this.v2_circle_intersections(circle);
+    if (ret.length == 1) {
+        return [];
+    } else {
+        return ret;
+    }
+});
+
 Array.add_method('line_circle_intersections', function(circle) {
     return this[1].v2_circle_intersections(circle.circ_sub(this[0]))
+        .map(function(x){return x.v2_add(this[0])}.bind(this));
+});
+
+Array.add_method('line_circle_intersections_exclusive', function(circle) {
+    return this[1].v2_circle_intersections_exclusive(circle.circ_sub(this[0]))
         .map(function(x){return x.v2_add(this[0])}.bind(this));
 });
 
@@ -455,6 +504,13 @@ Array.add_method('seg_circle_intersections', function(circle) {
     var line_intersections = this.seg_to_line().line_circle_intersections(circle);
     return line_intersections.filter(function(v) {
         return this.seg_contains_v2_on_line(v);
+    }.bind(this));
+});
+
+Array.add_method('seg_circle_intersections_exclusive', function(circle) {
+    var line_intersections = this.seg_to_line().line_circle_intersections_exclusive(circle);
+    return line_intersections.filter(function(v) {
+        return this.seg_contains_v2_on_line_exclusive(v);
     }.bind(this));
 });
 
@@ -500,4 +556,20 @@ function angle_normalize(angle) {
 function rem(a, b) {
     var div = a/b;
     return (div - Math.floor(div)) * b;
+}
+
+/*
+ * Given an equation with 2 unknown scalars of the form
+ * ax + by = c
+ * where a, b and c are vectors in r2,
+ * returns [x, y]
+ */
+Algebra.equation_solve_2 = function(a, b, c) {
+    var m = [a[0], a[1], 
+             b[0], b[1]];
+
+    mat2.invert(m, m);
+    mat2.multiply(m, m, c);
+
+    return [m[0], m[1]];
 }
