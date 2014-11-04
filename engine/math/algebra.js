@@ -71,6 +71,14 @@ Array.add_method('v2_to_length', function(s) {
     return this.v2_unit().v2_smult(s);
 });
 
+Array.add_method('v2_clone', function() {
+    return [this[0], this[1]];
+});
+
+Array.add_method('seg_clone', function() {
+    return [this[0].v2_clone(), this[1].v2_clone()];
+});
+
 Array.add_method('seg_direction', function() {
     return this[1].v2_sub(this[0]);
 });

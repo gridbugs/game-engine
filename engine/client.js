@@ -64,7 +64,6 @@ $(function() {
         var demo = Content.characters.walk_demo.instance('still');
     
         var map_demo = Content.maps.map_demo.create_collision_processors();
-        console.debug(map_demo);
         agent.enter_region(map_demo.region_hash.r1);
         
         
@@ -161,7 +160,7 @@ $(function() {
                 cu.draw_circle(start);
             } else {
                 end = [[x, y], rad];
-                console.debug(start, end);
+                //console.debug(start, end);
                 cu.draw_circle(start);
                 //cu.draw_circle(end);
                 //cu.draw_segment([start[0], end[0]]);
@@ -175,8 +174,8 @@ $(function() {
  
         }
 
-        click(350, 200);
-        click(350, 100);
+        click(400, 200);
+        click(800, 200);
 //        click(150.14138041849282, 386.68401267492493);
 //        click(226.73933810366054, 430.74136898660277);
 

@@ -35,7 +35,7 @@ CollisionProcessor.prototype.check_slide = function(collision) {
 
         var seg_collision = this.get_collision(seg_start, seg_end, collision.rad);
         
-        cu.draw_circle([seg_start, collision.rad], 'grey', 1);
+        //cu.draw_circle([seg_start, collision.rad], 'grey', 1);
         if (seg_collision != null) {
             //cu.draw_circle([seg_end, collision.rad], 'orange', 4);
             //cu.draw_circle([seg_start, collision.rad], 'red', 4);
@@ -48,6 +48,7 @@ CollisionProcessor.prototype.check_slide = function(collision) {
     }
     
     //console.debug('collision');
+    //console.debug(collision);
     //console.debug(path[path.length-1]);
 
     return path[path.length-1];
@@ -75,7 +76,7 @@ CollisionProcessor.Collision = function(start, end, rad, seg, centre) {
 
 CollisionProcessor.Collision.prototype.draw_path = function() {
     for (var i = 0;i<this.path.length;++i) {
-        cu.draw_circle([this.path[i], this.rad], 'black', 1);
+        //cu.draw_circle([this.path[i], this.rad], 'black', 1);
     }
 }
 
@@ -120,7 +121,7 @@ CollisionProcessor.prototype.edge_intersection = function(start, end, rad, seg) 
 
     circle_edge_collision_point_path_seg[0] = circle_edge_collision_point_path_seg[0].v2_sub(
             circle_edge_collision_point_path_vector.v2_to_length(0.1));
-    cu.draw_segment(circle_edge_collision_point_path_seg, 'red', 2);
+    //cu.draw_segment(circle_edge_collision_point_path_seg, 'red', 2);
 
     /* point on seg at which an edge collision will occur, if an
      * edge collision is going to occur
@@ -134,11 +135,6 @@ CollisionProcessor.prototype.edge_intersection = function(start, end, rad, seg) 
     var test = [start, end].seg_closest_pt_to_v(seg_edge_collision_point);
     //cu.draw_point(test, 'red', 6);
     //console.debug(seg_edge_collision_point.v2_dist(test));
-
-    if (seg_edge_collision_point.v2_dist(test) >= (rad - 0.01)) {
-        //console.debug("no collision 2");
-        return null;
-    }
 
 
     /* vector from centre of start circle to the circle edge collision point
@@ -166,7 +162,7 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
     /* segment starting at start and finishing at end
      */
     var path_seg = [start, end];
-
+    var path_vector = path_seg.seg_direction();
 
     //cu.draw_line(path_seg.seg_to_line());
     //cu.draw_segment(path_seg, 'black', 4);
@@ -174,8 +170,22 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
 
     /* points of interesction between the path segment and both the circles
      */
-    var circle_intersection_points = vertex_circles.map(function(c, i) {
-        return path_seg.seg_circle_intersections_exclusive(c);
+    var circle_intersection_points = vertex_circles.map(function(c) {
+        var tolerance_vector = path_vector;
+        var path_seg_copy = path_seg.seg_clone();
+        
+        if (start.v2_sub(c[0]).v2_dot(tolerance_vector) > 0) {
+            tolerance_vector = tolerance_vector.v2_invert();
+        }
+        
+        path_seg_copy[0] = path_seg_copy[0].v2_sub(tolerance_vector.v2_to_length(0.1));
+
+        //cu.draw_segment(path_seg_copy, 'red', 3);
+        //console.debug(path_seg_copy);
+        var intersections =  path_seg_copy.seg_circle_intersections_exclusive(c);
+        //console.debug(path_seg_copy.toString() + '.seg_circle_intersections_exclusive(' + c.toString() + ')');
+        //console.debug(intersections);
+        return intersections;
     });
     //console.debug(circle_intersection_points);
     //circle_intersection_points.map(function(arr){arr.map(function(v){cu.draw_point(v, 'green', 4)})});
@@ -201,10 +211,13 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
     }
 
     var closest_circle = [closest_vertex, rad];
-//    cu.draw_circle(closest_circle, 'green', 1);
+    //cu.draw_circle(closest_circle, 'green', 1);
     var path_line = path_seg.seg_to_line();
+    //cu.draw_line(path_line);
+    //console.debug(path_line.toString() + '.line_circle_intersections_exclusive(' + closest_circle.toString() + ')');
     var circle_points = path_line.line_circle_intersections_exclusive(closest_circle);
-    if (circle_points[0].v2_dist(circle_points[1]) < 0.01) {
+    //console.debug(circle_points);
+    if (circle_points.length != 2 || circle_points[0].v2_dist(circle_points[1]) < 0.01) {
         return null;
     }
 
