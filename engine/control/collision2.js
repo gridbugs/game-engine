@@ -2,6 +2,19 @@ function CollisionProcessor(segs) {
     this.segs = segs;
 }
 
+CollisionProcessor.prototype.process = function(start, end, rad) {
+    var candidates = this.segs.map(function(s) {
+        return this.edge_intersection(start, end, rad, s)
+    }.bind(this)).concat(this.segs.map(function(s) {
+        return this.vertex_intersection(start, end, rad, s)
+    }.bind(this))).filter(function(c) {
+        return c != null;  
+    });
+
+    console.debug(candidates);
+
+}
+
 CollisionProcessor.Collision = function(start, end, rad, seg, centre) {
     this.centre = centre;
     this.path = [centre];
@@ -126,25 +139,40 @@ CollisionProcessor.EdgeCollision.prototype.slide = function() {
 
     /* point in line with seg that is closest ot the end point */
     var end_projection_on_seg = seg.seg_closest_pt_to_v(end);
-    //cu.draw_segment([end, end_projection_on_seg], 'orange', 2);
+    //cu.draw_point(end_projection_on_seg, 'orange', 6);
 
-    var projected_centre = end_projection_on_seg.v2_sub(this.to_collision);
-    //cu.draw_circle([projected_centre, rad], 'orange', 2);
+    if (seg.seg_contains_v2_on_line_exclusive(end_projection_on_seg)) {
 
-    this.path.push(projected_centre);
+        var projected_centre = end_projection_on_seg.v2_sub(this.to_collision);
+        //cu.draw_circle([projected_centre, rad], 'orange', 2);
 
-    return this;
+        this.path.push(projected_centre);
+
+        return this;
+    }
+    
+    var mid = seg.seg_mid();
+    var closest_end = end_projection_on_seg.v2_sub(mid).v2_to_length(seg.seg_length()/2).v2_add(mid);
+//    cu.draw_point(closest_end, 'red', 4);
+
+    var centre_at_closest_end = closest_end.v2_sub(this.to_collision);
+//    cu.draw_circle([centre_at_closest_end, rad], 'orange', 2);
+    
+    var remaining_trajectory_vector = end.v2_sub(centre_at_closest_end);
+//    cu.draw_segment([centre_at_closest_end, centre_at_closest_end.v2_add(remaining_trajectory_vector)]);
+
+    return this.vertex_slide(centre_at_closest_end, end, centre_at_closest_end, closest_end);
 }
 
-
 CollisionProcessor.VertexCollision.prototype.slide = function() {
-    var start = this.start;
-    var end = this.end;
-    var rad = this.rad;
+    return this.vertex_slide(this.start, this.end, this.centre, this.vertex);
+}
+
+CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centre, vertex) {
 
     var total_distance = start.v2_dist(end);
     
-    var pre_collision_distance = start.v2_dist(this.centre);
+    var pre_collision_distance = start.v2_dist(centre);
 
     var remaining_distance = total_distance - pre_collision_distance;
 
@@ -156,30 +184,30 @@ CollisionProcessor.VertexCollision.prototype.slide = function() {
 
     /* vector from start position to the vertex involved in the collision
      */
-    var start_to_vertex = this.vertex.v2_sub(this.centre);
+    var start_to_vertex = vertex.v2_sub(centre);
 
     /* tangent to the circle at the intersection point
      */
-    var tangent_at_vertex = [this.vertex, start_to_vertex.v2_norm()];
+    var tangent_at_vertex = [vertex, start_to_vertex.v2_norm()];
     //cu.draw_line(tangent_at_vertex, 'purple');
 
     /* vector from start to end
      */
-    var start_to_end_vector = this.end.v2_sub(this.start);
+    var start_to_end_vector = end.v2_sub(start);
 
     /* a line through the start and end points 
      */
-    var start_to_end_line = [this.start, start_to_end_vector];
+    var start_to_end_line = [start, start_to_end_vector];
     //cu.draw_line(start_to_end_line, 'red');
 
-    //cu.draw_circle([this.centre, rad], 'black', 1);
+    //cu.draw_circle([centre, rad], 'black', 1);
 
-    var centre_to_intersection = this.vertex.v2_sub(this.centre);
+    var centre_to_intersection = vertex.v2_sub(centre);
 
     /* vector nomal to the the direction of movement with the same
      * length as the radius
      */
-    var normal_vector = start_to_end_vector.v2_norm().v2_to_length(rad);
+    var normal_vector = start_to_end_vector.v2_norm().v2_to_length(this.rad);
     var normal_vector_towards_intersection = 
         [normal_vector, normal_vector.v2_invert()].most(function(v) {
             return v.v2_dot(centre_to_intersection)
@@ -187,10 +215,10 @@ CollisionProcessor.VertexCollision.prototype.slide = function() {
 
     /* the tangent on the appropriate side
      */
-    var current_tangent = [normal_vector_towards_intersection.v2_add(this.centre), start_to_end_vector];
+    var current_tangent = [normal_vector_towards_intersection.v2_add(centre), start_to_end_vector];
     
 
-    //cu.draw_point(normal_vector_towards_intersection.v2_add(this.centre), 'green', 6);
+    //cu.draw_point(normal_vector_towards_intersection.v2_add(centre), 'green', 6);
     //cu.draw_line(current_tangent, 'red', 1);
 
     /* intersection between the tangent at the vertex and the tangent we
@@ -201,30 +229,30 @@ CollisionProcessor.VertexCollision.prototype.slide = function() {
 
     /* vector to move the circle along the tangent to resolve the collision
      */
-    var vertex_tangent_vector_to_move = this.vertex.v2_sub(current_tangent_vertex_tangent_intersection);
+    var vertex_tangent_vector_to_move = vertex.v2_sub(current_tangent_vertex_tangent_intersection);
     var current_tangent_vector_to_move = current_tangent_vertex_tangent_intersection.v2_sub(current_tangent[0]);
 
     /* new centre that avoids the collision
      */
-    var vertex_adjusted_centre = this.centre.v2_add(vertex_tangent_vector_to_move);
-    //cu.draw_segment([this.centre, vertex_adjusted_centre]);
+    var vertex_adjusted_centre = centre.v2_add(vertex_tangent_vector_to_move);
+    //cu.draw_segment([centre, vertex_adjusted_centre]);
     
     var current_adjusted_centre = vertex_adjusted_centre.v2_add(current_tangent_vector_to_move);
 
-    var move_distance = this.centre.v2_dist(current_adjusted_centre);
+    var move_distance = centre.v2_dist(current_adjusted_centre);
     //console.debug(move_distance);
 
     if (move_distance < remaining_distance) {
         this.path.push(vertex_adjusted_centre);
         this.path.push(current_adjusted_centre);
-        //cu.draw_circle([vertex_adjusted_centre, rad], 'black', 1);
-        //cu.draw_circle([current_adjusted_centre, rad], 'black', 1);
+        //cu.draw_circle([vertex_adjusted_centre, this.rad], 'black', 1);
+        //cu.draw_circle([current_adjusted_centre, this.rad], 'black', 1);
 
         remaining_distance -= move_distance;
 
         var adjusted_end = current_adjusted_centre.v2_add(start_to_end_vector.v2_to_length(remaining_distance));
         this.path.push(adjusted_end);
-        //cu.draw_circle([adjusted_end, rad], 'black', 1);
+        //cu.draw_circle([adjusted_end, this.rad], 'black', 1);
 
         return this;
     }
@@ -236,11 +264,11 @@ CollisionProcessor.VertexCollision.prototype.slide = function() {
 //    cu.draw_circle([vertex_adjusted_centre, this.rad]);
     //cu.draw_circle([current_adjusted_centre, this.rad], 'red', 2);
 
-    var current_angle = this.centre.v2_sub(this.vertex).v2_angle();
-    var adjusted_angle = current_adjusted_centre.v2_sub(this.vertex).v2_angle();
+    var current_angle = centre.v2_sub(vertex).v2_angle();
+    var adjusted_angle = current_adjusted_centre.v2_sub(vertex).v2_angle();
     var interpolated_angle = angle_normalize(current_angle + angle_normalize(adjusted_angle - current_angle) * ratio);
     
-    var interpolated_destination = angle_to_unit_vector(interpolated_angle).v2_to_length(this.rad).v2_sub(this.centre.v2_sub(this.vertex));
+    var interpolated_destination = angle_to_unit_vector(interpolated_angle).v2_to_length(this.rad).v2_sub(centre.v2_sub(vertex));
 
     var m = Algebra.equation_solve_2(
                 vertex_tangent_vector_to_move,
@@ -251,18 +279,12 @@ CollisionProcessor.VertexCollision.prototype.slide = function() {
     var x = vertex_tangent_vector_to_move.v2_smult(m[0]);
     var y = current_tangent_vector_to_move.v2_smult(m[1]);
 
-    var x_moved = this.centre.v2_add(x);
+    var x_moved = centre.v2_add(x);
     var y_moved = x_moved.v2_add(y);
 
     this.path.push(x_moved);
     this.path.push(y_moved);
 
-    //cu.draw_segment([this.centre, this.centre.v2_add(x)]);
-    //cu.draw_segment([this.centre.v2_add(x), this.centre.v2_add(x).v2_add(y)]);
-
-    //cu.draw_circle([this.centre.v2_add(x).v2_add(y), this.rad], 'black', 1);
-    
-    //cu.draw_circle([this.vertex, this.rad], 'black', 1);
  
     return this;
 }
