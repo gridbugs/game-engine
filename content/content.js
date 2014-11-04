@@ -2,5 +2,6 @@ Content.characters = {
     walk_demo: WalkDemo
 }
 Content.maps = {
-    map_demo: MapDemo
+    map_demo: MapDemo,
+    collision_test: CollisionTest
 }

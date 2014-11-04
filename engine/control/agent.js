@@ -8,10 +8,6 @@ function Agent(pos, facing) {
     this.rad = 50;
 }
 
-Agent.prototype.set_segs = function(segs) {
-    this.collision_processor = new CollisionProcessor(this.rad, segs);
-}
-
 Agent.prototype.enter_region = function(region) {
     this.region = region;
     this.collision_processor = region.collision_processor;
@@ -55,7 +51,7 @@ Agent.prototype.control_tick = function(time_delta) {
     
     var dest = this.pos.v2_add(angle_to_unit_vector(angle).v2_smult(this.move_speed));
     this.last_pos = this.pos;
-    this.pos = this.collision_processor.process_collision(this.pos, dest);
+    this.pos = this.collision_processor.process(this.pos, dest, this.rad);
 
     return true;
 }
@@ -84,8 +80,8 @@ Agent.prototype.absolute_control_tick = function(time_delta) {
 
     var dest = this.pos.v2_add(vec.v2_smult(this.move_speed*time_delta/1000));
     this.last_pos = this.pos;
-    this.pos = this.collision_processor.process_collision(this.pos, dest);
-
+    this.pos = this.collision_processor.process(this.pos, dest, this.rad);
+    
     return true;
 }
 

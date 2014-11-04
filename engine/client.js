@@ -63,8 +63,8 @@ $(function() {
 
         var demo = Content.characters.walk_demo.instance('still');
     
-        var map_demo = Content.maps.map_demo.create_collision_processors(agent.rad);
-        
+        var map_demo = Content.maps.map_demo.create_collision_processors();
+        console.debug(map_demo);
         agent.enter_region(map_demo.region_hash.r1);
         
         
@@ -109,7 +109,7 @@ $(function() {
  
             // apply global translation (for scrolling)
             drawer.save();
-            drawer.translate([-100, 0]);
+            drawer.translate([0, 0]);
            
             // apply local transformation (for moving the character)
             drawer.save();
@@ -117,7 +117,7 @@ $(function() {
  
             // draw the character
             circle.draw();
-            demo.draw();
+            //demo.draw();
             drawer.draw_point([0, 0], tc('black'), 4);
             
             var centre = drawer.global_centre();
@@ -145,13 +145,12 @@ $(function() {
             fps_stats.end();
             ms_stats.end();
         }
-        //t();
-
+        t();return;
         var count = 2;
         var rad = 100;
         var start;
         var end;
-        var segs = [ [[100, 100], [200, 300]] ];
+        var segs = [ /*[[100, 100], [200, 300]],*/ [[200, 300], [500, 300]] ];
         var cp = new CollisionProcessor(segs);
         segs.map(function(s){cu.draw_segment(s)});
         function click(x, y) {
@@ -176,8 +175,8 @@ $(function() {
  
         }
 
-        click(499, 308);
-        click(17, 233);
+        click(350, 200);
+        click(350, 100);
 //        click(150.14138041849282, 386.68401267492493);
 //        click(226.73933810366054, 430.74136898660277);
 

@@ -63,11 +63,11 @@ Region.prototype.display_detect = function(agent) {
     });
 }
 
-Region.prototype.create_collision_processor = function(rad) {
+Region.prototype.create_collision_processor = function() {
     var segs = this.segs;
     for (var i = 0;i<this.neighbours.length;++i) {
         segs = segs.concat(this.neighbours[i].segs);
     }
-    this.collision_processor = new CollisionProcessor(rad, segs);
+    this.collision_processor = new CollisionProcessor(segs);
 }
 
