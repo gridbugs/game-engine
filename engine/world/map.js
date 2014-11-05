@@ -45,6 +45,8 @@ Map.prototype.load_visible = function() {
         if (!o[name]) {
             group.hide();
         }
+
+        this.region_hash[name].group = group;
     }
 }
 
@@ -61,8 +63,8 @@ Map.prototype.load_display_detectors = function() {
         var right_names = line[2].constructor == Array ? line[2] : [line[2]];
         var seg = line[3];
 
-        var left = left_names.map(function(n){return this.group_hash[n]}.bind(this));
-        var right = right_names.map(function(n){return this.group_hash[n]}.bind(this));
+        var left = left_names.map(function(n){return this.region_hash[n]}.bind(this));
+        var right = right_names.map(function(n){return this.region_hash[n]}.bind(this));
 
         region.add_display_detector(left, right, seg);
     }

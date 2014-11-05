@@ -10,7 +10,6 @@ function Agent(pos, facing) {
 
 Agent.prototype.enter_region = function(region) {
     this.region = region;
-    this.collision_processor = region.collision_processor;
 }
 
 Agent.prototype.border_detect = function() {
@@ -51,7 +50,7 @@ Agent.prototype.control_tick = function(time_delta) {
     
     var dest = this.pos.v2_add(angle_to_unit_vector(angle).v2_smult(this.move_speed));
     this.last_pos = this.pos;
-    this.pos = this.collision_processor.process(this.pos, dest, this.rad);
+    this.pos = this.region.collision_processor.process(this.pos, dest, this.rad);
 
     return true;
 }
@@ -80,7 +79,7 @@ Agent.prototype.absolute_control_tick = function(time_delta) {
 
     var dest = this.pos.v2_add(vec.v2_smult(this.move_speed*time_delta/1000));
     this.last_pos = this.pos;
-    this.pos = this.collision_processor.process(this.pos, dest, this.rad);
+    this.pos = this.region.collision_processor.process(this.pos, dest, this.rad);
     
     return true;
 }
