@@ -1,3 +1,4 @@
+var scroll;
 var circle;
 var t;
 var drawer;
@@ -78,6 +79,8 @@ $(function() {
         var state = 1;
         var tm = new TimeManager();
        
+        scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
+
         t = function() {
             fps_stats.begin();
             ms_stats.begin();
@@ -108,7 +111,8 @@ $(function() {
  
             // apply global translation (for scrolling)
             drawer.save();
-            drawer.translate([0, 0]);
+            drawer.translate(scroll.translate);
+            //drawer.translate([-100, 0]);
            
             // apply local transformation (for moving the character)
             drawer.save();
@@ -119,7 +123,9 @@ $(function() {
             demo.draw();
             //drawer.draw_point([0, 0], tc('black'), 4);
             
+            // get the position of the player character on screen
             var centre = drawer.global_centre();
+            scroll.update(centre);
 
             drawer.restore();
             
