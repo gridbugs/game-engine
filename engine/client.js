@@ -146,10 +146,10 @@ $(function() {
         }
         t();return;
         var count = 2;
-        var rad = 100;
+        var rad = 50;
         var start;
         var end;
-        var segs = [ /*[[100, 100], [200, 300]],*/ [[200, 300], [500, 300]] ];
+        var segs = [ /*[[100, 100], [200, 300]],*/ [[300, 100], [300, 400]] ];
         var cp = new CollisionProcessor(segs);
         segs.map(function(s){cu.draw_segment(s)});
         function click(x, y) {
@@ -174,10 +174,8 @@ $(function() {
  
         }
 
-        click(400, 200);
-        click(800, 200);
-//        click(150.14138041849282, 386.68401267492493);
-//        click(226.73933810366054, 430.74136898660277);
+        click(249.99999999999997, 350);
+        click(249.99999999999997, 343.2);
 
         $(window).click(function(e) {
             click(e.clientX, e.clientY);

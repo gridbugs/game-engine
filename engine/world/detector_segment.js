@@ -16,15 +16,43 @@ DetectorSegment.prototype.detect = function(path) {
     if (this.seg.seg_aligned(path[0]) && this.seg.seg_aligned(path[1])) {
         return;
     }
-
+    
     // if the path crosses the segment
     if (this.seg.seg_intersects(path)) {
         var dot = this.seg.seg_direction().v2_norm().v2_dot(path.seg_direction());
-        if (dot > 0) {
-            this.left_callback.apply(window, arguments);
+        var left = dot > 0;
+
+        // if neither the start or end lying on the segment
+        if (this.seg.seg_aligned(path[0])) {
+            // path starts on segment
+ 
+            // only call the callback if the direction is generally the same
+            if (this.stored_left == left) {
+                this.call_callback(left, arguments);
+            }
+
+        } else if (this.seg.seg_aligned(path[1])) {
+            // path ends on segment
+ 
+            /* the next time this is invoked, provided that the movement is
+             * in generally the same direction, call the appropriate callback
+             */
+
+            this.stored_left = left;
+
         } else {
-            this.right_callback.apply(window, arguments);
+
+            // path croses segment
+            this.call_callback(left, arguments);
         }
+    }
+}
+
+DetectorSegment.prototype.call_callback = function(left, args) {
+    if (left) {
+        this.left_callback.apply(window, args);
+    } else {
+        this.right_callback.apply(window, args);
     }
 }
 

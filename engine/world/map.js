@@ -21,8 +21,8 @@ Map.prototype.connect = function() {
     }
 }
 
-Map.prototype.create_collision_processors = function(rad) {
-    this.region_arr.map(function(r){r.create_collision_processor(rad)});
+Map.prototype.create_collision_processors = function() {
+    this.region_arr.map(function(r){r.create_collision_processor()});
     return this;
 }
 
