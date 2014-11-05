@@ -63,7 +63,7 @@ $(function() {
 
         var demo = Content.characters.walk_demo.instance('still');
     
-        var map_demo = Content.maps.map_demo.create_collision_processors();
+        var map_demo = Content.maps.map_demo;
         agent.enter_region(map_demo.region_hash.r1);
         
         
@@ -115,9 +115,9 @@ $(function() {
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
  
             // draw the character
-            circle.draw();
-            //demo.draw();
-            drawer.draw_point([0, 0], tc('black'), 4);
+            //circle.draw();
+            demo.draw();
+            //drawer.draw_point([0, 0], tc('black'), 4);
             
             var centre = drawer.global_centre();
 
@@ -144,42 +144,7 @@ $(function() {
             fps_stats.end();
             ms_stats.end();
         }
-        t();return;
-        var count = 2;
-        var rad = 50;
-        var start;
-        var end;
-        var segs = [ /*[[100, 100], [200, 300]],*/ [[300, 100], [300, 400]] ];
-        var cp = new CollisionProcessor(segs);
-        segs.map(function(s){cu.draw_segment(s)});
-        function click(x, y) {
-            cu.clear();
-            segs.map(function(s){cu.draw_segment(s)});
-            if (count % 2 == 0) {
-                start = [[x, y], rad];
-                cu.draw_circle(start);
-            } else {
-                end = [[x, y], rad];
-                //console.debug(start, end);
-                cu.draw_circle(start);
-                //cu.draw_circle(end);
-                //cu.draw_segment([start[0], end[0]]);
-
-                var dest = cp.process(start[0], end[0], rad);
-                cu.draw_circle([dest, rad]);
-
-            }
-
-            count++;
- 
-        }
-
-        click(249.99999999999997, 350);
-        click(249.99999999999997, 343.2);
-
-        $(window).click(function(e) {
-            click(e.clientX, e.clientY);
-       });
+        t();
 
     }.arr_args());
 });

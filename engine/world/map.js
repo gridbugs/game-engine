@@ -77,6 +77,7 @@ Map.prototype.draw = function() {
 Map.prototype.run = function(then) {
     this.load_visible();
     this.load_display_detectors();
+    this.create_collision_processors();
     then();
 }
 

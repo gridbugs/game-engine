@@ -69,7 +69,6 @@ Region.prototype.display_detect = function(agent) {
 
 Region.prototype.create_collision_processor = function() {
     var segs = this.segs;
-    console.debug('create collision processor');
     for (var i = 0;i<this.neighbours.length;++i) {
         var nei = this.neighbours[i];
         if (nei.group.visible) {
