@@ -79,7 +79,7 @@ $(function() {
         var state = 1;
         var tm = new TimeManager();
        
-        scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
+        scroll = new ScrollContext([0, 0], 0, [$(window).width(), $(window).height()]);
 
         t = function() {
             fps_stats.begin();
@@ -119,9 +119,9 @@ $(function() {
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
  
             // draw the character
-            //circle.draw();
-            demo.draw();
-            //drawer.draw_point([0, 0], tc('black'), 4);
+            circle.draw();
+            //demo.draw();
+            drawer.draw_point([0, 0], tc('black'), 4);
             
             // get the position of the player character on screen
             var centre = drawer.global_centre();

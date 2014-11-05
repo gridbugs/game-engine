@@ -4,10 +4,11 @@ Map.prototype.regions = function(o) {
     this.region_hash = {};
     this.region_arr = [];
     for (var name in o) {
-        var r = new Region(o[name]);
+        var r = new Region(o[name], this.drawer, this);
         this.region_hash[name] = r;
         this.region_arr.push(r);
     }
+
 }
 
 Map.prototype.connect = function() {
@@ -23,6 +24,11 @@ Map.prototype.connect = function() {
 
 Map.prototype.create_collision_processors = function() {
     this.region_arr.map(function(r){r.create_collision_processor()});
+    return this;
+}
+
+Map.prototype.create_visibility_contexts = function() {
+    this.region_arr.map(function(r){r.create_visibility_context()});
     return this;
 }
 
@@ -48,6 +54,16 @@ Map.prototype.load_visible = function() {
 
         this.region_hash[name].group = group;
     }
+}
+
+Map.prototype.visible_regions = function() {
+    var ret = [];
+    for (var i = 0;i<this.group_arr.length;i++) {
+        if (this.group_arr[i].visible) {
+            ret.push(this.region_arr[i]);
+        }
+    }
+    return ret;
 }
 
 Map.prototype.display_detectors = function() {
@@ -78,9 +94,46 @@ Map.prototype.run = function(then) {
     this.load_visible();
     this.load_display_detectors();
     this.create_collision_processors();
+    this.create_vertices();
+    this.create_visibility_contexts();
     then();
 }
 
 Map.prototype.set_drawer = function(drawer) {
     this.drawer = drawer;
+}
+
+Map.prototype.insert_seg_vertices = function(seg, region) {
+    var exists = [false, false];
+    for (var i = 0;i<this.vertices.length;i++) {
+        var vertex = this.vertices[i];
+        if (seg[0].v2_equals(vertex.pos)) {
+            vertex.neighbours.push(seg[1]);
+            exists[0] = true;
+        } else if (seg[1].v2_equals(vertex.pos)) {
+            vertex.neighbours.push(seg[0]);
+            exists[1] = true;
+        }
+    }
+    for (var i = 0;i<2;i++) {
+        if (!exists[i]) {
+            var vertex = new Vertex(seg[i]);
+            this.vertices.push(vertex);
+            vertex.neighbours.push(seg[1-i]);
+            region.vertices.push(vertex);
+        }
+    }
+}
+
+Map.prototype.create_vertices = function() {
+    this.vertices = [];
+
+    for (var i = 0;i<this.region_arr.length;i++) {
+        var region = this.region_arr[i];
+        for (var j = 0;j<region.segs.length;j++) {
+            var seg = region.segs[j];
+            this.insert_seg_vertices(seg, region);
+        }
+    }
+
 }

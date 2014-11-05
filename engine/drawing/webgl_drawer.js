@@ -146,13 +146,14 @@ WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
 }
 
 WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {
+    this.save();
     this.select_dynamic();
     
     this.dynamic_vertex_buffer.update(0, [
         seg[0][0], seg[0][1], seg[1][0], seg[1][1]
     ]);
 
-    var mv_transform = mat3.create();
+    var mv_transform = this.mv_transform;
     this.u_model_view.set(mv_transform);
     this.index_buffer.bind();
     
@@ -169,6 +170,7 @@ WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {
     this.vertex_buffer.bind();
     
     this.select_static();
+    this.restore();
 }
 
 WebGLDrawer.prototype.clear = function() {

@@ -1,13 +1,14 @@
 /*
  * A collection of colliding walls
  */
-function Region(segs, drawer) {
+function Region(segs, drawer, map) {
     this.segs = segs;
     this.drawer = drawer;
     this.neighbours = [];
     this.border_detectors = [];
     this.display_detectors = [];
-    
+    this.vertices = [];
+    this.map = map;
 }
 
 Region.prototype.connect = function(region, segment) {
@@ -50,11 +51,13 @@ Region.prototype.add_display_detector = function(left, right, segment) {
             left.map(function(d){d.group.hide()});
             right.map(function(d){d.group.show()});
             this.create_collision_processor();
+            this.create_visibility_context();
         }.bind(this),
         function() {
             left.map(function(d){d.group.show()});
             right.map(function(d){d.group.hide()});
             this.create_collision_processor();
+            this.create_visibility_context();
         }.bind(this)
     ));
 }
@@ -65,6 +68,17 @@ Region.prototype.display_detect = function(agent) {
     this.display_detectors.map(function(d) {
         d.detect(path);
     });
+}
+
+Region.prototype.get_segs = function() {
+    var segs = this.segs;
+    for (var i = 0;i<this.neighbours.length;++i) {
+        var nei = this.neighbours[i];
+        if (nei.group.visible) {
+            segs = segs.concat(nei.segs);
+        }
+    }
+    return segs;
 }
 
 Region.prototype.create_collision_processor = function() {
@@ -79,3 +93,11 @@ Region.prototype.create_collision_processor = function() {
     this.collision_processor = new CollisionProcessor(segs);
 }
 
+Region.prototype.create_visibility_context = function() {
+    var visible_regions = this.map.visible_regions();
+    var visible_vertices = [];
+    for (var i = 0;i<visible_regions.length;i++) {
+        visible_vertices = visible_vertices.concat(visible_regions[i].vertices);
+    }
+    this.visibility_context = new VisibilityContext(visible_vertices);
+}
