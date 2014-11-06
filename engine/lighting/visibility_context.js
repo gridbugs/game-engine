@@ -2,6 +2,8 @@ function VisibilityContext(vertices, segs) {
     this.vertices = vertices;
     this.segs = segs;
 }
+VisibilityContext.LARGE_NUMBER = 10000;
+VisibilityContext.TOLERANCE = 0.00000001;
 
 VisibilityContext.prototype.non_intersecting_vertices = function(eye) {
     var vertices = this.vertices;
@@ -16,15 +18,24 @@ VisibilityContext.prototype.non_intersecting_vertices = function(eye) {
             var seg = segs[j];
             var intersection = ray.seg_to_line().line_intersection(seg.seg_to_line());
 
-            if (intersection == null || !seg.seg_contains_v2_on_line(intersection)) {
+            if (intersection == null) {
                 continue;
             }
-            var ratio = ray.seg_aligned_ratio(intersection);
-            if (ratio > 0 && ratio < 0.9) {
+
+           
+            var seg_ratio = seg.seg_aligned_ratio(intersection);
+            if (seg_ratio < 0 || seg_ratio > 1) {
+                continue;
+            }
+ 
+
+            // if the interesction was anywhere on the ray except right at the end
+            var ray_ratio = ray.seg_aligned_ratio(intersection);
+            if (ray_ratio > 0 && ray_ratio < (1 - VisibilityContext.TOLERANCE)) {
                 hits_seg = true;
                 break
             }
-        
+            
         }
         if (!hits_seg) {
             ret.push(vertex);
@@ -32,6 +43,60 @@ VisibilityContext.prototype.non_intersecting_vertices = function(eye) {
     }
     return ret;
 }
+
+VisibilityContext.prototype.closest_ray_intersection = function(ray) {
+    var min_distance = ray.seg_length();
+    var closest = ray[0].v2_add(ray.seg_direction().v2_to_length(VisibilityContext.LARGE_NUMBER));
+    var segs = this.segs;
+    for (var i = 0,slen = segs.length;i<slen;i++) {
+        var seg = segs[i];
+        var intersection = ray.seg_to_line().line_intersection(seg.seg_to_line());
+
+        // lines were parallel so no intersection
+        if (intersection == null) {
+            continue;
+        }
+
+        // intersection did not occur within the line segment      
+        var seg_ratio = seg.seg_aligned_ratio(intersection);
+        if (seg_ratio > 1 || seg_ratio < 0) {
+            continue;
+        }
+        
+        var ray_ratio = ray.seg_aligned_ratio(intersection);
+        if (ray_ratio > 0) {
+            var dist = ray[0].v2_dist(intersection);
+            if (dist > min_distance && dist < ray[0].v2_dist(closest)) {
+                closest = intersection;
+            }
+        }
+        
+    }
+
+    return closest;
+}
+
+VisibilityContext.prototype.connected_points_on_one_side = function(ray, vertex, radial_vector) {
+    /* check if all the connected points to this vertex are all on one side
+     * of the ray
+     */
+    var ray_norm = ray.seg_direction().v2_norm();
+    var neighbours = vertex.neighbours;
+    var left = false;
+    var right = false;
+    for (var i = 0,nlen = neighbours.length;i<nlen;i++) {
+        var v_to_nei = neighbours[i].v2_sub(vertex.pos);
+        var dot = ray_norm.v2_dot(v_to_nei);
+        if (dot < 0) {
+            left = true;
+        } else {
+            right = true;
+        }
+    }
+
+    return left && right;
+}
+
 
 VisibilityContext.prototype.visible_polygon = function(eye) {
 
@@ -56,30 +121,13 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
         var idx = indices[i];
         var vertex = vertices[idx];
         var ray = [eye, vertex.pos];
-
-        /* check if all the connected points to this vertex are all on one side
-         * of the ray
-         */
-        var ray_norm = ray.seg_direction().v2_norm();
-        var neighbours = vertex.neighbours;
-        var left = false;
-        var right = false;
         var radial_vector = radial_vectors[i];
-        for (var j = 0,nlen = neighbours.length;j<nlen;j++) {
-            var v_to_nei = neighbours[j].v2_sub(vertex.pos);
-            var dot = ray_norm.v2_dot(v_to_nei);
-            if (dot < 0) {
-                left = true;
-            } else {
-                right = true;
-            }
-        }
 
-        if (left && right) {
+        if (this.connected_points_on_one_side(ray, vertex, radial_vector)) {
             drawer.draw_line_segment(ray);
         } else {
-            var long_ray = ray.seg_extend(10000);
-            drawer.draw_line_segment(long_ray);
+            var closest_intersection = this.closest_ray_intersection(ray);
+            drawer.draw_line_segment([ray[0], closest_intersection]);
         }
         
     }
