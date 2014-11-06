@@ -1,3 +1,4 @@
+var vis;
 var scroll;
 var circle;
 var t;
@@ -132,8 +133,8 @@ $(function() {
             // draw the map
             map_demo.draw();
 
-            agent.region.visibility_context.visible_polygon(agent.pos);
-
+            vis = agent.region.visibility_context.visible_polygon(agent.pos);
+            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s)});
             drawer.restore();
 
             // draw the buffered session with any filters applied

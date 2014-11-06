@@ -1,3 +1,4 @@
+var test;
 function VisibilityContext(vertices, segs) {
     this.vertices = vertices;
     this.segs = segs;
@@ -128,7 +129,7 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
     });
 
     indices.sort(function(i, j) {
-        return angles[i] < angles[j];
+        return angles[i] - angles[j];
     });
 
     var points = [];
@@ -143,31 +144,30 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
 
         if (this.connected_points_on_one_side(ray, vertex)) {
             points.push(ray[1]);
-            drawer.draw_line_segment(ray);
-            drawer.draw_point(ray[1], tc('black'), 4);
+ //           drawer.draw_line_segment(ray);
+            //drawer.draw_point(ray[1], tc('black'), 4);
         } else {
             var closest_intersection = this.closest_ray_intersection(ray);
-            drawer.draw_line_segment([ray[0], closest_intersection]);
+          //  drawer.draw_line_segment([ray[0], closest_intersection]);
 
-            /*
+            
             if (last_vertex != null && last_vertex.has_neighbour(ray[1])) {
                 points.push(ray[1]);
                 points.push(closest_intersection);
             } else {
                 points.push(closest_intersection);
                 points.push(ray[1]);
-                last_vertex = vertex;
             }
-            */
+            
 
-            drawer.draw_point(closest_intersection, tc('black'), 4);
-            drawer.draw_point(ray[1], tc('black'), 4);
+            //drawer.draw_point(closest_intersection, tc('black'), 4);
+            //drawer.draw_point(ray[1], tc('black'), 4);
         }
         
         last_vertex = vertex;
     }
 
- //   points.polygon_to_segments().map(function(s){drawer.draw_line_segment(s)});
+//   points.polygon_to_segments().map(function(s){drawer.draw_line_segment(s)});
 
     return points;
 }
