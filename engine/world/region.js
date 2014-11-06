@@ -96,8 +96,10 @@ Region.prototype.create_collision_processor = function() {
 Region.prototype.create_visibility_context = function() {
     var visible_regions = this.map.visible_regions();
     var visible_vertices = [];
+    var visible_segs = [];
     for (var i = 0;i<visible_regions.length;i++) {
         visible_vertices = visible_vertices.concat(visible_regions[i].vertices);
+        visible_segs = visible_segs.concat(visible_regions[i].segs);
     }
-    this.visibility_context = new VisibilityContext(visible_vertices);
+    this.visibility_context = new VisibilityContext(visible_vertices, visible_segs);
 }

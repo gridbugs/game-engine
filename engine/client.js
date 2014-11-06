@@ -132,6 +132,8 @@ $(function() {
             // draw the map
             map_demo.draw();
 
+            agent.region.visibility_context.visible_polygon(agent.pos);
+
             drawer.restore();
 
             // draw the buffered session with any filters applied

@@ -249,6 +249,10 @@ Array.add_method('seg_contains_v2_on_line', function(v) {
     return Math.between_inclusive(0, this.seg_aligned_ratio(v), 1);
 });
 
+Array.add_method('seg_intersects_exclusive', function(s) {
+    return this.seg_intersection_exclusive(s) != null;
+});
+
 Array.add_method('seg_intersects', function(s) {
     return this.seg_intersection(s) != null;
 });
