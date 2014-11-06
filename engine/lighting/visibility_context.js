@@ -23,7 +23,8 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
     var segs = this.segs;
     for (var i = 0,len=indices.length;i<len;++i) {
         var idx = indices[i];
-        var ray = [eye, vertices[idx].pos];
+        var vertex = vertices[idx];
+        var ray = [eye, vertex.pos];
 
         var hits_seg = false;
         for (var j = 0,slen = segs.length;j<slen;j++) {
@@ -43,6 +44,31 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
         if (hits_seg) {
             continue;
         }
-        drawer.draw_line_segment(ray);
+
+        /* check if all the connected points to this vertex are all on one side
+         * of the ray
+         */
+        var ray_norm = ray.seg_direction().v2_norm();
+        var neighbours = vertex.neighbours;
+        var left = false;
+        var right = false;
+        var radial_vector = radial_vectors[i];
+        for (var j = 0,nlen = neighbours.length;j<nlen;j++) {
+            var v_to_nei = neighbours[j].v2_sub(vertex.pos);
+            var dot = ray_norm.v2_dot(v_to_nei);
+            if (dot < 0) {
+                left = true;
+            } else {
+                right = true;
+            }
+        }
+
+        if (left && right) {
+            drawer.draw_line_segment(ray);
+        } else {
+            var long_ray = ray.seg_extend(10000);
+            drawer.draw_line_segment(long_ray);
+        }
+        
     }
 }

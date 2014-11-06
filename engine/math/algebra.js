@@ -242,6 +242,10 @@ Array.add_method('seg_to_line', function() {
     return [this[0], this.seg_to_dir_v2()];
 });
 
+Array.add_method('seg_extend', function(length) {
+    return [this[0], this[0].v2_add(this.seg_direction().v2_to_length(length))];
+});
+
 Array.add_method('seg_contains_v2_on_line_exclusive', function(v) {
     return Math.between_exclusive(0, this.seg_aligned_ratio(v), 1);
 });
