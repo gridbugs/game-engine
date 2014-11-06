@@ -35,6 +35,10 @@ Array.add_method('v2_equals', function(v){return this[0]==v[0] && this[1]==v[1]}
 
 Array.add_method('v2_close', function(v, tol){return this.v2_dist(v) <= tol});
 
+Array.add_method('v2_nearly_aligned', function(v, tolerance) {
+    return Math.between_inclusive(-tolerance, this[0]*v[1] - this[1]*v[0], tolerance);
+});
+
 Array.add_method('v2_aligned', function(v) {
     return this[0]*v[1] == this[1]*v[0];
 });
@@ -47,6 +51,15 @@ Array.add_method('v2_aligned_ratio', function(v) {
     }
 });
 
+Array.add_method('seg_nearly_contains', function(v, tolerance) {
+    return this.seg_nearly_aligned(v, tolerance) && Math.between_inclusive(0, this.seg_aligned_ratio(v), 1);
+});
+Array.add_method('seg_contains', function(v) {
+    return this.seg_aligned(v) && Math.between_inclusive(0, this.seg_aligned_ratio(v), 1);
+});
+Array.add_method('seg_nearly_aligned', function(v, tolerance) {
+    return this[1].v2_sub(this[0]).v2_nearly_aligned(v.v2_sub(this[0]), tolerance);
+});
 Array.add_method('seg_aligned', function(v) {
     return this[1].v2_sub(this[0]).v2_aligned(v.v2_sub(this[0]));
 });

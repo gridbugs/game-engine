@@ -58,6 +58,7 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray) {
     var min_distance = ray.seg_length();
     var closest = ray[0].v2_add(ray.seg_direction().v2_to_length(VisibilityContext.LARGE_NUMBER));
     var segs = this.segs;
+    var hint = null;
     for (var i = 0,slen = segs.length;i<slen;i++) {
         var seg = segs[i];
         var intersection = ray.seg_to_line().line_intersection(seg.seg_to_line());
@@ -81,6 +82,11 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray) {
                 var dist = ray[0].v2_dist(intersection);
                 if (dist < ray[0].v2_dist(closest)) {
                     closest = intersection;
+                    if (vertex == null) {
+                        hint = seg;
+                    } else {
+                        hint = vertex;
+                    }
                 }
             }
         }
@@ -88,7 +94,7 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray) {
         
     }
 
-    return closest;
+    return [closest, hint];
 }
 
 VisibilityContext.prototype.connected_points_on_one_side = function(ray, vertex) {
@@ -136,7 +142,8 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
 
     var segs = this.segs;
 
-    var last_vertex = null;
+    var last_hint = null;
+
     for (var i = 0,len=indices.length;i<len;++i) {
         var idx = indices[i];
         var vertex = vertices[idx];
@@ -146,25 +153,72 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             points.push(ray[1]);
  //           drawer.draw_line_segment(ray);
             //drawer.draw_point(ray[1], tc('black'), 4);
+            last_hint = vertex;
         } else {
-            var closest_intersection = this.closest_ray_intersection(ray);
-          //  drawer.draw_line_segment([ray[0], closest_intersection]);
 
-            
-            if (last_vertex != null && last_vertex.has_neighbour(ray[1])) {
+            /* the ray hit the side of a corner, so we continue it until
+             * it hits something more substantial (either a segment edge
+             * or the front of a corner
+             */
+            var closest_intersection = this.closest_ray_intersection(ray);
+            var intersection_point = closest_intersection[0];
+
+            /* the hint is used by the next vertex when determining the order
+             * to insert points into the points array in the case where
+             * the ray hits the side of a corner (ie. this case)
+             */
+            var hint = closest_intersection[1];
+
+            /* Use the last hint to determine the order to insert points.
+             * The choice is between the "near" point, which is the vertex
+             * whose side was glanced by the ray, and the "far" point,
+             * which is the point where the extended ray hits something.
+             *
+             * If the last hint is a segment, the last ray also glanced a vertex,
+             * and was extended to collide with that segment. The first point
+             * to insert is a point on that segment.
+             *
+             * If the last hint is a vertex, either the last ray hit that
+             * vertex directly, or it glanced a different vertex and eventually
+             * hit this vertex. In either case, the first point should be a
+             * point between the hint vertex and one of its neighbours.
+             */
+            var near_first = true;
+            if (last_hint && last_hint.constructor == Vertex) {
+                if (last_hint.between_any_neighbour(ray[1], VisibilityContext.TOLERANCE)) {
+                    near_first = true;
+                } else if (last_hint.between_any_neighbour(intersection_point, VisibilityContext.TOLERANCE)) {
+                    near_first = false;
+                } else {
+                    console.debug(last_hint);
+                    console.debug(ray[1]);
+                    console.debug(intersection_point);
+                    console.debug('error vertex');
+                }
+            } else if (last_hint) {
+               if (last_hint.seg_nearly_contains(ray[1], VisibilityContext.TOLERANCE)) {
+                    near_first = true;
+               } else if (last_hint.seg_nearly_contains(intersection_point, VisibilityContext.TOLERANCE)) {
+                    near_first = false;
+               } else {
+                    console.debug(last_hint);
+                    console.debug(ray[1]);
+                    console.debug(intersection_point);
+                    console.debug('error segment');
+               }
+            }
+
+            if (near_first) {
                 points.push(ray[1]);
-                points.push(closest_intersection);
+                points.push(intersection_point);
             } else {
-                points.push(closest_intersection);
+                points.push(intersection_point);
                 points.push(ray[1]);
             }
-            
-
-            //drawer.draw_point(closest_intersection, tc('black'), 4);
-            //drawer.draw_point(ray[1], tc('black'), 4);
+         
+            last_hint = hint;
         }
         
-        last_vertex = vertex;
     }
 
 //   points.polygon_to_segments().map(function(s){drawer.draw_line_segment(s)});
