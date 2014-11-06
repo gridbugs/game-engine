@@ -33,6 +33,8 @@ Array.add_method('v2_len', function(){return Math.sqrt(this.v2_len_squared())});
 // true iff this is identical to v
 Array.add_method('v2_equals', function(v){return this[0]==v[0] && this[1]==v[1]});
 
+Array.add_method('v2_close', function(v, tol){return this.v2_dist(v) <= tol});
+
 Array.add_method('v2_aligned', function(v) {
     return this[0]*v[1] == this[1]*v[0];
 });
