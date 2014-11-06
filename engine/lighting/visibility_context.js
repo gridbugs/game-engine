@@ -3,27 +3,12 @@ function VisibilityContext(vertices, segs) {
     this.segs = segs;
 }
 
-VisibilityContext.prototype.visible_polygon = function(eye) {
-    var indices = Array.range(0, this.vertices.length);
-
-
-    var radial_vectors = this.vertices.map(function(v) {
-        return v.pos.v2_sub(eye);
-    });
-    
-    var angles = radial_vectors.map(function(v) {
-        return v.v2_angle();
-    });
-
-    indices.sort(function(i, j) {
-        return angles[i] < angles[j];
-    });
-
+VisibilityContext.prototype.non_intersecting_vertices = function(eye) {
     var vertices = this.vertices;
     var segs = this.segs;
-    for (var i = 0,len=indices.length;i<len;++i) {
-        var idx = indices[i];
-        var vertex = vertices[idx];
+    var ret = [];
+    for (var i = 0,len=vertices.length;i<len;++i) {
+        var vertex = vertices[i];
         var ray = [eye, vertex.pos];
 
         var hits_seg = false;
@@ -41,9 +26,36 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             }
         
         }
-        if (hits_seg) {
-            continue;
+        if (!hits_seg) {
+            ret.push(vertex);
         }
+    }
+    return ret;
+}
+
+VisibilityContext.prototype.visible_polygon = function(eye) {
+
+    var vertices = this.non_intersecting_vertices(eye);
+
+    var indices = Array.range(0, vertices.length);
+
+    var radial_vectors = vertices.map(function(v) {
+        return v.pos.v2_sub(eye);
+    });
+    
+    var angles = radial_vectors.map(function(v) {
+        return v.v2_angle();
+    });
+
+    indices.sort(function(i, j) {
+        return angles[i] < angles[j];
+    });
+
+    var segs = this.segs;
+    for (var i = 0,len=indices.length;i<len;++i) {
+        var idx = indices[i];
+        var vertex = vertices[idx];
+        var ray = [eye, vertex.pos];
 
         /* check if all the connected points to this vertex are all on one side
          * of the ray
