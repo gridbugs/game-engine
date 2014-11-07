@@ -111,7 +111,7 @@ VisibilityContext.prototype.connected_points_on_both_sides = function(ray, verte
         var dot = ray_norm.v2_dot(v_to_nei);
         if (dot < 0) {
             left = true;
-        } else if (dot > 0) {
+        } else {// if (dot > 0) {
             right = true;
         }
         // if dot == 0 it's not on either side
@@ -147,6 +147,19 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
     // used to determine if there are multiple consecutive aligned vertices
     var last_radial_vector = null; 
 
+
+    // rotate indices so indices[0] refers to a vertex connecetd on both sides
+    for (var i = 0,len=indices.length;i<len;++i) {
+        var idx = indices[i];
+        var vertex = vertices[idx];
+        var ray = [eye, vertex.pos];
+
+        if (this.connected_points_on_both_sides(ray, vertex)) {
+            indices = indices.rotate(i);
+            break;
+        }
+    }
+    
     //console.debug(indices.map(function(i){return [eye, vertices[i].pos]}));
 
     for (var i = 0,len=indices.length;i<len;++i) {
@@ -192,8 +205,6 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
              */
             var near_first = true;
             if (last_hint && last_hint.constructor == Vertex) {
-                drawer.draw_point(intersection_point, tc('blue'), 8);
-                drawer.draw_point(ray[1], tc('red'), 8);
                 if (last_hint.between_any_neighbour(ray[1], VisibilityContext.TOLERANCE)) {
                     near_first = true;
                 } else if (last_hint.between_any_neighbour(intersection_point, VisibilityContext.TOLERANCE)) {
@@ -213,6 +224,9 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
                } else if (last_hint.seg_nearly_contains(intersection_point, VisibilityContext.TOLERANCE)) {
                     near_first = false;
                } else {
+                    drawer.draw_line_segment(last_hint, tc('blue'), 4);
+                    drawer.draw_point(intersection_point, tc('blue'), 8);
+                    drawer.draw_point(ray[1], tc('red'), 8);
                     console.debug(last_hint);
                     console.debug(ray[1]);
                     console.debug(intersection_point);
@@ -223,15 +237,16 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             if (near_first) {
                 points.push(ray[1]);
                 points.push(intersection_point);
+                last_hint = hint;
             } else {
                 points.push(intersection_point);
                 points.push(ray[1]);
+                last_hint = vertex;
             }
          
             drawer.draw_point(ray[1], tc('black'), 4);
             drawer.draw_point(intersection_point, tc('black'), 4);
             
-            last_hint = hint;
         }
         
     }

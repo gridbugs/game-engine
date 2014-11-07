@@ -63,7 +63,7 @@ function MapDemo() {
         r3: false,
         r4: true,
         r5: true,
-        r6: false
+        r6: true
     });
 
     this.display_detectors(

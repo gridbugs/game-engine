@@ -30,8 +30,11 @@ $(function() {
 
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
-
-    agent = new Agent([200, 250], 0);
+    var pos = [607.0719114044902, 200];
+    pos = [543.2, 250];
+    pos = [550, 249.99999999999997];
+    pos = [200, 150];
+    agent = new Agent(pos, 0);
 
     var canvas = document.getElementById('screen');
     
@@ -134,7 +137,7 @@ $(function() {
             map_demo.draw();
 
             vis = agent.region.visibility_context.visible_polygon(agent.pos);
-            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s)});
+            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 4)});
             drawer.restore();
 
             // draw the buffered session with any filters applied
@@ -145,9 +148,8 @@ $(function() {
             
             // progress the time
             demo.tick(time_delta);
-            
             // repeat on the next frame
-            requestAnimationFrame(t);
+            //requestAnimationFrame(t);
 
             // record some stats
             fps_stats.end();
