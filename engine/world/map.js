@@ -109,9 +109,11 @@ Map.prototype.insert_seg_vertices = function(seg, region) {
         var vertex = this.vertices[i];
         if (seg[0].v2_equals(vertex.pos)) {
             vertex.neighbours.push(seg[1]);
+            vertex.segs.push(seg);
             exists[0] = true;
         } else if (seg[1].v2_equals(vertex.pos)) {
             vertex.neighbours.push(seg[0]);
+            vertex.segs.push(seg);
             exists[1] = true;
         }
     }
@@ -120,6 +122,7 @@ Map.prototype.insert_seg_vertices = function(seg, region) {
             var vertex = new Vertex(seg[i]);
             this.vertices.push(vertex);
             vertex.neighbours.push(seg[1-i]);
+            vertex.segs.push(seg);
             region.vertices.push(vertex);
         }
     }

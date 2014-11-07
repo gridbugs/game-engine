@@ -76,7 +76,7 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray) {
         
         var vertex = this.vertex_by_position(intersection);
 
-        if (vertex == null || this.connected_points_on_one_side(ray, vertex)) {
+        if (vertex == null || this.connected_points_on_both_sides(ray, vertex)) {
             var ray_ratio = ray.seg_aligned_ratio(intersection);
             if (ray_ratio > 0) {
                 var dist = ray[0].v2_dist(intersection);
@@ -97,7 +97,7 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray) {
     return [closest, hint];
 }
 
-VisibilityContext.prototype.connected_points_on_one_side = function(ray, vertex) {
+VisibilityContext.prototype.connected_points_on_both_sides = function(ray, vertex) {
     /* check if all the connected points to this vertex are all on one side
      * of the ray
      */
@@ -111,14 +111,14 @@ VisibilityContext.prototype.connected_points_on_one_side = function(ray, vertex)
         var dot = ray_norm.v2_dot(v_to_nei);
         if (dot < 0) {
             left = true;
-        } else {
+        } else if (dot > 0) {
             right = true;
         }
+        // if dot == 0 it's not on either side
     }
 
     return left && right;
 }
-
 
 VisibilityContext.prototype.visible_polygon = function(eye) {
 
@@ -144,15 +144,22 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
 
     var last_hint = null;
 
+    // used to determine if there are multiple consecutive aligned vertices
+    var last_radial_vector = null; 
+
+    //console.debug(indices.map(function(i){return [eye, vertices[i].pos]}));
+
     for (var i = 0,len=indices.length;i<len;++i) {
         var idx = indices[i];
         var vertex = vertices[idx];
         var ray = [eye, vertex.pos];
 
-        if (this.connected_points_on_one_side(ray, vertex)) {
+        var radial_vector = radial_vectors[i];
+
+        if (this.connected_points_on_both_sides(ray, vertex)) {
             points.push(ray[1]);
  //           drawer.draw_line_segment(ray);
-            //drawer.draw_point(ray[1], tc('black'), 4);
+            drawer.draw_point(ray[1], tc('green'), 4);
             last_hint = vertex;
         } else {
 
@@ -185,15 +192,20 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
              */
             var near_first = true;
             if (last_hint && last_hint.constructor == Vertex) {
+                drawer.draw_point(intersection_point, tc('blue'), 8);
+                drawer.draw_point(ray[1], tc('red'), 8);
                 if (last_hint.between_any_neighbour(ray[1], VisibilityContext.TOLERANCE)) {
                     near_first = true;
                 } else if (last_hint.between_any_neighbour(intersection_point, VisibilityContext.TOLERANCE)) {
                     near_first = false;
                 } else {
+                    //drawer.draw_point(ray[1], tc('red'), 8);
+                    //drawer.draw_point(intersection_point, tc('blue'), 8);
                     console.debug(last_hint);
                     console.debug(ray[1]);
                     console.debug(intersection_point);
                     console.debug('error vertex');
+                    console.debug(agent.pos);
                 }
             } else if (last_hint) {
                if (last_hint.seg_nearly_contains(ray[1], VisibilityContext.TOLERANCE)) {
@@ -216,6 +228,9 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
                 points.push(ray[1]);
             }
          
+            drawer.draw_point(ray[1], tc('black'), 4);
+            drawer.draw_point(intersection_point, tc('black'), 4);
+            
             last_hint = hint;
         }
         

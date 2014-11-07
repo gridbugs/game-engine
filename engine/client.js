@@ -31,7 +31,7 @@ $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
 
-    agent = new Agent([200, 200], 0);
+    agent = new Agent([200, 250], 0);
 
     var canvas = document.getElementById('screen');
     
