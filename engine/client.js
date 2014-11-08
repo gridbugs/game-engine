@@ -138,7 +138,7 @@ $(function() {
             map_demo.draw();
 
             vis = agent.region.visibility_context.visible_polygon(agent.pos);
-            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 1)});
+            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 4)});
             drawer.restore();
 
             // draw the buffered session with any filters applied

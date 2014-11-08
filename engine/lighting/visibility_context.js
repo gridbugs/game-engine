@@ -85,6 +85,7 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray, side_mask) 
         }
         
         if (intersection_occured) {
+            
             var ray_ratio = ray.seg_aligned_ratio(intersection);
             if (ray_ratio > 0) {
                 var dist = ray[0].v2_dist(intersection);
@@ -101,7 +102,6 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray, side_mask) 
 
         
     }
-
     return [closest, hint];
 }
 
@@ -117,9 +117,9 @@ VisibilityContext.prototype.connected_sides = function(ray, vertex) {
     for (var i = 0,nlen = neighbours.length;i<nlen;i++) {
         var v_to_nei = neighbours[i].v2_sub(vertex.pos);
         var dot = ray_norm.v2_dot(v_to_nei);
-        if (dot < 0) {
+        if (dot < -VisibilityContext.TOLERANCE) {
             left = true;
-        } else if (dot > 0) {
+        } else if (dot > VisibilityContext.TOLERANCE) {
             right = true;
         }
         // if dot == 0 it's not on either side
@@ -186,7 +186,7 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
         if (connected_sides[0] && connected_sides[1]) {
             points.push(ray[1]);
  //           drawer.draw_line_segment(ray);
-            drawer.draw_point(ray[1], tc('green'), 8);
+            //drawer.draw_point(ray[1], tc('green'), 8);
             last_hint = vertex;
         } else {
 
@@ -197,8 +197,10 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             var closest_intersection = this.closest_ray_intersection(ray, connected_sides);
             var intersection_point = closest_intersection[0];
             
-            drawer.draw_point(ray[1], tc('blue'), 8);
-            drawer.draw_point(intersection_point, tc('red'), 8);
+        
+
+            //drawer.draw_point(ray[1], tc('blue'), 8);
+            //drawer.draw_point(intersection_point, tc('red'), 8);
 
             /* the hint is used by the next vertex when determining the order
              * to insert points into the points array in the case where
@@ -227,13 +229,16 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
                 } else if (last_hint.between_any_neighbour(intersection_point, VisibilityContext.TOLERANCE)) {
                     near_first = false;
                 } else {
-                    //drawer.draw_point(ray[1], tc('red'), 8);
-                    //drawer.draw_point(intersection_point, tc('blue'), 8);
+                    /*
+                    drawer.draw_point(last_hint.pos, tc('green'), 8);
+                    drawer.draw_point(ray[1], tc('red'), 8);
+                    drawer.draw_point(intersection_point, tc('blue'), 8);
                     console.debug(last_hint);
                     console.debug(ray[1]);
                     console.debug(intersection_point);
                     console.debug('error vertex');
                     console.debug(agent.pos);
+                    */
                 }
             } else if (last_hint) {
                if (last_hint.seg_nearly_contains(ray[1], VisibilityContext.TOLERANCE)) {
@@ -248,6 +253,7 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
                     console.debug(ray[1]);
                     console.debug(intersection_point);
                     console.debug('error segment');
+                    console.debug('pos', agent.pos);
                }
             }
 
