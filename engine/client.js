@@ -8,6 +8,7 @@ var agent;
 var cu;
 
 $(function() {
+
     game_console = new Console(
         document.getElementById("console-input"),
         document.getElementById("console-output"),
@@ -30,11 +31,18 @@ $(function() {
 
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
-    var pos = [607.0719114044902, 200];
-    //pos = [543.2, 250];
+    var pos = [200, 200];
+    pos = [599, 200];
+    pos = [600, 200];
+    pos = [599.99999, 200];
+    pos = [299.99999999999994, 200];
+    pos = [300, 200];
+    pos = [607.0719114044902, 200];
+    pos = [543.2, 250];
     pos = [550, 249.99999999999997];
-    //pos = [200, 150];
+    pos = [200, 150];
     pos =  [277.95694090467003, 250.00000000000003];
+    pos = [398.42779838830785, 422.2828797303469];
     agent = new Agent(pos, 0);
 
     var canvas = document.getElementById('screen');
@@ -60,6 +68,7 @@ $(function() {
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
         Content
     ).run(function(shaders, images) {
+
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
@@ -124,7 +133,7 @@ $(function() {
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
  
             // draw the character
-            circle.draw();
+//            circle.draw();
             //demo.draw();
             drawer.draw_point([0, 0], tc('black'), 4);
             
@@ -138,7 +147,7 @@ $(function() {
             map_demo.draw();
 
             vis = agent.region.visibility_context.visible_polygon(agent.pos);
-            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 4)});
+            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 1)});
             drawer.restore();
 
             // draw the buffered session with any filters applied
@@ -150,14 +159,15 @@ $(function() {
             // progress the time
             demo.tick(time_delta);
             // repeat on the next frame
-            requestAnimationFrame(t);
-//            console.debug('pos', agent.pos);
+//            requestAnimationFrame(t);
+            //console.debug('pos', agent.pos);
 
             // record some stats
             fps_stats.end();
             ms_stats.end();
         }
         t();
+
 
     }.arr_args());
 });

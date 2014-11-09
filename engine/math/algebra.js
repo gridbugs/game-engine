@@ -14,6 +14,12 @@
 // namespace for some algebra utils
 function Algebra(){}
 
+Algebra.TOLERANCE = 0.0000001;
+
+Number.prototype.is_zero = function() {
+    return Math.between_exclusive(-Algebra.TOLERANCE, this, Algebra.TOLERANCE);
+}
+
 Array.add_method('toString', function() {
     return ["[", this.map(function(x){return x.toString()}).join(", "), "]"].join('');
 });
@@ -44,7 +50,7 @@ Array.add_method('v2_aligned', function(v) {
 });
 
 Array.add_method('v2_aligned_ratio', function(v) {
-    if (this[0] != 0) {
+    if (!this[0].is_zero()) {
         return v[0]/this[0];
     } else {
         return v[1]/this[1];
