@@ -24,6 +24,10 @@ Array.add_method('toString', function() {
     return ["[", this.map(function(x){return x.toString()}).join(", "), "]"].join('');
 });
 
+Array.add_method('v2_floor', function() {
+    return [Math.floor(this[0]), Math.floor(this[1])];
+});
+
 // algebraic sum of 2 vectors
 Array.add_method('v2_add', function(v){return [this[0]+v[0], this[1]+v[1]]});
 

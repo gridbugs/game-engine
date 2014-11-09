@@ -71,21 +71,8 @@ VisibilityContext.prototype.closest_ray_intersection = function(ray, side_mask) 
             continue;
         }
  
-            if ((seg.seg_equals([[610, 250], [600, 250]]) || seg.seg_equals([[600, 300], [600, 250]]) ||
-                seg.seg_equals([[550, 300], [600, 300]])
-                ) && ray[1][0] == 600 && ray[1][1] == 250) {
-                console.debug('a');
-                console.debug(vertex);
-                console.debug(seg.toString());
-                console.debug(intersection_occured);
-                console.debug(ray[1]);
-                console.debug(intersection);
-            }
- 
-
         // intersection did not occur within the line segment      
         var seg_ratio = seg.seg_aligned_ratio(intersection);
-       
 
         if (seg_ratio > 1 || seg_ratio < 0) {
             continue;
@@ -168,14 +155,6 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
         return angles[i] - angles[j];
     });
 
-/*
-    indices.map(function(i) {
-        var v = vertices[i];
-        console.debug(v.pos);
-        drawer.draw_line_segment([eye, v.pos], tc('blue'), 4)
-    });
-*/
-
     var points = [];
 
     var segs = this.segs;
@@ -222,14 +201,6 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             var closest_intersection = this.closest_ray_intersection(ray, connected_sides);
             var intersection_point = closest_intersection[0];
             
-            if (intersection_point.v2_dist([600, 750]) < 0.001) {
-                console.debug('error', agent.pos);
-                console.debug(intersection_point);
-            }
-
-            //drawer.draw_point(ray[1], tc('blue'), 8);
-            //drawer.draw_point(intersection_point, tc('red'), 8);
-
             /* the hint is used by the next vertex when determining the order
              * to insert points into the points array in the case where
              * the ray hits the side of a corner (ie. this case)
@@ -295,14 +266,12 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
                 last_hint = vertex;
             }
          
-            drawer.draw_point(ray[1], tc('black'), 8);
-            drawer.draw_point(intersection_point, tc('black'), 8);
+            //drawer.draw_point(ray[1], tc('grey'), 12);
+            //drawer.draw_point(intersection_point, tc('black'), 8);
             
         }
         
     }
-
-//   points.polygon_to_segments().map(function(s){drawer.draw_line_segment(s)});
 
     return points;
 }
