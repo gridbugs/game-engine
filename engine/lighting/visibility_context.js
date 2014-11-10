@@ -3,6 +3,26 @@ function VisibilityContext(vertices, segs) {
     this.vertices = vertices;
     this.segs = segs;
 }
+
+VisibilityContext.from_regions = function(regions, extra) {
+    var segs = [];//extra || [];
+    for (var i = 0;i<regions.length;i++) {
+        console.debug(regions[i]);
+        segs = segs.concat(regions[i].segs);
+    }
+    console.debug(segs, extra);
+    return VisibilityContext.from_segs(segs, extra);
+}
+
+VisibilityContext.from_segs = function(segs, extra) {
+    var all_segs = segs.concat(extra);
+    var vertices = Vertex.vertices_from_segs(all_segs);
+    console.debug(vertices, all_segs);
+    return new VisibilityContext(vertices, all_segs);
+}
+
+
+
 VisibilityContext.LARGE_NUMBER = 10000;
 VisibilityContext.TOLERANCE = 0.01;
 VisibilityContext.LOW_TOLERANCE = 0.0001;

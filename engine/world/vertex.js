@@ -23,3 +23,40 @@ Vertex.prototype.between_any_neighbour = function(v, tolerance) {
     }
     return false;
 }
+
+Vertex.vertices_from_segs = function(segs) {
+
+    var ret = [];
+
+    for (var i = 0;i<segs.length;i++) {
+        var seg = segs[i];
+
+        var exists = [false, false];
+        for (var j = 0;j<ret.length;j++) {
+            console.debug(i, j);
+            var vertex = ret[j];
+
+            if (seg[0].v2_equals(vertex.pos)) {
+                vertex.neighbours.push(seg[1]);
+                vertex.segs.push(seg);
+                exists[0] = true;
+            } else if (seg[1].v2_equals(vertex.pos)) {
+                vertex.neighbours.push(seg[0]);
+                vertex.segs.push(seg);
+                exists[1] = true;
+            }
+        }
+
+        for (var j = 0;j<2;j++) {
+            if (!exists[j]) {
+                console.debug(seg[j]);
+                var vertex = new Vertex(seg[j]);
+                ret.push(vertex);
+                vertex.neighbours.push(seg[1-j]);
+                vertex.segs.push(seg);
+            }
+        }
+    }
+
+    return ret;
+}

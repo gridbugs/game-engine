@@ -70,6 +70,33 @@ $(function() {
         var map_demo = Content.maps.map_demo;
         agent.enter_region(map_demo.region_hash.r1);
         
+        var v1 = VisibilityContext.from_regions([
+            map_demo.region_hash.r1,
+            map_demo.region_hash.r2,
+            map_demo.region_hash.r4,
+            map_demo.region_hash.r5,
+            map_demo.region_hash.r6
+        ], [
+            [[300, 350], [150, 350]]
+        ]);
+
+        var v2 = VisibilityContext.from_regions([
+            map_demo.region_hash.r2,
+            map_demo.region_hash.r3
+        ], [
+            [[400, 350], [550, 350]]
+        ]);
+
+        var visibility_context = v1;
+
+        var vis_det = new DetectorSegment([[350, 400], [350, 550]],
+            function(){
+                visibility_context = v2;
+            },
+            function(){
+                visibility_context = v1;
+            }
+        );
         
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         
@@ -105,6 +132,8 @@ $(function() {
             // show/hide regions if necessary
             agent.display_detect();
 
+            vis_det.detect(agent.last_move_seg());
+
             // reset the drawer
             drawer.clear();
             drawer.remove_filters();
@@ -123,7 +152,7 @@ $(function() {
  
             // draw the character
             circle.draw();
-            //demo.draw();
+            demo.draw();
             drawer.draw_point([0, 0], tc('black'), 4);
             
             // get the position of the player character on screen
@@ -135,7 +164,8 @@ $(function() {
             // draw the map
             map_demo.draw();
 
-            vis = agent.region.visibility_context.visible_polygon(agent.pos.v2_floor());
+            //vis = agent.region.visibility_context.visible_polygon(agent.pos.v2_floor());
+            vis = visibility_context.visible_polygon(agent.pos.v2_floor());
             vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 2)});
             
             drawer.restore();
