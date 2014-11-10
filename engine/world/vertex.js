@@ -33,7 +33,6 @@ Vertex.vertices_from_segs = function(segs) {
 
         var exists = [false, false];
         for (var j = 0;j<ret.length;j++) {
-            console.debug(i, j);
             var vertex = ret[j];
 
             if (seg[0].v2_equals(vertex.pos)) {
@@ -49,7 +48,6 @@ Vertex.vertices_from_segs = function(segs) {
 
         for (var j = 0;j<2;j++) {
             if (!exists[j]) {
-                console.debug(seg[j]);
                 var vertex = new Vertex(seg[j]);
                 ret.push(vertex);
                 vertex.neighbours.push(seg[1-j]);
