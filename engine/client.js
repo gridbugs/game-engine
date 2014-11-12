@@ -102,8 +102,17 @@ $(function() {
         
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
+        var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]]);
+
         drawer.sync_buffers();
         
+        drawer.save();
+        drawer.translate([100, 100]);
+        
+        radial.draw();
+
+        drawer.restore();
+
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
         var state = 1;
@@ -186,7 +195,7 @@ $(function() {
             fps_stats.end();
             ms_stats.end();
         }
-        t();
+        //t();
 
 
     }.arr_args());

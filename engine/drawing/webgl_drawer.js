@@ -251,6 +251,49 @@ WebGLDrawer.prototype.rect = function(top_left, size, colour, transform) {
     return new WebGLDrawer.Rect(top_left, size, colour, transform, this);
 }
 
+WebGLDrawer.Radial = function(centre, points, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+    
+    var vertices = [centre[0], centre[1]];
+    var texture_coords = [0, 0];
+    
+    for (var i = 0;i<points.length;i++) {
+        vertices.push(points[i][0]);
+        vertices.push(points[i][1]);
+
+        texture_coords.push(0);
+        texture_coords.push(0);
+    }
+
+    drawer.vertex_buffer.add(vertices);
+    drawer.texture_buffer.add(texture_coords);
+
+    var indices = [];
+    for (var i = 0;i<points.length;i++) {
+        indices.push(0); // central point
+        indices.push(i); // current point
+        indices.push((i+1)%points.length); // next point
+    }
+    drawer.index_buffer.add(indices.map(function(i){return i + this.v_offset}.bind(this)));
+
+    this.slice = drawer.glm.slice(this.i_offset, points.length * 3);
+}
+WebGLDrawer.Radial.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.prototype.radial = function(centre, points, transform) {
+    return new WebGLDrawer.Radial(centre, points, transform, this);
+}
+
+WebGLDrawer.Radial.prototype.draw = function() {
+    var drawer = this.before_draw();
+
+    drawer.u_colour.set([1,0,0,1]);
+    drawer.no_texture();
+    this.slice.draw_triangles();
+
+    this.after_draw();
+}
+
 WebGLDrawer.Image = function(image, position, size, clip_start, clip_size, transform, drawer) {
     WebGLDrawer.Drawable.call(this, transform, drawer);
     this.image = image;
