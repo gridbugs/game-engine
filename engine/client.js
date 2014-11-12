@@ -180,7 +180,7 @@ $(function() {
             drawer.restore();
             
             capture.end();
-            drawer.u_opacity.set(0.5);
+            drawer.u_opacity.set(0.3);
             capture.draw();
             drawer.u_opacity.set(1);
             

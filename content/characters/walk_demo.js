@@ -17,7 +17,10 @@ function WalkDemo() {
 
     this.states({
         walk: {
-            body: 'body',
+            body: {
+                image: 'body',
+                rotate: [[0, degrees_to_radians(4)], [400, degrees_to_radians(-4)], [800, degrees_to_radians(4)]]
+            },
             left_foot: {
                 image: 'foot', 
                 translate: [[0, [0, -30]], [100, [0, 0]], [400, [0, 30]], [700, [0, 0]], [800, [0, -30]]]
@@ -30,7 +33,10 @@ function WalkDemo() {
             right_knee: {copy: 'left_knee', flip_x: true, offset: 400},
             left_hip: {translate: [-15, 0]},
             right_hip: {copy: 'left_hip', flip_x: true},
-            head: 'head',
+            head: {
+                image: 'head',
+                rotate: [[0, degrees_to_radians(-4)], [400, degrees_to_radians(4)], [800, degrees_to_radians(-4)]]
+            },
             left_shoulder: {
                 image: 'shoulder',
                 translate: [[0, [-35, 5]], [400, [-35, -5]], [800, [-35, 5]]],
@@ -53,17 +59,23 @@ function WalkDemo() {
 
         },
         still: {
-            body: 'body',
+            body: {
+                image: 'body',
+                scale: [[0, [1, 1]], [1600, [1, 1]], [2000, [1, 1.1]], [2800, [1, 1.1]], [3200, [1, 1]]],
+                translate: [[0, [0, 0]], [1600, [0, 0]], [2000, [0, -1]], [2800, [0, -1]], [3200, [0, 0]]]
+            },
             left_foot: 'foot',
             right_foot: {copy: 'left_foot', flip_x: true},
             head: 'head',
             left_knee: 'knee',
             right_knee: {copy: 'left_knee', flip_x: true},
-            left_hip: {translate: [-15, 0]},
+            left_hip: {
+                translate: [[0, [-15, 0]], [1600, [-15, 0]], [2000, [-15, 1]], [2800, [-15, 1]], [3200, [-15, 0]]]
+            },
             right_hip: {copy: 'left_hip', flip_x: true},
             left_shoulder: {
                 image: 'shoulder',
-                translate: [-35, 0]
+                translate: [[0, [-35, 0]], [1600, [-35, 0]], [2000, [-34, 2]], [2800, [-34, 2]], [3200, [-35, 0]]]
             },
             right_shoulder: {copy: 'left_shoulder', flip_x: true},
             left_elbow: {

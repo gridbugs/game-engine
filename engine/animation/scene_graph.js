@@ -69,7 +69,6 @@ SceneGraph.Node.prototype.draw = function() {
 
     drawer.translate(t);
     drawer.rotate(r);
-    drawer.scale(s);
     
     var before = this.before;
     for (var i = 0,len = before.length;i!=len;++i) {
@@ -79,7 +78,10 @@ SceneGraph.Node.prototype.draw = function() {
     var i = this.image;
     if (i) {
         i = i.get_value();
+        drawer.save();
+        drawer.scale(s);
         i.draw();
+        drawer.restore();
     }
 
     var after = this.after;
