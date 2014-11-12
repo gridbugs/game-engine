@@ -274,12 +274,12 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             }
 
             if (near_first) {
-                points.push(ray[1]);
-                points.push(intersection_point);
+                points.push([ray[1][0], ray[1][1], true]);
+                points.push([intersection_point[0], intersection_point[1], true]);
                 last_hint = hint;
             } else {
-                points.push(intersection_point);
-                points.push(ray[1]);
+                points.push([intersection_point[0], intersection_point[1], true]);
+                points.push([ray[1][0], ray[1][1], true]);
                 last_hint = vertex;
             }
          

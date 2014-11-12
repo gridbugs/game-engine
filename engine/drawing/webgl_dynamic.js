@@ -62,7 +62,7 @@ WebGLDrawer.DynamicRadial.prototype.draw = function() {
     var drawer = this.before_draw();
     drawer.select_attribute(drawer.vertex_position_attribute, drawer.dynamic_vertex_buffer);
 
-    drawer.u_colour.set([1,0,0,0.4]);
+    drawer.u_colour.set([0,0,0,0.3]);
     drawer.no_texture();
 
     this.slice.draw_triangles();

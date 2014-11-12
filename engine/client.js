@@ -104,7 +104,7 @@ $(function() {
 
         var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40], [200, 0]]);
 
-        var dradial = drawer.dynamic_radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]], 64);
+        var dradial = drawer.dynamic_radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]], 512);
         dradial.update([100, 100], [[300, 200], [50, 120], [20, 20], [120, 40]]);
 
         drawer.sync_buffers();
@@ -163,9 +163,8 @@ $(function() {
             drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
  
             // draw the character
-            circle.draw();
+            //circle.draw();
             demo.draw();
-            drawer.draw_point([0, 0], tc('black'), 4);
             
             // get the position of the player character on screen
             var centre = drawer.global_centre();
@@ -178,10 +177,12 @@ $(function() {
 
             //vis = agent.region.visibility_context.visible_polygon(agent.pos.v2_floor());
             vis = visibility_context.visible_polygon(agent.pos.v2_floor());
-            vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 2)});
+            //vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 2)});
             
-            dradial.update(centre, vis);
+            dradial.update(agent.pos, vis);
             dradial.draw();
+            //drawer.draw_point(agent.pos, tc('black'), 4);
+            
             drawer.restore();
 
             // draw the buffered session with any filters applied
