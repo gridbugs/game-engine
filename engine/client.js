@@ -99,23 +99,15 @@ $(function() {
         );
         
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
-        
+        var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40], [200, 0]]);
 
-        var dradial = drawer.dynamic_radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]], 512);
-        dradial.update([100, 100], [[300, 200], [50, 120], [20, 20], [120, 40]]);
+        var dradial = drawer.dynamic_radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]], 512, canvas.width, canvas.height);
 
         drawer.sync_buffers();
         
-        drawer.save();
-        drawer.translate([100, 100]);
-        dradial.draw();
-        drawer.draw_point([100, 100], tc('black'), 4);
-
-        drawer.restore();
-
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
         var state = 1;
@@ -146,12 +138,13 @@ $(function() {
 
             vis_det.detect(agent.last_move_seg());
 
+
             // reset the drawer
             drawer.clear();
             drawer.remove_filters();
             
             // set up gl to draw to a framebuffer
-            filterer.begin();
+            capture.begin();
  
             // apply global translation (for scrolling)
             drawer.save();
@@ -179,15 +172,24 @@ $(function() {
             vis = visibility_context.visible_polygon(agent.pos.v2_floor());
             //vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 2)});
             
-            dradial.update(agent.pos, vis);
-            dradial.draw();
-            //drawer.draw_point(agent.pos, tc('black'), 4);
             
+            drawer.restore();
+            
+            capture.end();
+            capture.draw();
+            
+            drawer.save();
+            drawer.translate(scroll.translate);
+            dradial.update(agent.pos, vis);
+
+            dradial.draw(capture.texture);
+            drawer.draw_point(agent.pos, tc('black'), 4);
             drawer.restore();
 
             // draw the buffered session with any filters applied
-            filterer.draw();
-
+            //capture.begin();
+            //filterer.draw();
+            
 
 
             // sync the cpu for smooth animation

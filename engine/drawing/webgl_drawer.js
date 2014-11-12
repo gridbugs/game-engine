@@ -10,6 +10,7 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.texture_buffer = this.glm.array_buffer(2);
 
     this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
+    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
     this.dynamic_index_buffer = this.glm.element_buffer();
 
     this.text_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);

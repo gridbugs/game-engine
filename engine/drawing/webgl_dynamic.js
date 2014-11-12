@@ -3,11 +3,14 @@
  * It is initialized with a centre and list of outer points, as
  * well as a size specifying the maximum number of outer points.
  */
-WebGLDrawer.DynamicRadial = function(centre, points, size, transform, drawer) {
+WebGLDrawer.DynamicRadial = function(centre, points, size, screen_width, screen_height, transform, drawer) {
     if (!drawer) {
         return;
     }
     
+    this.screen_width = screen_width;
+    this.screen_height = screen_height;
+
     this.drawer = drawer;
 
     this.offset = drawer.dynamic_vertex_buffer.data.length;
@@ -34,40 +37,53 @@ WebGLDrawer.DynamicRadial = function(centre, points, size, transform, drawer) {
 }
 WebGLDrawer.DynamicRadial.inherits_from(WebGLDrawer.Drawable);
 
-WebGLDrawer.prototype.dynamic_radial = function(centre, points, size, transform) {
-    return new WebGLDrawer.DynamicRadial(centre, points, size, transform, this);
+WebGLDrawer.prototype.dynamic_radial = function(centre, points, size, screen_width, screen_height, transform) {
+    return new WebGLDrawer.DynamicRadial(centre, points, size, screen_width, screen_height, transform, this);
 }
 
 WebGLDrawer.DynamicRadial.prototype.update = function(centre, points) {
     var drawer = this.drawer;
     drawer.select_attribute(drawer.vertex_position_attribute, drawer.dynamic_vertex_buffer);
     
+    var screen_width = this.screen_width;
+    var screen_height = this.screen_height;
+
     var vertices = [centre[0], centre[1]];
+    var tex_coords = [centre[0]/screen_width, centre[1]/screen_height];
     for (var i = 0;i<points.length;i++) {
         vertices.push(points[i][0]);
         vertices.push(points[i][1]);
+        tex_coords.push(points[i][0]/screen_width);
+        tex_coords.push(points[i][1]/screen_height);
     }
     vertices.push(points[0][0]);
     vertices.push(points[0][1]);
+    tex_coords.push(points[0][0]/screen_width);
+    tex_coords.push(points[0][1]/screen_height);
 
-    var buffer = drawer.dynamic_vertex_buffer;
-    
-    buffer.update(this.offset, vertices);
+    drawer.dynamic_vertex_buffer.bind().update(this.offset, vertices);
+    drawer.dynamic_texture_buffer.bind().update(this.offset, tex_coords);
     
     this.slice.set_length(points.length*3);
     drawer.select_attribute(drawer.vertex_position_attribute, drawer.vertex_buffer);
 }
 
-WebGLDrawer.DynamicRadial.prototype.draw = function() {
+WebGLDrawer.DynamicRadial.prototype.draw = function(texture) {
     var drawer = this.before_draw();
     drawer.select_attribute(drawer.vertex_position_attribute, drawer.dynamic_vertex_buffer);
+    drawer.select_attribute(drawer.texture_coord_attribute, drawer.dynamic_texture_buffer);
 
-    drawer.u_colour.set([0,0,0,0.3]);
-    drawer.no_texture();
+    drawer.use_texture(this.screen_width, this.screen_height);
+    //console.debug(texture);
+    texture.bind();
+    //drawer.no_texture();
+    //drawer.u_colour.set([0,0,0,0.5]);
 
     this.slice.draw_triangles();
 
     drawer.select_attribute(drawer.vertex_position_attribute, drawer.vertex_buffer);
+    drawer.select_attribute(drawer.texture_coord_attribute, drawer.texture_buffer);
 
     this.after_draw();
 }
+
