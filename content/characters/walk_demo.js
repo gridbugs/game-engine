@@ -19,7 +19,6 @@ function WalkDemo() {
         walk: {
             body: {
                 image: 'body',
-                rotate: [[0, degrees_to_radians(4)], [400, degrees_to_radians(-4)], [800, degrees_to_radians(4)]]
             },
             left_foot: {
                 image: 'foot', 
@@ -35,7 +34,6 @@ function WalkDemo() {
             right_hip: {copy: 'left_hip', flip_x: true},
             head: {
                 image: 'head',
-                rotate: [[0, degrees_to_radians(-4)], [400, degrees_to_radians(4)], [800, degrees_to_radians(-4)]]
             },
             left_shoulder: {
                 image: 'shoulder',
