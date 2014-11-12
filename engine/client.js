@@ -66,7 +66,7 @@ $(function() {
         drawer.sync_buffers();
 
         var demo = Content.characters.walk_demo.instance('still');
-    
+
         var map_demo = Content.maps.map_demo;
         agent.enter_region(map_demo.region_hash.r1);
         
@@ -115,11 +115,14 @@ $(function() {
        
         scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
 
+
         t = function() {
             fps_stats.begin();
             ms_stats.begin();
             
             var time_delta = tm.get_delta();
+            
+            var original_position = agent.pos.slice();
 
             if (state == 0 && agent.absolute_control_tick(time_delta)) {
                 state = 1;
@@ -140,7 +143,9 @@ $(function() {
 
 
             // reset the drawer
+            drawer.glm.set_clear_colour([0,0,0,1]);
             drawer.clear();
+            drawer.glm.set_clear_colour([1,1,1,1]);
             drawer.remove_filters();
             
             // set up gl to draw to a framebuffer
@@ -161,7 +166,6 @@ $(function() {
             
             // get the position of the player character on screen
             var centre = drawer.global_centre();
-            scroll.update(centre);
 
             drawer.restore();
             
@@ -176,7 +180,9 @@ $(function() {
             drawer.restore();
             
             capture.end();
+            drawer.u_opacity.set(0.5);
             capture.draw();
+            drawer.u_opacity.set(1);
             
             drawer.save();
             drawer.translate(scroll.translate);
@@ -191,6 +197,7 @@ $(function() {
             //filterer.draw();
             
 
+            scroll.update(centre);
 
             // sync the cpu for smooth animation
             drawer.sync_gpu();

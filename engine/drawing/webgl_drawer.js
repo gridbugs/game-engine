@@ -97,6 +97,12 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_point_size = this.shader_program.uniform1f('u_point_size');
 
     this.u_flip_y.set(-1);
+
+    this.u_tex_from_position = this.shader_program.uniform1i('u_tex_from_position');
+    this.u_tex_from_position.set(false);
+
+    this.u_opacity = this.shader_program.uniform1f('u_opacity');
+    this.u_opacity.set(1);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {

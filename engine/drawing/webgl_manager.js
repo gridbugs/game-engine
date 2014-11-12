@@ -20,6 +20,10 @@ WebGLManager.prototype.init_2d = function() {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     return this;
 }
+WebGLManager.prototype.set_clear_colour = function(col) {
+    this.gl.clearColor(col[0], col[1], col[2], col[3]);
+}
+
 WebGLManager.prototype.viewport = function(left, top, width, height) {
     this.gl.viewport(left, top, width, height);
 }

@@ -17,6 +17,8 @@ uniform int u_blur_radius;
 
 uniform sampler2D u_image;
 
+uniform float u_opacity;
+
 void main() {
     if (u_has_texture == 1) {
 
@@ -59,10 +61,10 @@ void main() {
             }
             gl_FragColor = sum/float(u_blur_radius*u_blur_radius*4);
         } else {
-            gl_FragColor = texture2D(u_image, screen_coord / u_tex_size);
+            gl_FragColor = texture2D(u_image, screen_coord / u_tex_size)*u_opacity;
         }
     
     } else {
-        gl_FragColor = u_colour;
+        gl_FragColor = u_colour * u_opacity;
     }
 }
