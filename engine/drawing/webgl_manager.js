@@ -165,6 +165,11 @@ WebGLManager.AbstractBuffer.prototype.add = function(arr) {
         this.data.push(arr[i]);
     }
 }
+WebGLManager.AbstractBuffer.prototype.allocate = function(size) {
+    for (var i = 0;i<size;i++) {
+        this.data.push(0);
+    }
+}
 
 
 WebGLManager.ArrayBuffer = function(data, datum_size, gl) {
@@ -302,6 +307,9 @@ WebGLManager.Slice = function(offset, length, gl) {
     this.length = length;
     this.offset = offset;
     this.gl = gl;
+}
+WebGLManager.Slice.prototype.set_length = function(length) {
+    this.length = length;
 }
 WebGLManager.Slice.prototype.draw_triangles = function() {
     var gl = this.gl;

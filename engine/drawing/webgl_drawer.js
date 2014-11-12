@@ -1,7 +1,7 @@
 function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.canvas = canvas;
     this.glm = new WebGLManager(canvas, {
-        preserveDrawingBuffer: preserve_drawing_buffer
+//        preserveDrawingBuffer: preserve_drawing_buffer
     }).init_2d();
 
     // initialize buffers
@@ -9,7 +9,7 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.index_buffer = this.glm.element_buffer();
     this.texture_buffer = this.glm.array_buffer(2);
 
-    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(16);
+    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
     this.dynamic_index_buffer = this.glm.element_buffer();
 
     this.text_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
@@ -271,8 +271,8 @@ WebGLDrawer.Radial = function(centre, points, transform, drawer) {
     var indices = [];
     for (var i = 0;i<points.length;i++) {
         indices.push(0); // central point
-        indices.push(i); // current point
-        indices.push((i+1)%points.length); // next point
+        indices.push(i+1); // current point
+        indices.push((i+1)%points.length+1); // next point
     }
     drawer.index_buffer.add(indices.map(function(i){return i + this.v_offset}.bind(this)));
 
@@ -286,7 +286,7 @@ WebGLDrawer.prototype.radial = function(centre, points, transform) {
 
 WebGLDrawer.Radial.prototype.draw = function() {
     var drawer = this.before_draw();
-
+    console.debug(this);
     drawer.u_colour.set([1,0,0,1]);
     drawer.no_texture();
     this.slice.draw_triangles();

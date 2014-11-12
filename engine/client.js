@@ -102,14 +102,17 @@ $(function() {
         
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
-        var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]]);
+        var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40], [200, 0]]);
+
+        var dradial = drawer.dynamic_radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]], 64);
+        dradial.update([100, 100], [[300, 200], [50, 120], [20, 20], [120, 40]]);
 
         drawer.sync_buffers();
         
         drawer.save();
         drawer.translate([100, 100]);
-        
-        radial.draw();
+        dradial.draw();
+        drawer.draw_point([100, 100], tc('black'), 4);
 
         drawer.restore();
 
@@ -177,10 +180,14 @@ $(function() {
             vis = visibility_context.visible_polygon(agent.pos.v2_floor());
             vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 2)});
             
+            dradial.update(centre, vis);
+            dradial.draw();
             drawer.restore();
 
             // draw the buffered session with any filters applied
             filterer.draw();
+
+
 
             // sync the cpu for smooth animation
             drawer.sync_gpu();
@@ -189,13 +196,12 @@ $(function() {
             demo.tick(time_delta);
             // repeat on the next frame
             requestAnimationFrame(t);
-            //console.debug('pos', agent.pos);
 
             // record some stats
             fps_stats.end();
             ms_stats.end();
         }
-        //t();
+        t();
 
 
     }.arr_args());
