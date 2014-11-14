@@ -109,6 +109,13 @@ WebGLDrawer.prototype.init_uniforms = function() {
 
     this.u_opacity = this.shader_program.uniform1f('u_opacity');
     this.u_opacity.set(1);
+
+    this.u_is_light = this.shader_program.uniform1i('u_is_light');
+    this.u_is_light.set(false);
+
+    this.u_light_pos = this.shader_program.uniform2fv('u_light_pos');
+    this.u_light_radius = this.shader_program.uniform1f('u_light_radius');
+    this.u_light_colour = this.shader_program.uniform4fv('u_light_colour');
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {

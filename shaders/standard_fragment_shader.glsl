@@ -19,6 +19,13 @@ uniform sampler2D u_image;
 
 uniform float u_opacity;
 
+uniform bool u_is_light;
+uniform vec2 u_light_pos;
+uniform float u_light_radius;
+uniform vec4 u_light_colour;
+
+uniform vec2 u_resolution;
+
 void main() {
     if (u_has_texture == 1) {
 
@@ -60,8 +67,22 @@ void main() {
                 }
             }
             gl_FragColor = sum/float(u_blur_radius*u_blur_radius*4);
+        } else if (u_is_light) {
+            //vec2 pos = vec2(gl_FragCoord[0], u_resolution[1]-gl_FragCoord[1]);
+            vec2 pos = vec2(gl_FragCoord[0], gl_FragCoord[1]);
+            vec4 colour = texture2D(u_image, screen_coord / u_tex_size)*u_opacity;
+            float dist_to_light = distance(pos, u_light_pos);
+            float light_dist_mult = 1.0 - min(1.0, dist_to_light / u_light_radius);
+            colour[3] *= light_dist_mult;
+            gl_FragColor = colour * u_light_colour;
+            
         } else {
-            gl_FragColor = texture2D(u_image, screen_coord / u_tex_size)*u_opacity;
+            vec4 colour = texture2D(u_image, screen_coord / u_tex_size)*u_opacity;
+            if (colour[3] == 0.0) {
+                gl_FragColor = vec4(1,0,0,0);
+            } else {
+                gl_FragColor = colour;
+            }
         }
     
     } else {

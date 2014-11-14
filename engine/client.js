@@ -56,12 +56,14 @@ $(function() {
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
         Content,
-        new ImageLoader('images/', ['earth.jpg', 'wood.jpg'])
+        new ImageLoader('images/earth.jpg')
     ).run(function(shaders, images, test_images) {
         
-        var earth_texture = drawer.glm.texture(test_images[0]);
-        var wood_texture = drawer.glm.texture(test_images[1]);
-        
+        var test_texture;
+        if (test_images) {
+            test_texture = drawer.glm.texture(test_images[0]);
+        }
+
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
         drawer.update_resolution();
@@ -91,7 +93,7 @@ $(function() {
         ]);
 
         var visibility_context = v1;
-
+        
         var vis_det = new DetectorSegment([[350, 400], [350, 550]],
             function(){
                 visibility_context = v2;
@@ -103,6 +105,7 @@ $(function() {
         
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40], [200, 0]]);
@@ -118,7 +121,7 @@ $(function() {
         scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
 
         var l1 = [1000, 100];
-        var l2 = [1300, 500];
+        var l2 = [1500, 500];
 
         var l1radial = drawer.dynamic_radial(l1, [], 128, canvas.width, canvas.height);
         var l2radial = drawer.dynamic_radial(l2, [], 128, canvas.width, canvas.height);
@@ -175,55 +178,96 @@ $(function() {
             
             // get the position of the player character on screen
             var centre = drawer.global_centre();
-
+            
+            // back to the scroll transformation
             drawer.restore();
             
-            // draw the map
+            // draw the map line segments
             map_demo.draw();
 
             //vis = agent.region.visibility_context.visible_polygon(agent.pos.v2_floor());
-            vis = visibility_context.visible_polygon(agent.pos.v2_floor());
             //vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 2)});
             
-            
+            // remove all transformations
             drawer.restore();
             
+            // capture contains all the line segments and the character
             capture.end();
-            drawer.u_opacity.set(0.3);
+
+            // draw the line segments and character
+            drawer.u_opacity.set(0.2);
             capture.draw();
             drawer.u_opacity.set(1);
             
+            drawer.glm.set_clear_colour([0,0,0,0]);
+            // fill a buffer with all the lit areas
+            capture2.begin();
+            drawer.u_opacity.set(0.4);
+            capture.draw();
+            drawer.u_opacity.set(1);
+            
+            // translate back to the scroll position
             drawer.save();
             drawer.translate(scroll.translate);
             
-            drawer.draw_point(l1, tc('red'), 4);
+            // set the light polygons
             var l1pgon = visibility_context.visible_polygon(l1);
-
             l1radial.update(l1, l1pgon);
-            l1radial.draw(capture.texture);
-            l1pgon.polygon_to_segments().map(function(s){
-                drawer.draw_line_segment(s, tc('red'), 2)
-            });
-            
-            l1radial.draw(wood_texture);
-
-
-            drawer.draw_point(l2, tc('blue'), 4);
             var l2pgon = visibility_context.visible_polygon(l2);
             l2radial.update(l2, l2pgon);
-            l2radial.draw(earth_texture);
-            l2pgon.polygon_to_segments().map(function(s){
-                drawer.draw_line_segment(s, tc('blue'), 2)
-            });
-
-
+ 
+            vis = visibility_context.visible_polygon(agent.pos.v2_floor());
             dradial.update(agent.pos, vis);
 
-            drawer.u_opacity.set(0.5);
+
+
+            drawer.u_opacity.set(1);
+ 
+            // draw lit areas to a buffer
+            var pos = vec3.create();
+            var id = mat3.create();
+            mat3.multiply(pos, drawer.mv_transform, [l1[0], l1[1], 1]);
+            
+            drawer.u_is_light.set(true);
+            if (visibility_context == v1) {
+                drawer.u_light_colour.set([1,1,1,1]);
+                drawer.u_light_radius.set(800);
+                drawer.u_light_pos.set([pos[0], pos[1]]);
+                l1radial.draw(capture.texture);
+                
+                mat3.multiply(pos, drawer.mv_transform, [l2[0], l2[1], 1]);
+                drawer.u_light_colour.set([1,0.9,0.5,1]);
+                drawer.u_light_radius.set(1500);
+                drawer.u_light_pos.set([pos[0], pos[1]]);
+                l2radial.draw(capture.texture);
+            }
+            drawer.u_light_colour.set([0.6,0.6,1,1]);
+            mat3.multiply(pos, drawer.mv_transform, [agent.pos[0], agent.pos[1], 1]);
+            drawer.u_light_radius.set(150);
+            drawer.u_light_pos.set([pos[0], pos[1]]);
             dradial.draw(capture.texture);
+
+
+            drawer.u_is_light.set(false);
+
+            drawer.u_opacity.set(1);
+            
+            // remove all transformations
+            drawer.restore();
+            
+            capture2.end();
+
+            //capture2.draw();
+           
+            // translate back to the scroll position
+            drawer.save();
+            drawer.translate(scroll.translate);
+            
+            dradial.draw(capture2.texture);
             drawer.u_opacity.set(1);
             drawer.draw_point(agent.pos, tc('black'), 4);
             
+
             drawer.restore();
 
             // draw the buffered session with any filters applied
