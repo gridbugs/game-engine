@@ -55,9 +55,12 @@ $(function() {
     
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
-        Content
-    ).run(function(shaders, images) {
-
+        Content,
+        new ImageLoader('images/', ['earth.jpg', 'wood.jpg'])
+    ).run(function(shaders, images, test_images) {
+        
+        var earth_texture = drawer.glm.texture(test_images[0]);
+        var wood_texture = drawer.glm.texture(test_images[1]);
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
@@ -104,9 +107,8 @@ $(function() {
 
         var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40], [200, 0]]);
 
-        var dradial = drawer.dynamic_radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40]], 512, canvas.width, canvas.height);
+        var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
 
-        drawer.sync_buffers();
         
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -115,6 +117,13 @@ $(function() {
        
         scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
 
+        var l1 = [1000, 100];
+        var l2 = [1300, 500];
+
+        var l1radial = drawer.dynamic_radial(l1, [], 128, canvas.width, canvas.height);
+        var l2radial = drawer.dynamic_radial(l2, [], 128, canvas.width, canvas.height);
+        
+        drawer.sync_buffers();
 
         t = function() {
             fps_stats.begin();
@@ -186,10 +195,35 @@ $(function() {
             
             drawer.save();
             drawer.translate(scroll.translate);
+            
+            drawer.draw_point(l1, tc('red'), 4);
+            var l1pgon = visibility_context.visible_polygon(l1);
+
+            l1radial.update(l1, l1pgon);
+            l1radial.draw(capture.texture);
+            l1pgon.polygon_to_segments().map(function(s){
+                drawer.draw_line_segment(s, tc('red'), 2)
+            });
+            
+            l1radial.draw(wood_texture);
+
+
+            drawer.draw_point(l2, tc('blue'), 4);
+            var l2pgon = visibility_context.visible_polygon(l2);
+            l2radial.update(l2, l2pgon);
+            l2radial.draw(earth_texture);
+            l2pgon.polygon_to_segments().map(function(s){
+                drawer.draw_line_segment(s, tc('blue'), 2)
+            });
+
+
             dradial.update(agent.pos, vis);
 
+            drawer.u_opacity.set(0.5);
             dradial.draw(capture.texture);
+            drawer.u_opacity.set(1);
             drawer.draw_point(agent.pos, tc('black'), 4);
+            
             drawer.restore();
 
             // draw the buffered session with any filters applied

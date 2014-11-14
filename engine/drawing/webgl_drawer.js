@@ -9,13 +9,19 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.index_buffer = this.glm.element_buffer();
     this.texture_buffer = this.glm.array_buffer(2);
 
-    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
-    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
+    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(2048);
+    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(2048);
     this.dynamic_index_buffer = this.glm.element_buffer();
 
+    var line_segment_offset = 4;
+    this.dynamic_vertex_buffer.allocate(line_segment_offset);
+    this.dynamic_texture_buffer.allocate(line_segment_offset);
+
+    /*
     this.text_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
     this.text_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
     this.text_index_buffer = this.glm.element_buffer().bind().allocate_dynamic(512);
+    */
 
     this.init_presets();
 
