@@ -122,9 +122,11 @@ $(function() {
 
         var l1 = [1000, 100];
         var l2 = [1500, 500];
+        var l3 = [400, 110];
 
         var l1radial = drawer.dynamic_radial(l1, [], 128, canvas.width, canvas.height);
         var l2radial = drawer.dynamic_radial(l2, [], 128, canvas.width, canvas.height);
+        var l3radial = drawer.dynamic_radial(l2, [], 128, canvas.width, canvas.height);
         
         drawer.sync_buffers();
 
@@ -215,6 +217,8 @@ $(function() {
             l1radial.update(l1, l1pgon);
             var l2pgon = visibility_context.visible_polygon(l2);
             l2radial.update(l2, l2pgon);
+            var l3pgon = visibility_context.visible_polygon(l3);
+            l3radial.update(l3, l3pgon);
  
             vis = visibility_context.visible_polygon(agent.pos.v2_floor());
             dradial.update(agent.pos, vis);
@@ -240,6 +244,12 @@ $(function() {
                 drawer.u_light_radius.set(1500);
                 drawer.u_light_pos.set([pos[0], pos[1]]);
                 l2radial.draw(capture.texture);
+            } else {
+                mat3.multiply(pos, drawer.mv_transform, [l3[0], l3[1], 1]);
+                drawer.u_light_colour.set([1,0.5,0.5,1]);
+                drawer.u_light_radius.set(500);
+                drawer.u_light_pos.set([pos[0], pos[1]]);
+                l3radial.draw(capture.texture);
             }
             drawer.u_light_colour.set([0.6,0.6,1,1]);
             mat3.multiply(pos, drawer.mv_transform, [agent.pos[0], agent.pos[1], 1]);
