@@ -228,10 +228,14 @@ $(function() {
             
             }
 
-            l4.draw_with(capture.texture, agent.pos, dradial);
+            drawer.glm.disable_blend();
+            l4.draw_to_buffer_with(capture.texture, agent.pos, dradial);
+            drawer.glm.enable_blend();
 
             // remove all transformations
             drawer.restore();
+            
+            l4.draw_buffer();
             
             capture2.end();
 

@@ -6,7 +6,7 @@ function Light(visibility_context, position, radius, colour, drawer) {
     this.radial = drawer.dynamic_radial(this.position, [], 128, drawer.resolution[0], drawer.resolution[1]);
     this.position_buffer = vec3.create();
     this.visibility_context = visibility_context;
-
+    this.capture = drawer.capture([0, 0], drawer.resolution);
 }
 
 WebGLDrawer.prototype.light = function(visibility_context, position, radius, colour) {
@@ -19,6 +19,20 @@ WebGLDrawer.prototype.light = function(visibility_context, position, radius, col
 
 Light.prototype.draw = function(texture) {
     this.draw_with(texture, this.position, this.radial);
+}
+
+Light.prototype.draw_to_buffer = function(texture) {
+    this.capture.begin();
+    this.draw(texture);
+    this.capture.end();
+}
+Light.prototype.draw_to_buffer_with = function(texture, position, radial) {
+    this.capture.begin();
+    this.draw_with(texture, position, radial);
+    this.capture.end();
+}
+Light.prototype.draw_buffer = function() {
+    this.capture.draw();
 }
 
 Light.prototype.update = function() {
