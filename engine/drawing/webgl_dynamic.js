@@ -22,8 +22,8 @@ WebGLDrawer.DynamicRadial = function(centre, points, size, screen_width, screen_
     var indices = [];
     for (var i = 0;i<size;i++) {
         indices.push(0);
-        indices.push(2*i+1);
-        indices.push(2*i+2);
+        indices.push(i+1);
+        indices.push(i+2);
     }
 
     drawer.index_buffer.add(indices.map(function(i){return i + this.v_offset}.bind(this)));
@@ -51,13 +51,7 @@ WebGLDrawer.DynamicRadial.prototype.update = function(centre, points) {
 
     var vertices = [centre[0], centre[1]];
 
-    vertices.push(points[0][0]);
-    vertices.push(points[0][1]);
-    for (var i = 1;i<points.length;i++) {
-        
-        vertices.push(points[i][0]);
-        vertices.push(points[i][1]);
-        
+    for (var i = 0;i<points.length;i++) {
         vertices.push(points[i][0]);
         vertices.push(points[i][1]);
     }
@@ -68,6 +62,13 @@ WebGLDrawer.DynamicRadial.prototype.update = function(centre, points) {
     
     this.slice.set_length(points.length*3);
     drawer.select_attribute(drawer.vertex_position_attribute, drawer.vertex_buffer);
+}
+
+WebGLDrawer.DynamicRadial.prototype.draw_no_blend = function(texture) {
+    var drawer = this.drawer;
+    drawer.glm.disable_blend();
+    this.draw(texture);
+    drawer.glm.enable_blend();
 }
 
 WebGLDrawer.DynamicRadial.prototype.draw = function(texture) {

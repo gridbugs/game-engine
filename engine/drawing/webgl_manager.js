@@ -20,6 +20,14 @@ WebGLManager.prototype.init_2d = function() {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     return this;
 }
+
+WebGLManager.prototype.disable_blend = function() {
+    this.gl.disable(this.gl.BLEND);
+}
+WebGLManager.prototype.enable_blend = function() {
+    this.gl.enable(this.gl.BLEND);
+}
+
 WebGLManager.prototype.set_clear_colour = function(col) {
     this.gl.clearColor(col[0], col[1], col[2], col[3]);
 }

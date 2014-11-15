@@ -32,6 +32,7 @@ $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
     var pos = [200, 200];
+    pos = [720.799999999999, 200];
     agent = new Agent(pos, 0);
 
     var canvas = document.getElementById('screen');
@@ -73,7 +74,7 @@ $(function() {
         var demo = Content.characters.walk_demo.instance('still');
 
         var map_demo = Content.maps.map_demo;
-        agent.enter_region(map_demo.region_hash.r1);
+        agent.enter_region(map_demo.region_hash.r4);
         
         var v1 = VisibilityContext.from_regions([
             map_demo.region_hash.r1,
@@ -106,6 +107,7 @@ $(function() {
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40], [200, 0]]);
@@ -235,17 +237,22 @@ $(function() {
 
             //capture2.draw();
            
+            capture3.begin();
             // translate back to the scroll position
             drawer.save();
             drawer.translate(scroll.translate);
             
-            dradial.draw(capture2.texture);
             drawer.u_opacity.set(1);
+
+            dradial.draw_no_blend(capture2.texture);
+            
             drawer.draw_point(agent.pos, tc('black'), 4);
             
 
             drawer.restore();
 
+            capture3.end();
+            capture3.draw();
             // draw the buffered session with any filters applied
             //capture.begin();
             //filterer.draw();
