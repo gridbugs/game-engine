@@ -131,6 +131,7 @@ WebGLDrawer.prototype.standard_shaders = function(vertex, fragment) {
     return this;
 }
 WebGLDrawer.prototype.update_resolution = function() {
+    this.resolution = [this.canvas.width, this.canvas.height];
     this.u_resolution.set([this.canvas.width, this.canvas.height]);
 }
 WebGLDrawer.prototype.init_presets = function() {

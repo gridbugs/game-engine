@@ -120,14 +120,11 @@ $(function() {
        
         scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
 
-        var l1 = [1000, 100];
-        var l2 = [1500, 500];
-        var l3 = [400, 110];
+        var l1 = drawer.light(v1, [1000, 100], 800, [1,1,1,1]);
+        var l2 = drawer.light(v1, [1500, 500], 1500, [1,0.9,0.5,1]);
+        var l3 = drawer.light(v2, [400, 110], 500, [1,0.5,0.5,1]);
+        var l4 = drawer.light(150, [0.6,0.6,1,1]);
 
-        var l1radial = drawer.dynamic_radial(l1, [], 128, canvas.width, canvas.height);
-        var l2radial = drawer.dynamic_radial(l2, [], 128, canvas.width, canvas.height);
-        var l3radial = drawer.dynamic_radial(l2, [], 128, canvas.width, canvas.height);
-        
         drawer.sync_buffers();
 
         t = function() {
@@ -212,56 +209,25 @@ $(function() {
             drawer.save();
             drawer.translate(scroll.translate);
             
-            // set the light polygons
-            var l1pgon = visibility_context.visible_polygon(l1);
-            l1radial.update(l1, l1pgon);
-            var l2pgon = visibility_context.visible_polygon(l2);
-            l2radial.update(l2, l2pgon);
-            var l3pgon = visibility_context.visible_polygon(l3);
-            l3radial.update(l3, l3pgon);
- 
             vis = visibility_context.visible_polygon(agent.pos.v2_floor());
             dradial.update(agent.pos, vis);
 
 
-
-            drawer.u_opacity.set(1);
- 
             // draw lit areas to a buffer
-            var pos = vec3.create();
-            var id = mat3.create();
-            mat3.multiply(pos, drawer.mv_transform, [l1[0], l1[1], 1]);
             
-            drawer.u_is_light.set(true);
             if (visibility_context == v1) {
-                drawer.u_light_colour.set([1,1,1,1]);
-                drawer.u_light_radius.set(800);
-                drawer.u_light_pos.set([pos[0], pos[1]]);
-                l1radial.draw(capture.texture);
                 
-                mat3.multiply(pos, drawer.mv_transform, [l2[0], l2[1], 1]);
-                drawer.u_light_colour.set([1,0.9,0.5,1]);
-                drawer.u_light_radius.set(1500);
-                drawer.u_light_pos.set([pos[0], pos[1]]);
-                l2radial.draw(capture.texture);
-            } else {
-                mat3.multiply(pos, drawer.mv_transform, [l3[0], l3[1], 1]);
-                drawer.u_light_colour.set([1,0.5,0.5,1]);
-                drawer.u_light_radius.set(500);
-                drawer.u_light_pos.set([pos[0], pos[1]]);
-                l3radial.draw(capture.texture);
-            }
-            drawer.u_light_colour.set([0.6,0.6,1,1]);
-            mat3.multiply(pos, drawer.mv_transform, [agent.pos[0], agent.pos[1], 1]);
-            drawer.u_light_radius.set(150);
-            drawer.u_light_pos.set([pos[0], pos[1]]);
-            dradial.draw(capture.texture);
-
-
-            drawer.u_is_light.set(false);
-
-            drawer.u_opacity.set(1);
+                l1.draw(capture.texture);
+                l2.draw(capture.texture);
             
+            } else {
+                
+                l3.draw(capture.texture);
+            
+            }
+
+            l4.draw_with(capture.texture, agent.pos, dradial);
+
             // remove all transformations
             drawer.restore();
             
@@ -284,7 +250,6 @@ $(function() {
             //capture.begin();
             //filterer.draw();
             
-
             scroll.update(centre);
 
             // sync the cpu for smooth animation
