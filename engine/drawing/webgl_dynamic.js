@@ -22,8 +22,8 @@ WebGLDrawer.DynamicRadial = function(centre, points, size, screen_width, screen_
     var indices = [];
     for (var i = 0;i<size;i++) {
         indices.push(0);
-        indices.push(i+1);
-        indices.push(i+2);
+        indices.push(2*i+1);
+        indices.push(2*i+2);
     }
 
     drawer.index_buffer.add(indices.map(function(i){return i + this.v_offset}.bind(this)));
@@ -50,7 +50,14 @@ WebGLDrawer.DynamicRadial.prototype.update = function(centre, points) {
     
 
     var vertices = [centre[0], centre[1]];
-    for (var i = 0;i<points.length;i++) {
+
+    vertices.push(points[0][0]);
+    vertices.push(points[0][1]);
+    for (var i = 1;i<points.length;i++) {
+        
+        vertices.push(points[i][0]);
+        vertices.push(points[i][1]);
+        
         vertices.push(points[i][0]);
         vertices.push(points[i][1]);
     }

@@ -205,7 +205,7 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
 
         var connected_sides = this.connected_sides(ray, vertex);
         if (connected_sides[0] && connected_sides[1]) {
-            points.push(ray[1]);
+            points.push([ray[1][0], ray[1][1], 0]);
  //           drawer.draw_line_segment(ray);
             //drawer.draw_point(ray[1], tc('green'), 8);
             last_hint = vertex;
@@ -274,12 +274,12 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             }
 
             if (near_first) {
-                points.push([ray[1][0], ray[1][1], true]);
-                points.push([intersection_point[0], intersection_point[1], true]);
+                points.push([ray[1][0], ray[1][1], 1]);
+                points.push([intersection_point[0], intersection_point[1], 1]);
                 last_hint = hint;
             } else {
-                points.push([intersection_point[0], intersection_point[1], true]);
-                points.push([ray[1][0], ray[1][1], true]);
+                points.push([intersection_point[0], intersection_point[1], 1]);
+                points.push([ray[1][0], ray[1][1], 1]);
                 last_hint = vertex;
             }
          
