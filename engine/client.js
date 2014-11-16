@@ -119,112 +119,26 @@ $(function() {
             // show/hide regions if necessary
             agent.level_detect();
 
-            //vis_det.detect(agent.last_move_seg());
-
-
             // reset the drawer
             drawer.glm.set_clear_colour([0,0,0,1]);
             drawer.clear();
             drawer.glm.set_clear_colour([1,1,1,1]);
             drawer.remove_filters();
-            
-            // set up gl to draw to a framebuffer
-            capture.begin();
  
-            // apply global translation (for scrolling)
-            drawer.save();
-            drawer.translate(scroll.translate);
-            //drawer.translate([-100, 0]);
-           
-            // apply local transformation (for moving the character)
-            drawer.save();
-            drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
- 
-            // draw the character
-            //circle.draw();
-            demo.draw();
-            
-            // get the position of the player character on screen
-            var centre = drawer.global_centre();
-            
-            // back to the scroll transformation
-            drawer.restore();
-            
-            // draw the map line segments
-            map_demo.draw();
-
-            //vis = agent.region.visibility_context.visible_polygon(agent.pos.v2_floor());
-            //vis.polygon_to_segments().map(function(s){drawer.draw_line_segment(s, tc('black'), 2)});
-            
-            // remove all transformations
-            drawer.restore();
-            
-            // capture contains all the line segments and the character
-            capture.end();
+            Scene.base(capture, drawer, scroll, agent, demo, map_demo);
 
             // draw the line segments and character
             drawer.u_opacity.set(0.2);
             capture.draw();
             drawer.u_opacity.set(1);
             
+            Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
 
-            /* ----------- lighting ----------- */
-
-            drawer.glm.set_clear_colour([0,0,0,0]);
-            // fill a buffer with all the lit areas
-            capture2.begin();
-
-            /* draw the original capture into the lighting buffer so when this buffer
-             * is used to texture the visible area the original drawing is also present
-             */
-            drawer.u_opacity.set(0.4);
-            capture.draw();
-            drawer.u_opacity.set(1);
+            Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
             
-            // translate back to the scroll position
-            drawer.save();
-            drawer.translate(scroll.translate);
-            
-            vis = agent.level.visibility_context.visible_polygon(agent.pos.v2_floor());
-            dradial.update(agent.pos, vis);
-
-
-            // draw lit areas to a buffer
-
-            agent.level.lights.map(function(l) {
-                l.draw(capture.texture);
-            });
-
-            follow_light.draw_to_buffer_with(capture.texture, agent.pos, dradial);
-            
-            drawer.restore();
-            
-            follow_light.draw_buffer();
-
-            capture2.end();
-
-            /* ----------- visible area detection ----------- */
-            capture3.begin();
-            // translate back to the scroll position
-            drawer.save();
-            drawer.translate(scroll.translate);
-            
-            drawer.u_opacity.set(1);
-
-            dradial.draw_no_blend(capture2.texture);
-            
-            drawer.draw_point(agent.pos, tc('black'), 4);
-            
-
-            drawer.restore();
-
-            capture3.end();
             capture3.draw();
-            // draw the buffered session with any filters applied
-            //capture.begin();
-            //filterer.draw();
             
-            scroll.update(centre);
+            scroll.proceed();
 
             // sync the cpu for smooth animation
             drawer.sync_gpu();
@@ -242,3 +156,87 @@ $(function() {
 
     }.arr_args());
 });
+
+function Scene(){}
+Scene.base = function(capture, drawer, scroll, agent, character, map) {
+    // set up gl to draw to a framebuffer
+    capture.begin();
+
+    // apply global translation (for scrolling)
+    drawer.save();
+    drawer.translate(scroll.translate);
+   
+    // apply local transformation (for moving the character)
+    drawer.save();
+    drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
+
+    // draw the character
+    character.draw();
+            
+    scroll.set_next(drawer.global_centre());
+    
+    // back to the scroll transformation
+    drawer.restore();
+    
+    // draw the map line segments
+    map.draw();
+
+    // remove all transformations
+    drawer.restore();
+    
+    // capture contains all the line segments and the character
+    capture.end();
+}
+
+Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light, background) {
+    drawer.glm.set_clear_colour([0,0,0,0]);
+    
+    // fill a buffer with all the lit areas
+    capture.begin();
+
+    /* draw the original capture into the lighting buffer so when this buffer
+     * is used to texture the visible area the original drawing is also present
+     */
+    drawer.u_opacity.set(0.4);
+    background.draw();
+    drawer.u_opacity.set(1);
+    
+    // translate back to the scroll position
+    drawer.save();
+    drawer.translate(scroll.translate);
+    
+    dradial.update(agent.pos, agent.level.visibility_context.visible_polygon(agent.pos.v2_floor()));
+
+    // draw lit areas to a buffer
+
+    agent.level.lights.map(function(l) {
+        l.draw(background.texture);
+    });
+
+    follow_light.draw_to_buffer_with(background.texture, agent.pos, dradial);
+    
+    drawer.restore();
+    
+    follow_light.draw_buffer();
+
+    capture.end();
+
+}
+
+Scene.visible_area = function(capture, drawer, scroll, agent, dradial, background) {
+    capture.begin();
+    // translate back to the scroll position
+    drawer.save();
+    drawer.translate(scroll.translate);
+    
+    drawer.u_opacity.set(1);
+
+    dradial.draw_no_blend(background.texture);
+    
+    drawer.draw_point(agent.pos, tc('black'), 4);
+
+    drawer.restore();
+
+    capture.end();
+ 
+}

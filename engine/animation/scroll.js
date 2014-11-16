@@ -18,3 +18,11 @@ ScrollContext.prototype.update = function(position) {
 
     this.translate = this.translate.v2_sub(change);
 }
+
+ScrollContext.prototype.set_next = function(next) {
+    this.next = next;
+}
+
+ScrollContext.prototype.proceed = function() {
+    this.update(this.next);
+}
