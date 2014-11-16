@@ -85,6 +85,8 @@ WebGLDrawer.prototype.sync_gpu = function() {
 
 WebGLDrawer.prototype.init_uniforms = function() {
     this.u_resolution = this.shader_program.uniform2fv('u_resolution');
+    this.u_resolution.set([this.canvas.width, this.canvas.height]);
+
     this.u_colour = this.shader_program.uniform4fv('u_colour');
     this.u_model_view = this.shader_program.uniformMatrix3fv('u_model_view');
     this.u_tex_size = this.shader_program.uniform2fv('u_tex_size');
@@ -132,7 +134,10 @@ WebGLDrawer.prototype.standard_shaders = function(vertex, fragment) {
 }
 WebGLDrawer.prototype.update_resolution = function() {
     this.resolution = [this.canvas.width, this.canvas.height];
-    this.u_resolution.set([this.canvas.width, this.canvas.height]);
+    if (this.u_resolution) {
+        console.debug('a');
+        this.u_resolution.set([this.canvas.width, this.canvas.height]);
+    }
 }
 WebGLDrawer.prototype.init_presets = function() {
     this.vertex_buffer.add([0,0]);

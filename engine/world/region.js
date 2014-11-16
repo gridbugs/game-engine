@@ -7,6 +7,7 @@ function Region(segs, drawer, map) {
     this.neighbours = [];
     this.border_detectors = [];
     this.display_detectors = [];
+    this.level_detectors = [];
     this.vertices = [];
     this.map = map;
 }
@@ -37,6 +38,33 @@ Region.prototype.border_detect = function(agent) {
     });
 
 }
+
+Region.prototype.add_level_detector = function(left, right, segment) {
+    this.level_detectors.push(new DetectorSegment(segment, 
+        function(path, agent) {
+            left.regions.map(function(d){d.group.hide()});
+            right.regions.map(function(d){d.group.show()});
+            agent.enter_level(right);
+            this.create_collision_processor();
+        }.bind(this),
+        function(path, agent) {
+            left.regions.map(function(d){d.group.show()});
+            right.regions.map(function(d){d.group.hide()});
+            agent.enter_level(left);
+            this.create_collision_processor();
+        }.bind(this)
+    ));
+}
+
+Region.prototype.level_detect = function(agent) {
+    var path = agent.last_move_seg();
+
+    this.level_detectors.map(function(d) {
+        d.detect(path, agent);
+    });
+}
+
+
 
 Region.prototype.add_display_detector = function(left, right, segment) {
     if (left.constructor != Array) {

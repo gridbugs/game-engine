@@ -11,12 +11,15 @@ function Agent(pos, facing) {
 Agent.prototype.enter_region = function(region) {
     this.region = region;
 }
+Agent.prototype.enter_level = function(level) {
+    this.level = level;
+}
 
 Agent.prototype.border_detect = function() {
     this.region.border_detect(this);
 }
-Agent.prototype.display_detect = function() {
-    this.region.display_detect(this);
+Agent.prototype.level_detect = function() {
+    this.region.level_detect(this);
 }
 
 Agent.set_controlled_agent = function(agent) {

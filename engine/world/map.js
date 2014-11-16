@@ -56,6 +56,86 @@ Map.prototype.load_visible = function() {
     }
 }
 
+Map.prototype.levels = function(o) {
+    this.levels_obj = o;
+}
+
+Map.prototype.load_levels = function() {
+    var o = this.levels_obj;
+    this.level_arr = [];
+    this.level_hash = {};
+    for (var name in o) {
+        var region_names = o[name][0];
+        var extras = o[name][1];
+        var regions = region_names.map(function(n){return this.region_hash[n]}.bind(this));
+        var level = new Level(this.drawer, regions, extras);
+        
+        this.level_arr.push(level);
+        this.level_hash[name] = level;
+    }
+}
+
+Map.prototype.lights = function(o) {
+    this.lights_obj = o;
+}
+
+Map.prototype.load_lights = function() {
+    var o = this.lights_obj;
+    for (var light_name in o) {
+        var data = o[light_name];
+        var level_name = data[0];
+        var position = data[1];
+        var radius = data[2];
+        var colour = data[3];
+        var level = this.level_hash[level_name];
+        level.add_light(position, radius, colour);
+    }
+}
+
+Map.prototype.level_detectors = function(o) {
+    this.level_detectors_obj = o;
+}
+
+Map.prototype.load_level_detectors = function() {
+    var o = this.level_detectors_obj;
+    for (var region_name in o) {
+        var left_name = o[region_name][0];
+        var right_name = o[region_name][1];
+        var segment = o[region_name][2];
+        var left = this.level_hash[left_name];
+        var right = this.level_hash[right_name];
+        var region = this.region_hash[region_name];
+        region.add_level_detector(left, right, segment);
+    }
+}
+
+Map.prototype.initial = function(level_name) {
+    this.initial_level_name = level_name;
+}
+Map.prototype.load_initial = function() {
+    var drawer = this.drawer;
+    var level = this.level_hash[this.initial_level_name];
+    this.group_hash = {};
+    this.group_arr = [];
+    
+    for (var name in this.region_hash) {
+        var region = this.region_hash[name];
+        var group = drawer.group(region.segs.map(function(s) {
+            return drawer.line_segment(s[0], s[1], 1)
+        }));
+        this.group_hash[name] = group;
+        this.group_arr.push(group);
+        group.hide();
+
+        region.group = group;
+    }
+
+    for (var i = 0;i<level.regions.length;i++) {
+        var region = level.regions[i];
+        region.group.show();
+    }
+}
+
 Map.prototype.visible_regions = function() {
     var ret = [];
     for (var i = 0;i<this.group_arr.length;i++) {
@@ -92,10 +172,16 @@ Map.prototype.draw = function() {
 
 Map.prototype.run = function(then) {
     this.load_visible();
-    this.load_display_detectors();
-    this.create_collision_processors();
+//    this.load_display_detectors();
+//    this.load_lights();
     this.create_vertices();
-    this.create_visibility_contexts();
+    this.load_levels();
+    this.load_level_detectors();
+    this.load_initial();
+    this.load_lights();
+    this.create_collision_processors();
+    //this.create_visibility_contexts();
+    //console.debug(this.region_arr);
     then();
 }
 
@@ -139,4 +225,8 @@ Map.prototype.create_vertices = function() {
         }
     }
 
+}
+
+Map.prototype.update_lights = function() {
+    this.level_arr.map(function(l){l.update_lights()});
 }

@@ -32,7 +32,6 @@ $(function() {
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
     var pos = [200, 200];
-    pos = [720.799999999999, 200];
     agent = new Agent(pos, 0);
 
     var canvas = document.getElementById('screen');
@@ -50,59 +49,32 @@ $(function() {
     } else {
         drawer = new WebGLDrawer(canvas);
     }
+    drawer.update_resolution();
+   
 
     Content.load();
     Content.set_drawer(drawer);
     
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
-        Content,
-        new ImageLoader('images/earth.jpg')
-    ).run(function(shaders, images, test_images) {
+        Content
+    ).run(function(shaders, images) {
         
-        var test_texture;
-        if (test_images) {
-            test_texture = drawer.glm.texture(test_images[0]);
-        }
-
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
-        drawer.update_resolution();
         
         drawer.sync_buffers();
 
-        var demo = Content.characters.walk_demo.instance('still');
-
+        
         var map_demo = Content.maps.map_demo;
-        agent.enter_region(map_demo.region_hash.r4);
         
-        var v1 = VisibilityContext.from_regions([
-            map_demo.region_hash.r1,
-            map_demo.region_hash.r2,
-            map_demo.region_hash.r4,
-            map_demo.region_hash.r5,
-            map_demo.region_hash.r6
-        ], [
-            [[300, 350], [150, 350]]
-        ]);
+        map_demo.update_lights();
+       
 
-        var v2 = VisibilityContext.from_regions([
-            map_demo.region_hash.r2,
-            map_demo.region_hash.r3
-        ], [
-            [[400, 350], [550, 350]]
-        ]);
-
-        var visibility_context = v1;
+        var demo = Content.characters.walk_demo.instance('still');
         
-        var vis_det = new DetectorSegment([[350, 400], [350, 550]],
-            function(){
-                visibility_context = v2;
-            },
-            function(){
-                visibility_context = v1;
-            }
-        );
+        agent.enter_region(map_demo.region_hash.r1);
+        agent.enter_level(map_demo.level_hash.level1);
         
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
@@ -110,10 +82,9 @@ $(function() {
         var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
-        var radial = drawer.radial([100, 100], [[200, 200], [50, 120], [60, 20], [120, 40], [200, 0]]);
-
         var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
 
+        var follow_light = drawer.light(150, [0.6,0.6,1,1]);
         
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -121,13 +92,9 @@ $(function() {
         var tm = new TimeManager();
        
         scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
-
-        var l1 = drawer.light(v1, [1000, 100], 800, [1,1,1,1]);
-        var l2 = drawer.light(v1, [1500, 500], 1500, [1,0.9,0.5,1]);
-        var l3 = drawer.light(v2, [400, 110], 500, [1,0.5,0.5,1]);
-        var l4 = drawer.light(150, [0.6,0.6,1,1]);
-
+        
         drawer.sync_buffers();
+
 
         t = function() {
             fps_stats.begin();
@@ -150,9 +117,9 @@ $(function() {
             agent.border_detect();
 
             // show/hide regions if necessary
-            agent.display_detect();
+            agent.level_detect();
 
-            vis_det.detect(agent.last_move_seg());
+            //vis_det.detect(agent.last_move_seg());
 
 
             // reset the drawer
@@ -200,9 +167,16 @@ $(function() {
             capture.draw();
             drawer.u_opacity.set(1);
             
+
+            /* ----------- lighting ----------- */
+
             drawer.glm.set_clear_colour([0,0,0,0]);
             // fill a buffer with all the lit areas
             capture2.begin();
+
+            /* draw the original capture into the lighting buffer so when this buffer
+             * is used to texture the visible area the original drawing is also present
+             */
             drawer.u_opacity.set(0.4);
             capture.draw();
             drawer.u_opacity.set(1);
@@ -211,36 +185,25 @@ $(function() {
             drawer.save();
             drawer.translate(scroll.translate);
             
-            vis = visibility_context.visible_polygon(agent.pos.v2_floor());
+            vis = agent.level.visibility_context.visible_polygon(agent.pos.v2_floor());
             dradial.update(agent.pos, vis);
 
 
             // draw lit areas to a buffer
-            
-            if (visibility_context == v1) {
-                
-                l1.draw(capture.texture);
-                l2.draw(capture.texture);
-            
-            } else {
-                
-                l3.draw(capture.texture);
-            
-            }
 
-            drawer.glm.disable_blend();
-            l4.draw_to_buffer_with(capture.texture, agent.pos, dradial);
-            drawer.glm.enable_blend();
+            agent.level.lights.map(function(l) {
+                l.draw(capture.texture);
+            });
 
-            // remove all transformations
+            follow_light.draw_to_buffer_with(capture.texture, agent.pos, dradial);
+            
             drawer.restore();
             
-            l4.draw_buffer();
-            
+            follow_light.draw_buffer();
+
             capture2.end();
 
-            //capture2.draw();
-           
+            /* ----------- visible area detection ----------- */
             capture3.begin();
             // translate back to the scroll position
             drawer.save();
@@ -265,7 +228,6 @@ $(function() {
 
             // sync the cpu for smooth animation
             drawer.sync_gpu();
-            
             // progress the time
             demo.tick(time_delta);
             // repeat on the next frame

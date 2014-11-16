@@ -13,7 +13,7 @@ WebGLDrawer.prototype.light = function(visibility_context, position, radius, col
     if (radius == undefined) {
         return new Light(null, null, visibility_context, position, this);
     } else {
-        return new Light(visibility_context, position, radius, colour, this).update();
+        return new Light(visibility_context, position, radius, colour, this);
     }
 }
 

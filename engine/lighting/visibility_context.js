@@ -5,7 +5,7 @@ function VisibilityContext(vertices, segs) {
 }
 
 VisibilityContext.from_regions = function(regions, extra) {
-    var segs = [];//extra || [];
+    var segs = [];
     for (var i = 0;i<regions.length;i++) {
         segs = segs.concat(regions[i].segs);
     }
@@ -17,8 +17,6 @@ VisibilityContext.from_segs = function(segs, extra) {
     var vertices = Vertex.vertices_from_segs(all_segs);
     return new VisibilityContext(vertices, all_segs);
 }
-
-
 
 VisibilityContext.LARGE_NUMBER = 10000;
 VisibilityContext.TOLERANCE = 0.01;
