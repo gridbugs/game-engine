@@ -73,8 +73,8 @@ $(function() {
 
         var demo = Content.characters.walk_demo.instance('still');
         
-        agent.enter_region(map_demo.region_hash.r1);
-        agent.enter_level(map_demo.level_hash.level1);
+        agent.enter_region(map_demo.region_hash.r3);
+        agent.enter_level(map_demo.level_hash.level2);
         
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
@@ -95,6 +95,11 @@ $(function() {
         
         drawer.sync_buffers();
 
+        agent.region.collision_processor.process(
+            [250.00000000000003, 250], 
+            [250.00000000000003, 257.6],
+            50
+        );
 
         t = function() {
             fps_stats.begin();
@@ -126,18 +131,19 @@ $(function() {
             drawer.remove_filters();
  
             Scene.base(capture, drawer, scroll, agent, demo, map_demo);
-
+            //Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
+            //Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
+            
             // draw the line segments and character
+            /*
             drawer.u_opacity.set(0.2);
             capture.draw();
             drawer.u_opacity.set(1);
             
-            Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
-
-            Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
-            
             capture3.draw();
-            
+            */
+            capture.draw();
+
             scroll.proceed();
 
             // sync the cpu for smooth animation
@@ -151,7 +157,7 @@ $(function() {
             fps_stats.end();
             ms_stats.end();
         }
-        t();
+        //t();
 
 
     }.arr_args());
@@ -172,6 +178,7 @@ Scene.base = function(capture, drawer, scroll, agent, character, map) {
 
     // draw the character
     character.draw();
+    circle.draw();
             
     scroll.set_next(drawer.global_centre());
     
@@ -213,7 +220,9 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
         l.draw(background.texture);
     });
 
+    drawer.glm.disable_blend();
     follow_light.draw_to_buffer_with(background.texture, agent.pos, dradial);
+    drawer.glm.enable_blend();
     
     drawer.restore();
     

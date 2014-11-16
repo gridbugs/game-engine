@@ -76,5 +76,5 @@ function MapDemo() {
         r2: ['level1', 'level2', [[350, 400], [350, 550]]]
     });
 
-    this.initial('level1');
+    this.initial('level2');
 }
