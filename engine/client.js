@@ -213,7 +213,9 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
         l.draw(background.texture);
     });
 
+    drawer.glm.disable_blend();
     follow_light.draw_to_buffer_with(background.texture, agent.pos, dradial);
+    drawer.glm.enable_blend();
     
     drawer.restore();
     
