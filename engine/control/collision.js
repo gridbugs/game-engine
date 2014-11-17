@@ -27,7 +27,6 @@ CollisionProcessor.prototype.get_collision = function(start, end, rad) {
 CollisionProcessor.prototype.check_slide = function(collision) {
     // compute the path for resolving the collision
     var path = collision.slide();
-
     //console.debug('checking path for collisions');
     for (var i = 1;i<path.length;i++) {
         var seg_start = path[i-1];
@@ -62,8 +61,35 @@ CollisionProcessor.prototype.process = function(start, end, rad) {
         //console.debug('no collision');
         return end;
     }
+    if (collision.constructor == CollisionProcessor.VertexCollision) {
+        /*
+        console.debug(collision.seg.toString());
+        console.debug(collision.centre);
+        console.debug(collision.centre.v2_dist(collision.vertex));
+        cu.draw_circle([collision.centre, 50]);
+        cu.draw_segment(collision.seg);
+        //cu.draw_point(collision.centre);
+        console.debug(collision.centre);
+        console.debug(collision.start);
+        console.debug(collision.vertex);
+        console.debug(collision.start.v2_dist(collision.vertex));
+        console.debug(collision.centre.v2_dist(collision.vertex));
 
-    return this.check_slide(collision);
+        console.debug(collision);
+        console.debug('pre_slide', collision.centre);
+        console.debug('pre_slide', collision.centre.v2_dist(collision.vertex));
+        */
+    }
+    var post_slide = this.check_slide(collision);
+ 
+ /*
+    if (collision.constructor == CollisionProcessor.VertexCollision) {
+        console.debug('post_slide', post_slide);
+        console.debug('post_slide', post_slide.v2_dist(collision.vertex));
+    }
+    */
+
+    return post_slide;
 }
 
 CollisionProcessor.Collision = function(start, end, rad, seg, centre) {
@@ -184,6 +210,7 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
         //cu.draw_segment(path_seg_copy, 'red', 3);
         //console.debug(path_seg_copy);
         var intersections =  path_seg_copy.seg_circle_intersections_exclusive(c);
+
         //console.debug(path_seg_copy.toString() + '.seg_circle_intersections_exclusive(' + c.toString() + ')');
         //console.debug(intersections);
         return intersections;
@@ -211,6 +238,7 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
         }
     }
 
+
     var closest_circle = [closest_vertex, rad];
     //cu.draw_circle(closest_circle, 'green', 1);
     var path_line = path_seg.seg_to_line();
@@ -222,11 +250,13 @@ CollisionProcessor.prototype.vertex_intersection = function(start, end, rad, seg
         return null;
     }
 
+    var tolerance = closest_intersection_point.v2_sub(closest_vertex).v2_to_length(0.01);
+
     //console.debug(closest_intersection_point.v2_dist(seg[1]));
     //cu.draw_point(closest_intersection_point, 'black', 8);
     //cu.draw_circle([closest_intersection_point, rad], 'blue', 2);
-
-    return new CollisionProcessor.VertexCollision(start, end, rad, seg, closest_intersection_point, closest_vertex);
+    //console.debug(closest_intersection_point, closest_vertex);
+    return new CollisionProcessor.VertexCollision(start, end, rad, seg, closest_intersection_point.v2_add(tolerance), closest_vertex);
 }
 
 CollisionProcessor.EdgeCollision.prototype.slide = function() {
@@ -274,9 +304,9 @@ CollisionProcessor.VertexCollision.prototype.slide = function() {
 }
 
 CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centre, vertex) {
-    if (start.v2_equals(end)) {
+    //if (start.v2_equals(end)) {
     ///    console.debug('start == end');
-    }
+   // }
     //console.debug('vertex_slide');
     var total_distance = start.v2_dist(end);
     
@@ -334,6 +364,10 @@ CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centr
     var current_tangent_vertex_tangent_intersection = current_tangent.line_intersection(tangent_at_vertex);
     //cu.draw_point(current_tangent_vertex_tangent_intersection, 'purple', 6);
 
+    if (current_tangent_vertex_tangent_intersection == null) {
+        error();
+    }
+
     /* vector to move the circle along the tangent to resolve the collision
      */
     var vertex_tangent_vector_to_move = vertex.v2_sub(current_tangent_vertex_tangent_intersection);
@@ -349,6 +383,8 @@ CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centr
     var move_distance = centre.v2_dist(current_adjusted_centre);
     //console.debug(move_distance);
 
+    var tolerance = this.centre.v2_sub(vertex).v2_to_length(0.01);
+    
     if (move_distance < remaining_distance) {
         //console.debug('simple case');
         this.path.push(vertex_adjusted_centre);
@@ -361,8 +397,9 @@ CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centr
         var adjusted_end = current_adjusted_centre.v2_add(start_to_end_vector.v2_to_length(remaining_distance));
         this.path.push(adjusted_end);
         //cu.draw_circle([adjusted_end, this.rad], 'black', 1);
-
-        return this.path;
+        //return this.path;
+        //console.debug(tolerance);
+        return this.path.map(function(v){return v.v2_add(tolerance)});
     }
     //console.debug('complex case');
 
@@ -395,6 +432,6 @@ CollisionProcessor.Collision.prototype.vertex_slide = function(start, end, centr
     this.path.push(x_moved);
     this.path.push(y_moved);
 
- 
-    return this.path;
+    //console.debug(tolerance);
+    return this.path.map(function(v){return v.v2_add(tolerance)});
 }
