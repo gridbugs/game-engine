@@ -48,8 +48,8 @@ Region.prototype.add_level_detector = function(left, right, segment) {
             this.create_collision_processor();
         }.bind(this),
         function(path, agent) {
-            left.regions.map(function(d){d.group.show()});
             right.regions.map(function(d){d.group.hide()});
+            left.regions.map(function(d){d.group.show()});
             agent.enter_level(left);
             this.create_collision_processor();
         }.bind(this)

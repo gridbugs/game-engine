@@ -6,6 +6,74 @@ var drawer;
 var game_console;
 var agent;
 var cu;
+var test_texture1;
+var test_texture2;
+var canvas;
+
+function test_textures() {
+
+    var rect = drawer.rect([0, 0], [canvas.width, canvas.height], tc('black'));
+
+    drawer.sync_buffers();
+
+    drawer.glm.set_clear_colour([0,0,0,0]);
+    drawer.clear();
+
+    drawer.use_texture(canvas.width, canvas.height);
+
+    drawer.u_model_view.set(drawer.mv_transform);
+    drawer.index_buffer.bind();
+
+
+
+    function a() {
+        drawer.u_light_radius.set(500);
+        drawer.u_light_pos.set([300, canvas.height - 200]);
+        drawer.u_light_colour.set([1,0,0,1]);
+        
+        rect.slice.draw_triangles();
+    }
+    function b() {
+        drawer.u_light_radius.set(600);
+        drawer.u_light_pos.set([600, canvas.height - 300]);
+        drawer.u_light_colour.set([0,1,0,1]);
+
+        rect.slice.draw_triangles();
+    }
+    function c() {
+        drawer.u_light_radius.set(400);
+        drawer.u_light_pos.set([1000, canvas.height - 200]);
+        drawer.u_light_colour.set([0,0,1,1]);
+
+        rect.slice.draw_triangles();
+    }
+    function d() {
+        drawer.u_light_radius.set(100);
+        drawer.u_light_pos.set([1100, canvas.height - 800]);
+        drawer.u_light_colour.set([1,1,0,1]);
+
+        rect.slice.draw_triangles();
+    }
+
+
+
+    test_texture2.bind();
+    rect.slice.draw_triangles();
+
+    test_texture1.bind();
+
+    drawer.u_is_light.set(true);
+    drawer.glm.light_blend();
+    c();
+    a();
+/*
+    b();
+    a();
+    c();
+    d();
+*/
+
+}
 
 $(function() {
 
@@ -34,7 +102,7 @@ $(function() {
     var pos = [200, 200];
     agent = new Agent(pos, 0);
 
-    var canvas = document.getElementById('screen');
+    canvas = document.getElementById('screen');
     
     $(document).resize(function() {
         canvas.width = $(window).width();
@@ -57,14 +125,17 @@ $(function() {
     
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
-        Content
-    ).run(function(shaders, images) {
+        Content,
+        new ImageLoader('images/', ['wood.jpg', 'white.jpg'])
+    ).run(function(shaders, images, test_images) {
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
-        
-        drawer.sync_buffers();
+        test_texture1 = drawer.glm.texture(test_images[0]);
+        test_texture2 = drawer.glm.texture(test_images[1]);
 
+        //test_textures();
+        //return;
         
         var map_demo = Content.maps.map_demo;
         
@@ -80,11 +151,12 @@ $(function() {
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var capture4 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
 
-        var follow_light = drawer.light(150, [0.6,0.6,1,1]);
+        var follow_light = drawer.light(500, [1,1,1,0.2]);
         
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -119,6 +191,7 @@ $(function() {
             // show/hide regions if necessary
             agent.level_detect();
 
+            
             // reset the drawer
             drawer.glm.set_clear_colour([0,0,0,1]);
             drawer.clear();
@@ -127,16 +200,27 @@ $(function() {
  
             Scene.base(capture, drawer, scroll, agent, demo, map_demo);
 
-            // draw the line segments and character
-            drawer.u_opacity.set(0.2);
-            capture.draw();
-            drawer.u_opacity.set(1);
             
             Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
 
             Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
             
+            //filterer.begin();
+
+            // draw the line segments and character
+            
+            
+            //capture2.draw();
             capture3.draw();
+            
+            drawer.u_opacity.set(0.2);
+            capture.draw();
+            drawer.u_opacity.set(1);
+            
+
+            
+
+            //filterer.draw();
             
             scroll.proceed();
 
@@ -189,7 +273,7 @@ Scene.base = function(capture, drawer, scroll, agent, character, map) {
 }
 
 Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light, background) {
-    drawer.glm.set_clear_colour([0,0,0,0]);
+    drawer.glm.set_clear_colour([0,0,0,1]);
     
     // fill a buffer with all the lit areas
     capture.begin();
@@ -197,10 +281,13 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
     /* draw the original capture into the lighting buffer so when this buffer
      * is used to texture the visible area the original drawing is also present
      */
-    drawer.u_opacity.set(0.4);
+    
+    /*
+    drawer.u_opacity.set(0.3);
     background.draw();
     drawer.u_opacity.set(1);
-    
+    */
+
     // translate back to the scroll position
     drawer.save();
     drawer.translate(scroll.translate);
@@ -209,17 +296,26 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
 
     // draw lit areas to a buffer
 
+    drawer.glm.light_blend();
+    var lights = agent.level.lights;
+    
+    
+    
     agent.level.lights.map(function(l) {
         l.draw(background.texture);
     });
+    
 
     drawer.glm.disable_blend();
     follow_light.draw_to_buffer_with(background.texture, agent.pos, dradial);
     drawer.glm.enable_blend();
     
     drawer.restore();
-    
+ 
+    capture.bind();
     follow_light.draw_buffer();
+    
+    drawer.glm.general_blend();
 
     capture.end();
 
@@ -235,7 +331,7 @@ Scene.visible_area = function(capture, drawer, scroll, agent, dradial, backgroun
 
     dradial.draw_no_blend(background.texture);
     
-    drawer.draw_point(agent.pos, tc('black'), 4);
+    //drawer.draw_point(agent.pos, tc('black'), 4);
 
     drawer.restore();
 

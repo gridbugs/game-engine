@@ -16,9 +16,19 @@ WebGLManager.prototype.init_2d = function() {
     var gl = this.gl;
     gl.clearColor(1, 1, 1, 1);
     gl.disable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    this.enable_blend();
+    this.general_blend();
     return this;
+}
+
+WebGLManager.prototype.general_blend = function() {
+    var gl = this.gl;
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+}
+
+WebGLManager.prototype.light_blend = function() {
+    var gl = this.gl;
+    gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
 }
 
 WebGLManager.prototype.disable_blend = function() {

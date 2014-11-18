@@ -9,8 +9,8 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.index_buffer = this.glm.element_buffer();
     this.texture_buffer = this.glm.array_buffer(2);
 
-    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(2048);
-    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(2048);
+    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(4096);
+    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(4096);
     this.dynamic_index_buffer = this.glm.element_buffer();
 
     var line_segment_offset = 4;
@@ -96,7 +96,7 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_flip_y = this.shader_program.uniform1f('u_flip_y');
 
     this.u_pixelate = this.shader_program.uniform1i('u_pixelate');
-    this.u_pixel_size = this.shader_program.uniform1i('u_pixel_size');
+    this.u_pixel_size = this.shader_program.uniform1f('u_pixel_size');
     this.u_pixel_fade = this.shader_program.uniform1f('u_pixel_fade');
 
     this.u_blur = this.shader_program.uniform1i('u_blur');
@@ -248,7 +248,7 @@ WebGLDrawer.Rect = function(top_left, size, colour, transform, drawer) {
         top_left[0], top_left[1] + size[1],
     ]);
 
-    drawer.texture_buffer.add([0,0,0,0,0,0,0,0]);
+    drawer.texture_buffer.add([0,0,1,0,1,1,0,1]);
 
     this.slice = drawer.glm.slice(this.i_offset, 6);
 
@@ -433,10 +433,14 @@ WebGLDrawer.prototype.capture = function(top_left, size, transform) {
 }
 
 WebGLDrawer.Capture.prototype.begin = function() {
+    this.bind();
+    this.drawer.glm.clear();
+}
+
+WebGLDrawer.Capture.prototype.bind = function() {
     this.framebuffer.bind();
     this.texture.bind();
     this.drawer.u_flip_y.set(1);
-    this.drawer.glm.clear();
 }
 
 WebGLDrawer.Capture.prototype.end = function() {
