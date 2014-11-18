@@ -10,71 +10,6 @@ var test_texture1;
 var test_texture2;
 var canvas;
 
-function test_textures() {
-
-    var rect = drawer.rect([0, 0], [canvas.width, canvas.height], tc('black'));
-
-    drawer.sync_buffers();
-
-    drawer.glm.set_clear_colour([0,0,0,0]);
-    drawer.clear();
-
-    drawer.use_texture(canvas.width, canvas.height);
-
-    drawer.u_model_view.set(drawer.mv_transform);
-    drawer.index_buffer.bind();
-
-
-
-    function a() {
-        drawer.u_light_radius.set(500);
-        drawer.u_light_pos.set([300, canvas.height - 200]);
-        drawer.u_light_colour.set([1,0,0,1]);
-        
-        rect.slice.draw_triangles();
-    }
-    function b() {
-        drawer.u_light_radius.set(600);
-        drawer.u_light_pos.set([600, canvas.height - 300]);
-        drawer.u_light_colour.set([0,1,0,1]);
-
-        rect.slice.draw_triangles();
-    }
-    function c() {
-        drawer.u_light_radius.set(400);
-        drawer.u_light_pos.set([1000, canvas.height - 200]);
-        drawer.u_light_colour.set([0,0,1,1]);
-
-        rect.slice.draw_triangles();
-    }
-    function d() {
-        drawer.u_light_radius.set(100);
-        drawer.u_light_pos.set([1100, canvas.height - 800]);
-        drawer.u_light_colour.set([1,1,0,1]);
-
-        rect.slice.draw_triangles();
-    }
-
-
-
-    test_texture2.bind();
-    rect.slice.draw_triangles();
-
-    test_texture1.bind();
-
-    drawer.u_is_light.set(true);
-    drawer.glm.light_blend();
-    c();
-    a();
-/*
-    b();
-    a();
-    c();
-    d();
-*/
-
-}
-
 $(function() {
 
     game_console = new Console(
@@ -125,22 +60,15 @@ $(function() {
     
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
-        Content,
-        new ImageLoader('images/', ['wood.jpg', 'white.jpg'])
-    ).run(function(shaders, images, test_images) {
+        Content
+    ).run(function(shaders, images) {
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
-        test_texture1 = drawer.glm.texture(test_images[0]);
-        test_texture2 = drawer.glm.texture(test_images[1]);
 
-        //test_textures();
-        //return;
-        
         var map_demo = Content.maps.map_demo;
         
         map_demo.update_lights();
-       
 
         var demo = Content.characters.walk_demo.instance('still');
         
