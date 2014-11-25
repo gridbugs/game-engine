@@ -21,6 +21,8 @@ $(function() {
     $("#console-container").hide();
     $("#info-overlay").hide();
 
+    game_console.write('test');
+
     var fps_stats = new Stats();
     fps_stats.setMode(0);
     fps_stats.domElement.style.position = 'relative';
@@ -61,10 +63,13 @@ $(function() {
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
         Content
-    ).run(function(shaders, images) {
+        //,new ImageLoader('images/', ['wood.jpg'])
+    ).run(function(shaders, images, test_images) {
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
+
+        //test_texture1 = drawer.glm.texture(test_images[0]);
 
         var map_demo = Content.maps.map_demo;
         
@@ -79,12 +84,11 @@ $(function() {
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
-        var capture4 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
 
-        var follow_light = drawer.light(500, [1,1,1,0.2]);
+        var follow_light = drawer.light(1500, [1,1,1,0.3]);
         
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -95,6 +99,7 @@ $(function() {
         
         drawer.sync_buffers();
 
+        var profile_tm = new TimeManager();
 
         t = function() {
             fps_stats.begin();
@@ -128,7 +133,6 @@ $(function() {
  
             Scene.base(capture, drawer, scroll, agent, demo, map_demo);
 
-            
             Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
 
             Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
@@ -137,17 +141,15 @@ $(function() {
 
             // draw the line segments and character
             
-            
             //capture2.draw();
+            
             capture3.draw();
             
-            drawer.u_opacity.set(0.2);
+            drawer.u_opacity.set(0.15);
             capture.draw();
             drawer.u_opacity.set(1);
             
-
             
-
             //filterer.draw();
             
             scroll.proceed();
@@ -250,6 +252,8 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
 }
 
 Scene.visible_area = function(capture, drawer, scroll, agent, dradial, background) {
+    drawer.glm.set_clear_colour([0,0,0,0]);
+    
     capture.begin();
     // translate back to the scroll position
     drawer.save();

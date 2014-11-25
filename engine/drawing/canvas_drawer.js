@@ -21,7 +21,11 @@ CanvasDrawer.convert_colour = function(colour) {
     if (colour == undefined) {
         return "black";
     }
-    return "rgba("+(colour[0]*255)+","+(colour[1]*255)+","+(colour[2]*255)+","+(colour[3])+")";
+    return "rgba("+
+        parseInt(colour[0]*255)+","+
+        parseInt(colour[1]*255)+","+
+        parseInt(colour[2]*255)+","+
+        colour[3]+")";
 }
 
 CanvasDrawer.Drawable = function(transform) {
@@ -62,6 +66,7 @@ CanvasDrawer.Image.prototype.draw = function() {
     var ctx = this.ctx;
     ctx.save();
     this.drawer.mv_transform.canvas_transform(ctx);
+    console.debug(this);
     this.mv_transform.canvas_transform(ctx);
     ctx.drawImage(this.image, 
             this.clip_start[0], this.clip_start[1], 

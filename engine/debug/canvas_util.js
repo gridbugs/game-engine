@@ -306,3 +306,10 @@ CanvasUtil.prototype.draw_image = function(image, top_left, size, clip_top_left,
     clip_size = d(clip_size, [image.width, image.height]);
     this.ctx.drawImage(image, clip_top_left[0], clip_top_left[1], clip_size[0], clip_size[1], top_left[0], top_left[1], size[0], size[1]);
 }
+
+CanvasUtil.prototype.clear_colour = function(colour) {
+    this.ctx.beginPath();
+    this.ctx.fillStyle = colour;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fill();
+}

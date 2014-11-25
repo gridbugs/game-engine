@@ -24,6 +24,36 @@ Vertex.prototype.between_any_neighbour = function(v, tolerance) {
     return false;
 }
 
+Vertex.vertices_from_segs2 = function(segs) {
+    var ret = [];
+
+    for (var i = 0;i<segs.length;i++) {
+        var seg = segs[i];
+
+        var seg_vertices = [null, null];
+        
+        // check if either ends of this segment are already a vertex
+        for (var j = 0;j<ret.length;j++) {
+            var vertex = ret[j];
+
+            if (seg[0].v2_equals(vertex.pos)) {
+                seg_vertices[0] = vertex;
+            } else if (seg[1].v2_equals(vertex.pos)) {
+                seg_vertices[1] = vertex;
+            }
+        }
+
+        if (seg_vertices[0] == null) {
+            seg_vertices[0] = new Vertex(segs[0]);
+        }
+
+        if (seg_vertices[1] == null) {
+            seg_vertices[1] = new Vertex(segs[1]);
+        }
+    }
+}
+
+
 Vertex.vertices_from_segs = function(segs) {
 
     var ret = [];

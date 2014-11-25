@@ -1,9 +1,11 @@
+var gl;
 /*
  * Creates a manager for a given canvas html element
  */
 function WebGLManager(canvas, options) {
     this.canvas = canvas;
     this.gl = canvas.getContext('webgl', options);
+    gl = this.gl;
 }
 
 /*

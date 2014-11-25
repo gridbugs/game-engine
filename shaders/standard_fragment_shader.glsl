@@ -65,7 +65,7 @@ void main() {
             vec4 colour = texture2D(u_image, screen_coord / u_tex_size) * u_opacity;
             float dist_to_light = distance(pos, u_light_pos);
             float light_dist_mult = 1.0 - min(1.0, dist_to_light / u_light_radius);
-            colour[3] *= (light_dist_mult * light_dist_mult);
+            colour[3] *= light_dist_mult;
             gl_FragColor = colour * u_light_colour;
             
         } else {
