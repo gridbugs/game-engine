@@ -19,6 +19,10 @@ WebGLDrawer.FilterPipeline.prototype.begin = function() {
     this.capture_pair.begin();
 }
 
+WebGLDrawer.FilterPipeline.prototype.bind = function() {
+    this.capture_pair.bind();
+}
+
 WebGLDrawer.FilterPipeline.prototype.draw = function() {
     var filters = this.filters;
     if (filters == undefined || filters.length == 0) {

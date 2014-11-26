@@ -137,18 +137,18 @@ $(function() {
 
             Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
             
-            //filterer.begin();
 
             // draw the line segments and character
             
-            capture3.draw();
+            filterer.begin();
             
-            drawer.u_opacity.set(0.15);
+            drawer.u_opacity.set(0.3);
             capture.draw();
             drawer.u_opacity.set(1);
             
+            capture3.draw();
             
-            //filterer.draw();
+            filterer.draw();
             
             scroll.proceed();
 

@@ -487,6 +487,11 @@ WebGLDrawer.CapturePair.prototype.end = function() {
     this.capturing.end();
     this.do_swap();
 }
+
+WebGLDrawer.CapturePair.prototype.bind = function() {
+    this.capturing.bind();
+}
+
 WebGLDrawer.prototype.capture_pair = function(top_left, size, transform) {
     return new WebGLDrawer.CapturePair(top_left, size, transform, this);
 }
