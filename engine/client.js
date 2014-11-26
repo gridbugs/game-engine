@@ -21,8 +21,6 @@ $(function() {
     $("#console-container").hide();
     $("#info-overlay").hide();
 
-    game_console.write('test');
-
     var fps_stats = new Stats();
     fps_stats.setMode(0);
     fps_stats.domElement.style.position = 'relative';
@@ -76,13 +74,15 @@ $(function() {
         map_demo.update_lights();
 
         var demo = Content.characters.warrior.instance('still');
-//        console.debug(demo.character.seqs.);
         agent.enter_region(map_demo.region_hash.r1);
         agent.enter_level(map_demo.level_hash.level1);
         
-        var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters(
-            drawer.pixelate_filter(3)
-        );
+        var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]);
+        
+        if (window.location.hash == '#pixelate') {
+            filterer.set_filters(drawer.pixelate_filter(3));
+        }
+
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
@@ -141,7 +141,7 @@ $(function() {
             
 
             // draw the line segments and character
-            
+
             filterer.begin();
             
             drawer.u_opacity.set(0.3);
