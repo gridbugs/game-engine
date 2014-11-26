@@ -31,7 +31,7 @@ function Warrior() {
             },
             left_foot: {
                 image: [[0, 'foot_front'], [foot_switch[0], 'foot_back'], [foot_switch[1], 'foot_front'], [800, 'foot_front']],
-                translate: [[0, [0, -30]], [150, [0, 0]], [400, [0, 30]], [650, [0, 0]], [800, [0, -30]]],
+                translate: [[0, [0, -10]], [150, [0, 0]], [400, [0, 10]], [650, [0, 0]], [800, [0, -10]]],
                 scale: [[0, [1, 1]], [foot_switch[0], [1, 0.2]], [foot_switch[0]+0.01, [1, 1]], 
                         [foot_switch[1]-0.01, [1, 1]], [foot_switch[1], [1, 0.1]], [800, [1, 1]]]
             },
