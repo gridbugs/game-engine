@@ -1,7 +1,7 @@
 function Warrior() {
     this.images('content/characters/warrior/images/', {
         foot_front: ['foot-front.png', [-10, -30], [15, 40]],
-        foot_back: ['foot-back.png', [-7.5, -7.5], [15, 15]],
+        foot_back: ['foot-back.png', [-8, -8], [16, 16]],
         lower_leg_front: ['lower-leg-front.png', [-11, -60], [20, 50]],
         lower_leg_back: ['lower-leg-back.png', [-10, -50], [20, 60]],
         knee_front: ['knee-front.png', [-10, -10], [20, 20]],
@@ -9,7 +9,7 @@ function Warrior() {
         upper_leg_front: ['upper-leg-front.png', [-8, -60], [20, 60]],
         upper_leg_back: ['upper-leg-back.png', [-10, -60], [20, 60]],
         torso: ['torso.png', [-30, -6], [60, 25]],
-        head: ['head.png', [-12.5, -5], [25, 25]],
+        head: ['head.png', [-12, -5], [24, 24]],
         shoulder: ['shoulder.png', [-18, -10], [20, 20]],
         elbow_back: ['elbow-back.png', [-8, -8], [16, 16]],
         elbow_front: ['elbow-front.png', [-8, -8], [16, 16]],
@@ -31,14 +31,14 @@ function Warrior() {
             },
             left_foot: {
                 image: [[0, 'foot_front'], [foot_switch[0], 'foot_back'], [foot_switch[1], 'foot_front'], [800, 'foot_front']],
-                translate: [[0, [0, -10]], [150, [0, 0]], [400, [0, 10]], [650, [0, 0]], [800, [0, -10]]],
+                translate: [[0, [2, -10]], [150, [2, 0]], [400, [2, 10]], [650, [2, 0]], [800, [2, -10]]],
                 scale: [[0, [1, 1]], [foot_switch[0], [1, 0.2]], [foot_switch[0]+0.01, [1, 1]], 
                         [foot_switch[1]-0.01, [1, 1]], [foot_switch[1], [1, 0.1]], [800, [1, 1]]]
             },
             right_foot: {copy: 'left_foot', flip_x: true, offset: 400},
             left_knee: {
                 image: [[0, 'knee_front'], [knee_switch[0], 'knee_back'], [knee_switch[1], 'knee_front'], [800, 'knee_front']], 
-                translate: [[0, [0, -30]], [400, [0, 40]], [600, [0, 0]], [700, [0, -25]], [800, [0, -30]]]
+                translate: [[0, [5, -30]], [400, [5, 40]], [600, [5, 0]], [700, [5, -25]], [800, [5, -30]]]
             },
             right_knee: {copy: 'left_knee', flip_x: true, offset: 400},
             left_hip: {translate: [-15, 0]},
@@ -53,12 +53,12 @@ function Warrior() {
             right_shoulder: {copy: 'left_shoulder', flip_x: true, offset: 400},
             left_elbow: {
                 image: [[0, 'elbow_back'], [200, 'elbow_front'], [600, 'elbow_back'], [800, 'elbow_back']],
-                translate: [[0, [-10, 30]], [200, [-5, 0]], [400, [-10, -30]], [600, [-5, 0]], [800, [-10, 30]]]
+                translate: [[0, [-10, 20]], [200, [-5, 0]], [400, [-10, -20]], [600, [-5, 0]], [800, [-10, 20]]]
             },
             right_elbow: {copy: 'left_elbow', flip_x: true, offset: 400},
             left_hand: {
                 image: [[0, 'hand_back'], [200, 'hand_front'], [600, 'hand_back'], [800, 'hand_back']],
-                translate: [[0, [-5, 20]], [200, [0, 0]], [400, [10, -30]], [600, [0, 0]], [800, [-5, 20]]]
+                translate: [[0, [-5, 15]], [200, [0, 0]], [400, [10, -20]], [600, [0, 0]], [800, [-5, 15]]]
             },
             right_hand: {copy: 'left_hand', flip_x: true, offset: 400},
 
