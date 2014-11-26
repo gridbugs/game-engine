@@ -105,7 +105,35 @@ Character.prototype.body_part_from_description = function(desc, state_name) {
                     scale = new ContinuousValue(new VectorWrapper(desc.scale));
                 }
 
-                return new BodyPart(image, translate, rotate, scale);
+                var private_translate;
+                if (desc.private_translate == undefined) {
+                    private_translate = null;
+                } else if (desc.private_translate[0].constructor == Array) {
+                    private_translate = new ContinuousInterpolator(VectorWrapper.from_seq(desc.private_translate));
+                } else {
+                    private_translate = new ContinuousValue(new VectorWrapper(desc.private_translate));
+                }
+                
+                var private_rotate;
+                if (desc.private_rotate == undefined) {
+                    private_rotate = null;
+                } else if (desc.private_rotate.constructor == Array) {
+                    private_rotate = new ContinuousInterpolator(AngleWrapper.from_seq(desc.private_rotate));
+                } else {
+                    private_rotate = new ContinuousValue(new AngleWrapper(desc.private_rotate));
+                }
+                
+                var private_scale;
+                if (desc.private_scale == undefined) {
+                    private_scale = null;
+                } else if (desc.private_scale[0].constructor == Array) {
+                    private_scale = new ContinuousInterpolator(VectorWrapper.from_seq(desc.private_scale));
+                } else {
+                    private_scale = new ContinuousValue(new VectorWrapper(desc.private_scale));
+                }
+
+                return new BodyPart(image, translate, rotate, scale,
+                                    private_translate, private_rotate, private_scale);
             }
     }
             
@@ -138,6 +166,9 @@ Character.prototype.generate_seqs = function() {
             seq[part_name+'_t'] = part.translate;
             seq[part_name+'_r'] = part.rotate;
             seq[part_name+'_s'] = part.scale;
+            seq[part_name+'_pt'] = part.private_translate;
+            seq[part_name+'_pr'] = part.private_rotate;
+            seq[part_name+'_ps'] = part.private_scale;
         }
     }
 }

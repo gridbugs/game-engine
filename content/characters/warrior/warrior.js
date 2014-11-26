@@ -28,6 +28,7 @@ function Warrior() {
         walk: {
             torso: {
                 image: 'torso',
+                private_rotate: [[0, degrees_to_radians(-5)], [400, degrees_to_radians(5)], [800, degrees_to_radians(-5)]]
             },
             left_foot: {
                 image: [[0, 'foot_front'], [foot_switch[0], 'foot_back'], [foot_switch[1], 'foot_front'], [800, 'foot_front']],
@@ -48,7 +49,8 @@ function Warrior() {
             },
             left_shoulder: {
                 image: 'shoulder',
-                translate: [[0, [-15, 8]], [400, [-15, 3]], [800, [-15, 8]]]
+                translate: [[0, [-15, 8]], [400, [-15, 5]], [800, [-15, 8]]],
+                rotate: [[0, degrees_to_radians(-5)], [400, degrees_to_radians(5)], [800, degrees_to_radians(-5)]]
             },
             right_shoulder: {copy: 'left_shoulder', flip_x: true, offset: 400},
             left_elbow: {
@@ -82,8 +84,8 @@ function Warrior() {
         still: {
             torso: {
                 image: 'torso',
-                scale: [[0, [1, 1]], [1600, [1, 1]], [2000, [1, 1.1]], [2800, [1, 1.1]], [3200, [1, 1]]],
-                translate: [[0, [0, 0]], [1600, [0, 0]], [2000, [0, -1]], [2800, [0, -1]], [3200, [0, 0]]]
+                private_scale: [[0, [1, 1]], [1600, [1, 1]], [2000, [1, 1.1]], [2800, [1, 1.1]], [3200, [1, 1]]],
+                private_translate: [[0, [0, 0]], [1600, [0, 0]], [2000, [0, -1]], [2800, [0, -1]], [3200, [0, 0]]]
             },
             left_foot: 'foot_front',
             right_foot: {copy: 'left_foot', flip_x: true},
@@ -94,12 +96,12 @@ function Warrior() {
             },
             right_knee: {copy: 'left_knee', flip_x: true},
             left_hip: {
-                translate: [[0, [-15, 0]], [1600, [-15, 0]], [2000, [-15, 1]], [2800, [-15, 1]], [3200, [-15, 0]]]
+                translate: [-15, 0]
             },
             right_hip: {copy: 'left_hip', flip_x: true},
             left_shoulder: {
                 image: 'shoulder',
-                translate: [[0, [-15, 6]], [1600, [-15, 6]], [2000, [-14, 8]], [2800, [-14, 8]], [3200, [-15, 6]]]
+                translate: [[0, [-15, 6]], [1600, [-15, 6]], [2000, [-14, 7]], [2800, [-14, 7]], [3200, [-15, 6]]]
             },
             right_shoulder: {copy: 'left_shoulder', flip_x: true},
             left_elbow: {

@@ -1,15 +1,14 @@
 function SceneGraph(drawer, m, root_idx, before, after) {
     this.sequence_manager = m;
     this.drawer = drawer;
-    this.root = new SceneGraph.Node(
+    this.root = SceneGraph.Node.from_sequence(
         drawer,
-        m.g(root_idx+'_i'),
-        m.g(root_idx+'_t'),
-        m.g(root_idx+'_r'),
-        m.g(root_idx+'_s'),
+        m,
+        root_idx,
         SceneGraph.parse(drawer, m, before),
         SceneGraph.parse(drawer, m, after)
     );
+        
     this.root.idx = root_idx;
 }
 SceneGraph.parse = function(drawer, m, arr) {
@@ -49,12 +48,15 @@ SceneGraph.parse = function(drawer, m, arr) {
     return nodes;
 }
 
-SceneGraph.Node = function(drawer, image, translate, rotate, scale, before, after) {
+SceneGraph.Node = function(drawer, image, translate, rotate, scale, pr_translate, pr_rotate, pr_scale, before, after) {
     this.drawer = drawer;
     this.image = image;
     this.translate = translate;
     this.rotate = rotate;
     this.scale = scale;
+    this.private_translate = pr_translate;
+    this.private_rotate = pr_rotate;
+    this.private_scale = pr_scale;
     this.before = before;
     this.after = after;
 }
@@ -63,24 +65,32 @@ SceneGraph.Node.prototype.draw = function() {
     var t = this.translate.get_value();
     var r = this.rotate.get_value();
     var s = this.scale.get_value();
+    var pt = this.private_translate.get_value();
+    var pr = this.private_rotate.get_value();
+    var ps = this.private_scale.get_value();
 
     var drawer = this.drawer;
     drawer.save();
 
     drawer.translate(t);
     drawer.rotate(r);
+    drawer.scale(s);
     
     var before = this.before;
     for (var i = 0,len = before.length;i!=len;++i) {
         before[i].draw();
     }
   
+    
     var i = this.image;
     if (i) {
         i = i.get_value();
         drawer.save();
-        drawer.scale(s);
+        drawer.translate(pt);
+        drawer.rotate(pr);
+        drawer.scale(ps);
         i.draw();
+        //drawer.draw_point([0, 0], tc('blue'), 4);
         drawer.restore();
     }
 
@@ -113,6 +123,9 @@ SceneGraph.Node.from_body_part = function(drawer, b, before, after) {
         b.translate,
         b.rotate,
         b.scale,
+        b.private_translate,
+        b.private_rotate,
+        b.private_scale,
         before,
         after
     );
@@ -125,6 +138,9 @@ SceneGraph.Node.from_sequence = function(drawer, m, idx, before, after) {
         m.g(idx+'_t'),
         m.g(idx+'_r'),
         m.g(idx+'_s'),
+        m.g(idx+'_pt'),
+        m.g(idx+'_pr'),
+        m.g(idx+'_ps'),
         before,
         after
     );
