@@ -80,7 +80,9 @@ $(function() {
         agent.enter_region(map_demo.region_hash.r1);
         agent.enter_level(map_demo.level_hash.level1);
         
-        var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters();
+        var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]).set_filters(
+            drawer.pixelate_filter(3, 1)
+        );
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);

@@ -8,8 +8,9 @@ uniform int u_has_texture;
 uniform vec2 u_tex_size;
 
 uniform int u_pixelate;
-uniform float u_pixel_size;
+uniform int u_pixel_size;
 uniform float u_pixel_fade;
+#define MAX_PIXEL_SIZE 10
 
 uniform int u_blur;
 uniform int u_blur_radius;
@@ -27,6 +28,7 @@ uniform vec4 u_light_colour;
 uniform vec2 u_resolution;
 uniform float u_flip_y;
 
+
 void main() {
     if (u_has_texture == 1) {
 
@@ -34,10 +36,36 @@ void main() {
         vec2 pixel_size = vec2(1,1)/u_tex_size;
 
         if (u_pixelate == 1) {
+ 
+            // the dimension of a real pixel in texture coordinate units
+            vec2 real_pixel_size = vec2(1,1)/u_tex_size;
             
-            vec2 virtual_pixel_size = vec2(1, 1)/(u_tex_size/u_pixel_size);
-            vec2 test = v_tex_coord - mod(v_tex_coord, virtual_pixel_size);
-            vec4 colour = texture2D(u_image, test);
+            // the dimension of a virtual pixel in texture coordinate units
+            vec2 virtual_pixel_size = real_pixel_size * float(u_pixel_size);
+
+            /* Round off the texture coordinate to the nearest virtual pixel size.
+             * This is the texture coordinate of the top left pixel of the virtual pixel.
+             */
+            vec2 virtual_pixel_top_left = v_tex_coord - mod(v_tex_coord, virtual_pixel_size);
+
+            vec4 total_colour = vec4(0,0,0,0);
+            // loop over all the real pixels in the virtual pixel
+            for (int i = 0;i<MAX_PIXEL_SIZE;++i) {
+                if (i == u_pixel_size) {
+                    break;
+                }
+                float tex_coord_x = virtual_pixel_top_left[0] + real_pixel_size[0] * float(i);
+                for (int j = 0;j<MAX_PIXEL_SIZE;++j) {
+                    if (j == u_pixel_size) {
+                        break;
+                    }
+                    float tex_coord_y = virtual_pixel_top_left[1] + real_pixel_size[1] * float(j);
+                    vec4 real_pixel_colour = texture2D(u_image, vec2(tex_coord_x, tex_coord_y));
+                    total_colour += real_pixel_colour;
+                }
+            }
+
+            vec4 colour = total_colour / float(u_pixel_size * u_pixel_size);
             gl_FragColor = colour;
         } else if (u_blur == 1) {
             vec4 sum = vec4(0,0,0,0);
