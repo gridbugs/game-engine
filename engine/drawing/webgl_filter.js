@@ -50,18 +50,16 @@ WebGLDrawer.prototype.remove_filters = function() {
     this.u_blur.set(0);
 }
 
-WebGLDrawer.PixelateFilter = function(pixel_size, pixel_fade, drawer) {
+WebGLDrawer.PixelateFilter = function(pixel_size, drawer) {
     this.drawer = drawer;
     this.pixel_size = pixel_size;
-    this.pixel_fade = pixel_fade;
 }
 WebGLDrawer.PixelateFilter.prototype.activate = function() {
     this.drawer.u_pixelate.set(1);
     this.drawer.u_pixel_size.set(this.pixel_size);
-    this.drawer.u_pixel_fade.set(this.pixel_fade);
 }
-WebGLDrawer.prototype.pixelate_filter = function(pixel_size, pixel_fade) {
-    return new WebGLDrawer.PixelateFilter(pixel_size, pixel_fade, this);
+WebGLDrawer.prototype.pixelate_filter = function(pixel_size) {
+    return new WebGLDrawer.PixelateFilter(pixel_size, this);
 }
 
 WebGLDrawer.prototype.blur_filter = function(blur_radius) {
