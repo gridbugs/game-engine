@@ -1,5 +1,6 @@
 Content.characters = {
-    walk_demo: WalkDemo
+    walk_demo: WalkDemo,
+    warrior: Warrior
 }
 Content.maps = {
     map_demo: MapDemo

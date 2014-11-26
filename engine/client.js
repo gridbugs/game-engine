@@ -75,7 +75,7 @@ $(function() {
         
         map_demo.update_lights();
 
-        var demo = Content.characters.walk_demo.instance('still');
+        var demo = Content.characters.warrior.instance('still');
         
         agent.enter_region(map_demo.region_hash.r1);
         agent.enter_level(map_demo.level_hash.level1);
