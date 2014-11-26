@@ -616,3 +616,12 @@ Algebra.equation_solve_2 = function(a, b, c) {
 
     return [m[0], m[1]];
 }
+
+Algebra.nearest_rotation_multiplier = function(current, target) {
+    var diff = target - current;
+    if (diff < -Math.PI || (diff >= 0 && diff < Math.PI)) {
+        return 1;
+    } else {
+        return -1;
+    }
+}

@@ -5,7 +5,7 @@ function Agent(pos, facing) {
     this.move_speed = 10;
     this.turn_speed = Math.PI/12;
     this.colour = "black";
-    this.rad = 50;
+    this.rad = 30;
 }
 
 Agent.prototype.enter_region = function(region) {
@@ -78,7 +78,9 @@ Agent.prototype.absolute_control_tick = function(time_delta) {
         return false;
     }
     vec = vec.v2_unit();
-    this.facing = vec.v2_angle();
+    
+    var final_facing = vec.v2_angle();
+    agent.turn_towards_angle(final_facing);
 
     var dest = this.pos.v2_add(vec.v2_smult(this.move_speed*time_delta/1000));
     this.last_pos = this.pos;
@@ -95,12 +97,17 @@ Agent.prototype.last_move_seg = function() {
     return [this.last_pos, this.pos];
 }
 
-Agent.prototype.turn_towards = function(pt) {
-    var target_angle = _angle_between(this.pos, pt);
+Agent.prototype.turn_towards_point = function(pt) {
+    return this.turn_towards_angle(this.pos.v2_angle_between(pt));
+}
+
+Agent.prototype.turn_towards_angle = function(angle) {
+    var target_angle = angle;
     var angle_diff = radians_between(this.facing, target_angle);
     if (angle_diff <= this.turn_speed) {
         this.facing = target_angle;
     } else {
-        this.facing += this.turn_speed * nearest_rotation_type(this.facing, target_angle);
+        this.facing = 
+            angle_normalize(this.facing + this.turn_speed * Algebra.nearest_rotation_multiplier(this.facing, target_angle));
     }
 }
