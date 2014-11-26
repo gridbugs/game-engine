@@ -320,10 +320,6 @@ SequenceInterpolator.prototype.get_value = function() {
     return this.get().val();
 }
 
-SequenceInterpolator.prototype.get_value_discrete = function() {
-    return this.current.get_value_discrete(this.time);
-}
-
 SequenceInterpolator.prototype.connect = function(image) {
     return new BodyPart(
             image,

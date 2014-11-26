@@ -76,7 +76,7 @@ $(function() {
         map_demo.update_lights();
 
         var demo = Content.characters.warrior.instance('still');
-        
+//        console.debug(demo.character.seqs.);
         agent.enter_region(map_demo.region_hash.r1);
         agent.enter_level(map_demo.level_hash.level1);
         
@@ -111,7 +111,7 @@ $(function() {
 
             if (state == 0 && agent.absolute_control_tick(time_delta)) {
                 state = 1;
-                demo.update('walk', 100, -100);
+                demo.update('walk', 1, -200);
             } else if (state == 1 && !agent.absolute_control_tick(time_delta)) {
                 state = 0;
                 demo.update('still');
@@ -140,8 +140,6 @@ $(function() {
             //filterer.begin();
 
             // draw the line segments and character
-            
-            //capture2.draw();
             
             capture3.draw();
             
@@ -186,7 +184,7 @@ Scene.base = function(capture, drawer, scroll, agent, character, map) {
 
     // draw the character
     character.draw();
-            
+
     scroll.set_next(drawer.global_centre());
     
     // back to the scroll transformation
