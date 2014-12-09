@@ -140,8 +140,8 @@ WebGLDrawer.prototype.update_resolution = function() {
     }
 }
 WebGLDrawer.prototype.init_presets = function() {
-    this.vertex_buffer.add([0,0]);
-    this.texture_buffer.add([0,0]);
+    this.vertex_buffer.add([0,0,0,0]);
+    this.texture_buffer.add([0,0,0,0]);
     this.index_buffer.add([0, 1]);
 
     this.point_slice = this.glm.slice(0, 1);
@@ -168,6 +168,8 @@ WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
     this.no_texture();
     
     this.point_slice.draw_points();
+
+    console.debug(width);
     this.restore();
 }
 
@@ -189,6 +191,7 @@ WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {
     this.u_colour.set(colour || [0,0,0,1]);
     this.no_texture();
     
+    console.debug(this);
     this.line_segment_slice.draw_lines();
 
     this.pop_line_width();
