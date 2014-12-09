@@ -142,15 +142,15 @@ $(function() {
 
             // draw the line segments and character
 
-            filterer.begin();
+//            filterer.begin();
             
-            drawer.u_opacity.set(0.3);
+//            drawer.u_opacity.set(0.3);
             capture.draw();
-            drawer.u_opacity.set(1);
+//            drawer.u_opacity.set(1);
             
-            capture3.draw();
+//            capture3.draw();
             
-            filterer.draw();
+//            filterer.draw();
             
             scroll.proceed();
 

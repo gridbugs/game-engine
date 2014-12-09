@@ -113,7 +113,9 @@ CanvasUtil.prototype.draw_circle = function(circle, colour, width, filled) {
     }
 
     this.ctx.beginPath();
-    element_call(function(x, y){this.ctx.arc(x, y, radius, 0, Math.PI*2)}.bind(this), centre);
+    
+    this.ctx.arc(centre[0], centre[1], radius, 0, Math.PI*2);
+
 
     if (filled) {
         this.ctx.fill();

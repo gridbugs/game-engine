@@ -1,7 +1,7 @@
 function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.canvas = canvas;
     this.glm = new WebGLManager(canvas, {
-//        preserveDrawingBuffer: preserve_drawing_buffer
+        preserveDrawingBuffer: preserve_drawing_buffer
     }).init_2d();
 
     // initialize buffers
@@ -191,7 +191,6 @@ WebGLDrawer.prototype.draw_line_segment = function(seg, colour, width) {
     this.u_colour.set(colour || [0,0,0,1]);
     this.no_texture();
     
-    console.debug(this);
     this.line_segment_slice.draw_lines();
 
     this.pop_line_width();
@@ -280,9 +279,10 @@ WebGLDrawer.prototype.rect = function(top_left, size, colour, transform) {
     return new WebGLDrawer.Rect(top_left, size, colour, transform, this);
 }
 
-WebGLDrawer.Radial = function(centre, points, transform, drawer) {
+WebGLDrawer.Radial = function(centre, points, colour, transform, drawer) {
     WebGLDrawer.Drawable.call(this, transform, drawer);
     
+    this.colour = colour;
     var vertices = [centre[0], centre[1]];
     var texture_coords = [0, 0];
     
@@ -309,18 +309,28 @@ WebGLDrawer.Radial = function(centre, points, transform, drawer) {
 }
 WebGLDrawer.Radial.inherits_from(WebGLDrawer.Drawable);
 
-WebGLDrawer.prototype.radial = function(centre, points, transform) {
-    return new WebGLDrawer.Radial(centre, points, transform, this);
+WebGLDrawer.prototype.radial = function(centre, points, colour, transform) {
+    return new WebGLDrawer.Radial(centre, points, colour, transform, this);
 }
 
 WebGLDrawer.Radial.prototype.draw = function() {
     var drawer = this.before_draw();
-    console.debug(this);
-    drawer.u_colour.set([1,0,0,1]);
+    drawer.u_colour.set(this.colour);
     drawer.no_texture();
     this.slice.draw_triangles();
 
     this.after_draw();
+}
+WebGLDrawer.Radial.prototype.draw_with_texture = function(texture) {
+    var drawer = this.before_draw();
+    drawer.use_texture(100, 100);
+    drawer.u_tex_from_position.set(true);
+    texture.bind();
+    this.slice.draw_triangles();
+    drawer.u_tex_from_position.set(false);
+
+    this.after_draw();
+
 }
 
 WebGLDrawer.Image = function(image, position, size, clip_start, clip_size, transform, drawer) {

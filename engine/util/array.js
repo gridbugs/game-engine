@@ -147,3 +147,13 @@ Array.add_method('flatten', function() {
     }
     return ret;
 });
+
+Array.add_method('shuffle', function() {
+    for (var i = 0;i<this.length;i++) {
+        var idx = Math.floor(Math.random()*this.length-i);
+        var tmp = this[i];
+        this[i] = this[i+idx];
+        this[i+idx] = tmp;
+    }
+    return this;
+});

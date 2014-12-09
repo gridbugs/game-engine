@@ -1,0 +1,207 @@
+<html>
+<head>
+
+    <link rel="stylesheet" type="text/css" href="/stylesheets/canvas.css">
+    
+    <script type="application/x-javascript" src="/artwork/generators/utils/random.js"></script>
+    
+    <script type="application/x-javascript" src="/engine/lib/tinycolor.js"></script>
+    <script type="application/x-javascript" src="/engine/lib/jquery.min.js"></script>
+    <script type="application/x-javascript" src="/engine/lib/gl-matrix-min.js"></script>
+    <script type="application/x-javascript" src="/engine/lib/seedrandom.min.js"></script>
+    
+    <script type="application/x-javascript" src="/engine/util/language.js"></script>
+    <script type="application/x-javascript" src="/engine/util/util.js"></script>
+    <script type="application/x-javascript" src="/engine/util/array.js"></script>
+    <script type="application/x-javascript" src="/engine/util/async.js"></script>
+    <script type="application/x-javascript" src="/engine/util/heap.js"></script>
+
+    <script type="application/x-javascript" src="/engine/math/math.js"></script>
+    <script type="application/x-javascript" src="/engine/math/algebra.js"></script>
+
+    <script type="application/x-javascript" src="/engine/loaders/file_path.js"></script>
+    <script type="application/x-javascript" src="/engine/loaders/file_loader.js"></script>
+    <script type="application/x-javascript" src="/engine/loaders/image_loader.js"></script>
+    <script type="application/x-javascript" src="/engine/loaders/content_loader.js"></script>
+
+    <script type="application/x-javascript" src="/engine/drawing/transform.js"></script>
+    <script type="application/x-javascript" src="/engine/drawing/drawer.js"></script>
+    <script type="application/x-javascript" src="/engine/drawing/canvas_drawer.js"></script>
+    <script type="application/x-javascript" src="/engine/drawing/webgl_manager.js"></script>
+    <script type="application/x-javascript" src="/engine/drawing/webgl_drawer.js"></script>
+    <script type="application/x-javascript" src="/engine/drawing/webgl_dynamic.js"></script>
+    <script type="application/x-javascript" src="/engine/drawing/webgl_filter.js"></script>
+    <script type="application/x-javascript" src="/engine/drawing/webgl_text.js"></script>
+
+    <script type="application/x-javascript" src="/engine/control/input.js"></script>
+
+</head>
+<body>
+<script>
+$(function() {
+
+    //Math.seedrandom(1);
+    
+    var canvas = document.getElementById('screen');
+    canvas.width = $(window).width();
+    canvas.height = $(window).height();
+    
+
+    Input.set_canvas_offset(0, 0);
+    Input.init();
+
+    var drawer = new WebGLDrawer(canvas, null, false);
+    
+    drawer.update_resolution();
+    
+    new AsyncGroup(
+        new FileLoader('/artwork/generators/cobblestone/', ['cv.glsl', 'cf.glsl'])
+        ,new ImageLoader('/images/', ['noise.png'])
+    ).run(function(shaders, test_images) {
+        drawer.standard_shaders(shaders[0], shaders[1]);
+        drawer.init_uniforms();
+
+        var u_top = drawer.shader_program.uniform1f('u_top');
+        var u_bottom = drawer.shader_program.uniform1f('u_bottom');
+        var u_left = drawer.shader_program.uniform1f('u_left');
+        var u_right = drawer.shader_program.uniform1f('u_right');
+        
+        function Brick(top_left, size) {
+            this.rect = drawer.rect(top_left, size, [0,1,0,1]);
+            this.top_left = top_left;
+            this.size = size;
+        }
+        Brick.prototype.draw = function() {
+            u_top.set(canvas.height-this.top_left[1]);
+            u_bottom.set(canvas.height-(this.top_left[1] + this.size[1]));
+            u_left.set(this.top_left[0]);
+            u_right.set(this.top_left[0] + this.size[0]);
+            this.rect.draw();
+        }
+
+        var brick_size = [100, 50];
+        var bricks = [];
+        for (var j = 0;j<20;j++) {
+            var x_offset = j%2==0 ? 0 : brick_size[0]/2;
+            for (var i = 0;i<20;i++) {
+                bricks.push(new Brick([i*brick_size[0] - x_offset, j*brick_size[1]], brick_size));
+            }
+        }
+
+        drawer.sync_buffers();
+
+        bricks.map(function(b){b.draw()});
+
+        return;
+
+        var u_dot_pos = drawer.shader_program.uniform2fv('u_dot_pos');
+        var u_dot_col = drawer.shader_program.uniform4fv('u_dot_col');
+        var u_dot_rad = drawer.shader_program.uniform1f('u_dot_rad');
+        var u_cobble = drawer.shader_program.uniform1i('u_cobble');
+        var u_darken = drawer.shader_program.uniform1f('u_darken');
+
+        function draw_dot(pos, rad, col) {
+            u_dot_pos.set([pos[0], canvas.height-pos[1]]);
+            u_dot_rad.set(rad);
+            u_dot_col.set(col);
+            a.draw();
+        }
+
+        function draw_stone(centre, radius_mid, radius_variance) {
+            var parts = 40;
+            
+            var radius_multipliers = [];
+            for (var i = 0;i<parts;i++) {
+                radius_multipliers[i] = rand_sine_sum((i*Math.PI*2)/parts, 6);
+            }
+
+            function circle_point(angle) {
+                return [radius * Math.cos(angle), radius * Math.sin(angle)];
+            }
+
+            var last_point = null;
+            var first_point;
+            var points = [];
+
+            for (var i = 0;i<parts;i++) {
+                var radius = radius_mid + radius_variance * radius_multipliers[i];
+                var angle = (i*Math.PI*2)/parts;
+                var pt = circle_point(angle);
+                points.push(pt);
+                if (last_point == null) {
+                    first_point = pt;
+                } else {
+ //                   drawer.draw_line_segment([last_point, pt]);
+                }
+                last_point = pt;
+            }
+//            drawer.draw_line_segment([last_point, first_point]);
+            var tr = mat3.create();
+            mat3.translate(tr, tr, centre);
+            var grey1= Math.random()*0.05 + 0.0;
+            var grey2= Math.random()*0.3 + 0.2;
+            return [
+                drawer.radial([0, 0], points, [grey1,grey1,grey1,1], tr), 
+                drawer.radial([0, 0], points.map(function(v){return v.v2_smult(0.80)}), [grey2,grey2,grey2,1], tr)
+            ];
+        }
+
+        var texture1 = drawer.glm.texture(test_images[0]);
+
+        var offset = 0;
+        function t() {
+            /*
+            rand_regenerate();
+            var r = draw_stone([100, 100], 50, 4);
+            drawer.sync_buffers();
+            r[0].draw();
+            u_cobble.set(true);
+            r[1].draw_with_texture(texture1);
+            u_cobble.set(false);
+            console.debug(r);
+            return;
+            */
+            
+
+            const GRID_W = 10;
+            const GRID_H = 40;
+            const CELL_W = 15;
+            const CELL_H = 15;
+            const CELL_VAR = 10;
+            var radials = [];
+            for (var i = 0;i<GRID_H;i++) {
+                for (var j = 0;j<GRID_W;j++) {
+                    var centre = [CELL_W*j, CELL_H*i].v2_add([CELL_VAR*(Math.random()-0.5), CELL_VAR*(Math.random()-0.5)]);
+                    rand_regenerate();
+                    radials.push(draw_stone(centre, 10, 2));
+                }
+            }
+ 
+            drawer.sync_buffers();
+
+            drawer.glm.set_clear_colour(0.7,0.7,0.7,1);
+            drawer.clear();
+
+            radials.shuffle();
+
+            for (var i = 0;i<radials.length;i++) {
+                radials[i][0].draw();
+                radials[i][1].draw();
+                continue;
+                u_darken.set(Math.random()*0.3 + 0.2);
+                u_cobble.set(true);
+                radials[i][1].draw_with_texture(texture1);
+                u_cobble.set(false);
+            }
+
+        }
+
+        t();
+
+    }.arr_args());
+ 
+})
+</script>
+<canvas id="screen">
+</canvas>
+</html>
