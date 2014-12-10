@@ -63,7 +63,19 @@ Map.prototype.images = function(base, o) {
 }
 
 Map.prototype.process_images = function() {
+    this.image_closures = {};
+    for (var name in this.image_data) {
+        var data = this.image_data[name];
+        this.image_closures[name] = this.drawer.image(
+            data.image,
+            data.translate,
+            data.size,
+            data.clip_start,
+            data.clip_size
+        );
+    }
 }
+
 
 Map.prototype.load_visible = function() {
     var o = this.visible_obj;
@@ -98,10 +110,11 @@ Map.prototype.load_levels = function() {
         var extras = o[name][1];
         var floor_name = o[name][2];
         var regions = region_names.map(function(n){return this.region_hash[n]}.bind(this));
-        var level = new Level(this.drawer, regions, extras);
+        var level = new Level(this.drawer, regions, extras, this.image_closures[floor_name]);
         
         this.level_arr.push(level);
         this.level_hash[name] = level;
+        console.debug(this);
     }
 }
 

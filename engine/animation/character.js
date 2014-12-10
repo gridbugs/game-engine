@@ -5,19 +5,7 @@ Character.prototype.images = Map.prototype.images;
  * Creates the drawer.image objects for each image.
  * Must be called after images have loaded.
  */
-Character.prototype.process_images = function() {
-    this.image_closures = {};
-    for (var name in this.image_data) {
-        var data = this.image_data[name];
-        this.image_closures[name] = this.drawer.image(
-            data.image,
-            data.translate,
-            data.size,
-            data.clip_start,
-            data.clip_size
-        );
-    }
-}
+Character.prototype.process_images = Map.prototype.process_images;
 
 /*
  * Returns a new BodyPart from a given description.

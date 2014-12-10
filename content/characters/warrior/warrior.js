@@ -1,5 +1,5 @@
 function Warrior() {
-    this.images('content/characters/warrior/images/', {
+    this.images('/content/characters/warrior/images/', {
         foot_front: ['foot-front.png', [-10, -30], [15, 40]],
         foot_back: ['foot-back.png', [-8, -8], [16, 16]],
         lower_leg_front: ['lower-leg-front.png', [-11, -60], [20, 50]],

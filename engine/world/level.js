@@ -7,6 +7,7 @@ function Level(drawer, regions, extras, floor) {
     );
     this.lights = [];
     this.floor = floor;
+
 }
 
 Level.prototype.add_light = function(position, radius, colour) {
@@ -16,4 +17,8 @@ Level.prototype.add_light = function(position, radius, colour) {
 
 Level.prototype.update_lights = function() {
     this.lights.map(function(l){l.update()});
+}
+
+Level.prototype.draw_floor = function() {
+    this.floor.draw();
 }

@@ -132,7 +132,7 @@ $(function() {
             drawer.clear();
             drawer.glm.set_clear_colour([1,1,1,1]);
             drawer.remove_filters();
- 
+        
             Scene.base(capture, drawer, scroll, agent, demo, map_demo);
 
             Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
@@ -142,15 +142,15 @@ $(function() {
 
             // draw the line segments and character
 
-//            filterer.begin();
+            filterer.begin();
             
-//            drawer.u_opacity.set(0.3);
-            capture.draw();
-//            drawer.u_opacity.set(1);
+            //drawer.u_opacity.set(0.3);
+           // capture.draw();
+           // drawer.u_opacity.set(1);
             
-//            capture3.draw();
+            capture3.draw();
             
-//            filterer.draw();
+            filterer.draw();
             
             scroll.proceed();
 
@@ -180,9 +180,14 @@ Scene.base = function(capture, drawer, scroll, agent, character, map) {
     drawer.save();
     drawer.translate(scroll.translate);
    
+    agent.level.draw_floor();
+    // draw the map line segments
+    //map.draw();
+    
     // apply local transformation (for moving the character)
     drawer.save();
     drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
+    
 
     // draw the character
     character.draw();
@@ -192,8 +197,6 @@ Scene.base = function(capture, drawer, scroll, agent, character, map) {
     // back to the scroll transformation
     drawer.restore();
     
-    // draw the map line segments
-    map.draw();
 
     // remove all transformations
     drawer.restore();

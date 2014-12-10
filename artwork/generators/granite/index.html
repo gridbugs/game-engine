@@ -33,8 +33,34 @@
     <script type="application/x-javascript" src="/engine/drawing/webgl_filter.js"></script>
     <script type="application/x-javascript" src="/engine/drawing/webgl_text.js"></script>
 
-    <script type="application/x-javascript" src="/engine/control/input.js"></script>
 
+    <script type="application/x-javascript" src="/engine/world/map.js"></script>
+    <script type="application/x-javascript" src="/engine/world/detector_segment.js"></script>
+    <script type="application/x-javascript" src="/engine/world/region.js"></script>
+    <script type="application/x-javascript" src="/engine/world/vertex.js"></script>
+    <script type="application/x-javascript" src="/engine/world/level.js"></script>
+
+
+    <script type="application/x-javascript" src="/engine/animation/time_manager.js"></script>
+    <script type="application/x-javascript" src="/engine/animation/scroll.js"></script>
+    <script type="application/x-javascript" src="/engine/animation/interpolate.js"></script>
+    <script type="application/x-javascript" src="/engine/animation/scene_graph.js"></script>
+    <script type="application/x-javascript" src="/engine/animation/body_model.js"></script>
+    <script type="application/x-javascript" src="/engine/animation/character.js"></script>
+
+    <script type="application/x-javascript" src="/engine/control/collision.js"></script>
+    <script type="application/x-javascript" src="/engine/control/input.js"></script>
+    <script type="application/x-javascript" src="/engine/control/agent.js"></script>
+
+
+    <script type="application/x-javascript" src="/engine/lighting/light.js"></script>
+    <script type="application/x-javascript" src="/engine/lighting/visibility_context.js"></script>
+
+    <script type="application/x-javascript" src="/content/characters/walk_demo.js"></script>
+    <script type="application/x-javascript" src="/content/characters/warrior/warrior.js"></script>
+    <script type="application/x-javascript" src="/content/maps/demo/demo.js"></script>
+    
+    <script type="application/x-javascript" src="/content/content.js"></script>
 </head>
 <body>
 <script>
@@ -53,10 +79,14 @@ $(function() {
     var drawer = new WebGLDrawer(canvas, null, false);
     
     drawer.update_resolution();
+
+    Content.load();
+    Content.set_drawer(drawer);
+
     
     new AsyncGroup(
-        new FileLoader('/artwork/generators/granite/', ['cv.glsl', 'cf.glsl'])
-        ,new ImageLoader('/images/', ['noise.png'])
+        new FileLoader('/artwork/generators/granite/', ['cv.glsl', 'cf.glsl']),
+        Content
     ).run(function(shaders, test_images) {
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
@@ -65,6 +95,8 @@ $(function() {
         var u_bottom = drawer.shader_program.uniform1f('u_bottom');
         var u_left = drawer.shader_program.uniform1f('u_left');
         var u_right = drawer.shader_program.uniform1f('u_right');
+        var u_capturing = drawer.shader_program.uniform1f('u_capturing');
+        var u_tex_zoom = drawer.shader_program.uniform2fv('u_tex_zoom');
         
         function Brick(top_left, size) {
             this.rect = drawer.rect(top_left, size, [0,1,0,1]);
@@ -88,10 +120,53 @@ $(function() {
             }
         }
 
+        var brick_vector = [brick_size[0], 0];
+        var seg = [[100, 100], [200, 400]];
+
+        function Wall(seg, height) {
+            var tr = mat3.create();
+            mat3.translate(tr, tr, seg[0]);
+            mat3.rotate(tr, tr, seg.seg_direction().v2_angle());
+            mat3.translate(tr, tr, [-height/2, -height/2]);
+
+            this.rect = drawer.rect([0, 0], [seg.seg_length()+height, height], tc('blue'), tr);
+        }
+
+        Wall.prototype.draw = function(texture) {
+            u_tex_zoom.set([canvas.width / this.rect.size[0], canvas.height / this.rect.size[1]]);
+            this.rect.draw_with_texture(texture, [200, 20]);
+        }
+
+
+        var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+
+
+        var tr = mat3.create();
+        mat3.translate(tr, tr, [100, 100]);
+        mat3.rotate(tr, tr, Math.PI/4);
+//        var test = drawer.rect([0, 0], [200, 20], tc('blue'), tr);
+        var test = new Wall(seg, 20);
+
+        var regions = Content.maps.map_demo.level_hash.level2.regions;
+        var segs = regions.map(function(r){return r.segs}).flatten();
+        var walls = segs.map(function(s){return new Wall(s, 20)});
         drawer.sync_buffers();
 
+        u_tex_zoom.set([1, 1]);
+        u_capturing.set(true);
+        capture.begin();
         bricks.map(function(b){b.draw()});
+        capture.end();
+        u_capturing.set(false);
 
+        console.debug(capture);
+
+        //capture.draw();
+        
+        walls.map(function(w){w.draw(capture.texture)});
+
+
+        
         return;
 
         var u_dot_pos = drawer.shader_program.uniform2fv('u_dot_pos');
@@ -146,7 +221,6 @@ $(function() {
             ];
         }
 
-        var texture1 = drawer.glm.texture(test_images[0]);
 
         var offset = 0;
         function t() {

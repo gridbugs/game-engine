@@ -255,6 +255,8 @@ WebGLDrawer.Rect = function(top_left, size, colour, transform, drawer) {
     this.slice = drawer.glm.slice(this.i_offset, 6);
 
     this.colour = colour;
+
+    this.size = size;
 }
 WebGLDrawer.Rect.inherits_from(WebGLDrawer.Drawable);
 
@@ -274,6 +276,20 @@ WebGLDrawer.Rect.prototype.draw = function() {
 
     this.after_draw();
 }
+
+WebGLDrawer.Rect.prototype.draw_with_texture = function(texture, size) {
+    var drawer = this.before_draw();
+
+    drawer.no_texture();
+    drawer.use_texture(size[0], size[1]);
+    texture.bind();
+
+    this.slice.draw_triangles();
+
+    this.after_draw();
+}
+
+
 
 WebGLDrawer.prototype.rect = function(top_left, size, colour, transform) {
     return new WebGLDrawer.Rect(top_left, size, colour, transform, this);
