@@ -114,7 +114,6 @@ Map.prototype.load_levels = function() {
         
         this.level_arr.push(level);
         this.level_hash[name] = level;
-        console.debug(this);
     }
 }
 
