@@ -43,8 +43,8 @@ $(function() {
     //Math.seedrandom(1);
     
     var canvas = document.getElementById('screen');
-    canvas.width = $(window).width();
-    canvas.height = $(window).height();
+    canvas.width = 2048;//$(window).width();
+    canvas.height = 2048;//$(window).height();
     
 
     Input.set_canvas_offset(0, 0);
@@ -55,7 +55,7 @@ $(function() {
     drawer.update_resolution();
     
     new AsyncGroup(
-        new FileLoader('/artwork/generators/cobblestone/', ['cv.glsl', 'cf.glsl'])
+        new FileLoader('/artwork/generators/granite/', ['cv.glsl', 'cf.glsl'])
         ,new ImageLoader('/images/', ['noise.png'])
     ).run(function(shaders, test_images) {
         drawer.standard_shaders(shaders[0], shaders[1]);
@@ -79,11 +79,11 @@ $(function() {
             this.rect.draw();
         }
 
-        var brick_size = [100, 50];
+        var brick_size = [40, 20];
         var bricks = [];
-        for (var j = 0;j<20;j++) {
+        for (var j = 0;j<120;j++) {
             var x_offset = j%2==0 ? 0 : brick_size[0]/2;
-            for (var i = 0;i<20;i++) {
+            for (var i = 0;i<100;i++) {
                 bricks.push(new Brick([i*brick_size[0] - x_offset, j*brick_size[1]], brick_size));
             }
         }

@@ -36,6 +36,35 @@ Map.prototype.visible = function(o) {
     this.visible_obj = o;
 }
 
+Map.prototype.images = function(base, o) {
+    if (o == undefined) {
+        o = base;
+        base = '';
+    }
+    this.image_description = o;
+    this.image_url_base = base;
+
+    this.image_data = {};
+    var image_loaders = [];
+    for (var name in o) {
+        var desc = o[name];
+        var loader = new SingleImageLoader(base + desc[0]);
+        image_loaders.push(loader);
+        this.image_data[name] = {
+            image: loader.image,
+            translate: desc[1],
+            size: desc[2],
+            clip_start: desc[3],
+            clip_size: desc[4]
+        };
+    }
+
+    this.image_loader = new AsyncGroup(image_loaders);
+}
+
+Map.prototype.process_images = function() {
+}
+
 Map.prototype.load_visible = function() {
     var o = this.visible_obj;
     this.group_hash = {};
@@ -67,6 +96,7 @@ Map.prototype.load_levels = function() {
     for (var name in o) {
         var region_names = o[name][0];
         var extras = o[name][1];
+        var floor_name = o[name][2];
         var regions = region_names.map(function(n){return this.region_hash[n]}.bind(this));
         var level = new Level(this.drawer, regions, extras);
         
@@ -171,18 +201,20 @@ Map.prototype.draw = function() {
 }
 
 Map.prototype.run = function(then) {
-    this.load_visible();
-//    this.load_display_detectors();
-//    this.load_lights();
-    this.create_vertices();
-    this.load_levels();
-    this.load_level_detectors();
-    this.load_initial();
-    this.load_lights();
-    this.create_collision_processors();
-    //this.create_visibility_contexts();
-    //console.debug(this.region_arr);
-    then();
+    this.image_loader.run(function() {
+
+        this.process_images();
+
+        this.load_visible();
+        this.create_vertices();
+        this.load_levels();
+        this.load_level_detectors();
+        this.load_initial();
+        this.load_lights();
+        this.create_collision_processors();
+    
+        then();
+    }.bind(this));
 }
 
 Map.prototype.set_drawer = function(drawer) {

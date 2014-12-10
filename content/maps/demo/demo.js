@@ -63,13 +63,18 @@ function MapDemo() {
         ['r5', 'r6', [[700, 750], [800, 750]]]
     );
 
+    this.images('content/maps/demo/images/', {
+        l1_floor: ['l1_floor.png', [100, 100]],
+        l2_floor: ['l2_floor.png', [150, 50]]
+    });
+
     this.levels({
         level1: [['r1', 'r2', 'r4', 'r5', 'r6'], [
             [[300, 350], [150, 350]]
-        ]],
+        ], 'l1_floor'],
         level2: [['r2', 'r3'], [
             [[400, 350], [550, 350]]
-        ]]
+        ], 'l2_floor']
     });
     
     this.lights({

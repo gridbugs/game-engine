@@ -1,29 +1,5 @@
 function Character() {}
-Character.prototype.images = function(base, o) {
-    if (o == undefined) {
-        o = base;
-        base = '';
-    }
-    this.image_description = o;
-    this.image_url_base = base;
-
-    this.image_data = {};
-    var image_loaders = [];
-    for (var name in o) {
-        var desc = o[name];
-        var loader = new SingleImageLoader(base + desc[0]);
-        image_loaders.push(loader);
-        this.image_data[name] = {
-            image: loader.image,
-            translate: desc[1],
-            size: desc[2],
-            clip_start: desc[3],
-            clip_size: desc[4]
-        };
-    }
-
-    this.image_loader = new AsyncGroup(image_loaders);
-}
+Character.prototype.images = Map.prototype.images;
 
 /* 
  * Creates the drawer.image objects for each image.

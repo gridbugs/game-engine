@@ -43,7 +43,7 @@ float rand(vec2 co){
         return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
-const float border = 4.0;
+const float border = 2.0;
 
 void main() {
     if (u_has_texture == 1) {

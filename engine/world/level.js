@@ -1,4 +1,4 @@
-function Level(drawer, regions, extras) {
+function Level(drawer, regions, extras, floor) {
     this.drawer = drawer;
     this.regions = regions;
     this.visibility_context = VisibilityContext.from_regions(
@@ -6,6 +6,7 @@ function Level(drawer, regions, extras) {
         extras
     );
     this.lights = [];
+    this.floor = floor;
 }
 
 Level.prototype.add_light = function(position, radius, colour) {
