@@ -63,7 +63,7 @@ function MapDemo() {
         ['r5', 'r6', [[700, 750], [800, 750]]]
     );
 
-    this.images('/content/maps/demo/images/', {
+    this.images('content/maps/demo/images/', {
         l1_floor: ['l1_floor.png', [100, 50]],
         l2_floor: ['l2_floor.png', [150, 50]]
     });
