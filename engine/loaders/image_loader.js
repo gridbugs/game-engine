@@ -13,7 +13,7 @@ SingleImageLoader.prototype.run = function(then) {
 }
 
 function ImageLoader(root, sources) {
-    var paths = PathManager.get_paths(root, sources);
+    var paths = PathManager.get_paths.apply(null, arguments);
     AsyncGroup.call(this, paths.map(function(p){return new SingleImageLoader(p)}));
 }
 ImageLoader.inherits_from(AsyncGroup);
