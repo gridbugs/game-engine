@@ -282,8 +282,11 @@ WebGLManager.Texture = function(gl) {
     this.texture = gl.createTexture();
 
 }
-WebGLManager.Texture.prototype.bind = function() {
+WebGLManager.Texture.prototype.bind = function(n) {
     var gl = this.gl;
+    if (n != undefined) {
+        gl.activeTexture(gl.TEXTURE0+n);
+    }
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     return this;
 }
