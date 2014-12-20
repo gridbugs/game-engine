@@ -17,6 +17,9 @@ uniform int u_blur_radius;
 #define MAX_BLUR_RADIUS 1000
 
 uniform sampler2D u_image;
+uniform sampler2D u_bump_map;
+uniform sampler2D u_light_map;
+uniform sampler2D u_shine_map;
 
 uniform float u_opacity;
 
@@ -27,6 +30,7 @@ uniform vec4 u_light_colour;
 
 uniform vec2 u_resolution;
 uniform float u_flip_y;
+
 
 
 void main() {

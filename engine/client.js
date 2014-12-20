@@ -61,12 +61,18 @@ $(function() {
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
         Content
-        //,new ImageLoader('images/', ['wood.jpg'])
+        ,new ImageLoader('/artwork/shaders/irregular_pavement/', [
+            'irregular_pavement.png', 
+            'irregular_pavement_bumpmap.png',
+            'irregular_pavement_lightmap.png',
+            'irregular_pavement_shinemap.png'
+        ])
     ).run(function(shaders, images, test_images) {
         
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
 
+        var test_image = drawer.phong_illuminated_image(test_images[0], test_images[1], test_images[2], test_images[3], [200, 200]);
         //test_texture1 = drawer.glm.texture(test_images[0]);
 
         var map_demo = Content.maps.map_demo;
@@ -151,6 +157,8 @@ $(function() {
             capture3.draw();
             
             filterer.draw();
+
+            test_image.draw();
             
             scroll.proceed();
 
@@ -159,7 +167,7 @@ $(function() {
             // progress the time
             demo.tick(time_delta);
             // repeat on the next frame
-            requestAnimationFrame(t);
+           // requestAnimationFrame(t);
 
             // record some stats
             fps_stats.end();

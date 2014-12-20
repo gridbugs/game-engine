@@ -17,12 +17,6 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.dynamic_vertex_buffer.allocate(line_segment_offset);
     this.dynamic_texture_buffer.allocate(line_segment_offset);
 
-    /*
-    this.text_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
-    this.text_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(1024);
-    this.text_index_buffer = this.glm.element_buffer().bind().allocate_dynamic(512);
-    */
-
     this.init_presets();
 
     this.line_width_stack = [];
@@ -31,6 +25,11 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
 
     this.vertex_position_attribute = 'a_position';
     this.texture_coord_attribute = 'a_tex_coord';
+
+    this.TEXTURE_IDX = 0;
+    this.BUMP_MAP_IDX = 1;
+    this.LIGHT_MAP_IDX = 2;
+    this.SHINE_MAP_IDX = 3;
 
     Drawer.call(this, stack_size);
 }
@@ -118,6 +117,19 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_light_pos = this.shader_program.uniform2fv('u_light_pos');
     this.u_light_radius = this.shader_program.uniform1f('u_light_radius');
     this.u_light_colour = this.shader_program.uniform4fv('u_light_colour');
+
+    this.u_image = this.shader_program.uniform1i('u_image');
+    this.u_bump_map = this.shader_program.uniform1i('u_bump_map');
+    this.u_light_map = this.shader_program.uniform1i('u_light_map');
+    this.u_shine_map = this.shader_program.uniform1i('u_shine_map');
+
+    /* assign an integer to each Sampler2D in the fragment shader
+     * so the appropriate texture can be associated to each
+     */
+    this.u_image.set(this.TEXTURE_IDX);
+    this.u_bump_map.set(this.BUMP_MAP_IDX);
+    this.u_light_map.set(this.LIGHT_MAP_IDX);
+    this.u_shine_map.set(this.SHINE_MAP_IDX);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -146,7 +158,6 @@ WebGLDrawer.prototype.init_presets = function() {
 
     this.point_slice = this.glm.slice(0, 1);
     this.line_segment_slice = this.glm.slice(0, 2);
-
 }
 WebGLDrawer.prototype.sync_buffers = function() {
     this.vertex_buffer.bind().upload_static();
@@ -385,6 +396,53 @@ WebGLDrawer.Image = function(image, position, size, clip_start, clip_size, trans
 }
 WebGLDrawer.Image.inherits_from(WebGLDrawer.Drawable);
 
+WebGLDrawer.PhongIlluminatedImage = function(texture, bump_map, light_map, shine_map, position, size, clip_start, clip_size, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+
+    this.position = position != undefined ? position : [0, 0];
+    this.size = size != undefined ? size : [texture.width, texture.height];
+    this.clip_start = clip_start != undefined ? clip_start : [0, 0];
+    this.clip_size = clip_size != undefined ? clip_size : [texture.width, texture.height];
+ 
+    position = this.position;
+    size = this.size;
+
+    drawer.index_buffer.add(this.plus_v_offset(WebGLDrawer.Rect.indices));
+    drawer.vertex_buffer.add([
+        position[0], position[1],
+        position[0] + size[0], position[1],
+        position[0] + size[0], position[1] + size[1],
+        position[0], position[1] + size[1],
+    ]);
+
+    clip_start = this.clip_start;
+    clip_size = this.clip_size;
+    var clip_top_left = [clip_start[0]/texture.width, clip_start[1]/texture.height];
+    var clip_bottom_right = [(clip_start[0]+clip_size[0])/texture.width, (clip_start[1]+clip_size[1])/texture.height];
+    drawer.texture_buffer.add([
+        clip_top_left[0], clip_top_left[1],
+        clip_bottom_right[0], clip_top_left[1],
+        clip_bottom_right[0], clip_bottom_right[1],
+        clip_top_left[0], clip_bottom_right[1]
+    ]);
+
+    this.image = texture;
+
+    // create the texture objects
+    this.texture = drawer.glm.texture(texture);
+    this.bump_map = drawer.glm.texture(bump_map);
+    this.light_map = drawer.glm.texture(light_map);
+    this.shine_map = drawer.glm.texture(shine_map);
+
+
+    this.slice = drawer.glm.slice(this.i_offset, 6);
+}
+WebGLDrawer.PhongIlluminatedImage.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.prototype.phong_illuminated_image = function(texture, bump_map, light_map, shine_map, position, size, clip_start, clip_size, transform) {
+    return new WebGLDrawer.PhongIlluminatedImage(texture, bump_map, light_map, shine_map, position, size, clip_start, clip_size, transform, this);
+}
+
 WebGLDrawer.Image.prototype.draw = function() {
     var drawer = this.before_draw();
  
@@ -394,6 +452,22 @@ WebGLDrawer.Image.prototype.draw = function() {
 
     this.after_draw();
 }
+
+WebGLDrawer.PhongIlluminatedImage.prototype.draw = function() {
+    var drawer = this.before_draw();
+
+    drawer.use_texture(this.image.width, this.image.height);
+    
+    this.texture.bind(drawer.TEXTURE_IDX);
+    this.bump_map.bind(drawer.BUMP_MAP_IDX);
+    this.light_map.bind(drawer.LIGHT_MAP_IDX);
+    this.shine_map.bind(drawer.SHINE_MAP_IDX);
+
+    this.slice.draw_triangles();
+
+    this.after_draw();
+}
+
 WebGLDrawer.Image.prototype.clone = function() {
     return new WebGLDrawer.Image(this.image, this.position, this.size, this.clip_start, this.clip_size, this.clone_transform(), this.drawer);
 }
