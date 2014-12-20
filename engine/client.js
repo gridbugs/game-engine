@@ -72,7 +72,7 @@ $(function() {
         drawer.standard_shaders(shaders[0], shaders[1]);
         drawer.init_uniforms();
 
-        var test_image = drawer.phong_illuminated_image(test_images[0], test_images[1], test_images[2], test_images[3], [200, 200]);
+        var test_image = drawer.phong_illuminated_image(test_images[0], test_images[1], test_images[2], test_images[3], [200, 200], [128, 128]);
         //test_texture1 = drawer.glm.texture(test_images[0]);
 
         var map_demo = Content.maps.map_demo;
@@ -158,6 +158,10 @@ $(function() {
             
             filterer.draw();
 
+
+            var mouse = Input.get_mouse_pos();
+            drawer.u_mouse.set([mouse[0], canvas.height-mouse[1]]);
+
             test_image.draw();
             
             scroll.proceed();
@@ -167,7 +171,7 @@ $(function() {
             // progress the time
             demo.tick(time_delta);
             // repeat on the next frame
-           // requestAnimationFrame(t);
+            /requestAnimationFrame(t);
 
             // record some stats
             fps_stats.end();

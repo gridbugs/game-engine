@@ -31,14 +31,25 @@ uniform vec4 u_light_colour;
 uniform vec2 u_resolution;
 uniform float u_flip_y;
 
+uniform bool u_phong;
 
+uniform vec2 u_mouse;
+
+vec4 phong_pix(sampler2D texture_image, sampler2D bump_map, 
+               sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate);
 
 void main() {
-    if (u_has_texture == 1) {
+
+    if (u_phong) {
+        
+        gl_FragColor = phong_pix(u_image, u_bump_map, u_light_map, u_shine_map, v_tex_coord);
+
+
+    } else if (u_has_texture == 1) {
 
         vec2 screen_coord = v_tex_coord * u_tex_size;
         vec2 pixel_size = vec2(1,1)/u_tex_size;
-
+        
         if (u_pixelate == 1) {
  
             // the dimension of a real pixel in texture coordinate units
@@ -112,4 +123,75 @@ void main() {
     } else {
         gl_FragColor = u_colour * u_opacity;
     }
+}
+
+#define HORIZONTAL_ANGLE 0
+#define VERTICAL_ANGLE 1
+#define PIXEL_HEIGHT 2
+
+#define GET_PIXEL_HEIGHT(bump_map_pix) bump_map_pix[2]*256.0
+
+#define AMBIENT_COEF 0
+#define DIFFUSE_COEF 1
+#define SPECULAR_COEF 2
+
+#define SHINE_EXPONENT 0
+
+#define PI 3.141592653589793
+#define TWO_PI 6.283185307179586
+#define HALF_PI 1.5707963267948966
+
+vec3 bump_map_to_normal(vec4 bump_map_pix) {
+    float theta = bump_map_pix[0] * TWO_PI;
+    float phi = (1.0 - bump_map_pix[1]) * HALF_PI;
+
+    float z = sin(phi);
+    float base_len = cos(phi);
+
+    float x = base_len * cos(theta);
+    float y = base_len * sin(theta);
+
+    return vec3(x,y,z);
+}
+
+vec3 refl(vec3 norm, vec3 to_light) {
+    return 2.0*(dot(to_light, norm))*norm - to_light;
+}
+
+vec4 phong_pix(sampler2D texture_image, sampler2D bump_map, 
+               sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate) {
+
+    vec4 texture_image_pix = texture2D(texture_image, texture_coordinate);
+    vec4 bump_map_pix = texture2D(bump_map, texture_coordinate);
+    vec4 light_map_pix = texture2D(light_map, texture_coordinate);
+    vec4 shine_map_pix = texture2D(shine_map, texture_coordinate);
+
+    vec3 pix_point = vec3(vec2(gl_FragCoord), bump_map_pix[PIXEL_HEIGHT]*256.0);
+    
+    vec3 light_pos = vec3(u_mouse, 200.0);
+    vec3 eye_pos = vec3(u_resolution, 200.0);
+
+    vec3 normal = normalize(bump_map_to_normal(bump_map_pix));
+    vec3 to_light = normalize(light_pos - pix_point);
+    float diffuse = max(dot(to_light, normal), 0.0);
+    vec3 reflection = normalize(refl(normal, to_light));
+    vec3 to_eye = normalize(eye_pos - pix_point);
+
+    float specular;
+    if (diffuse > 0.0) {
+        specular = pow(max(dot(reflection, to_eye), 0.0), 1.0+shine_map_pix[SHINE_EXPONENT]*256.0);
+    } else {
+        specular = 0.0;
+    }
+
+    vec4 pix_colour =
+        texture_image_pix * light_map_pix[1] * diffuse;
+            (light_map_pix[AMBIENT_COEF] +       // ambient light
+            diffuse*light_map_pix[DIFFUSE_COEF]) // diffuse light
+         + vec4(specular, specular, specular, 1)*
+            light_map_pix[SPECULAR_COEF];       // specular light
+    
+    pix_colour[3] = 1.0;
+
+    return pix_colour;
 }

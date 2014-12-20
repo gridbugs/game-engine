@@ -117,6 +117,8 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_light_pos = this.shader_program.uniform2fv('u_light_pos');
     this.u_light_radius = this.shader_program.uniform1f('u_light_radius');
     this.u_light_colour = this.shader_program.uniform4fv('u_light_colour');
+    
+    this.u_mouse = this.shader_program.uniform2fv('u_mouse');
 
     this.u_image = this.shader_program.uniform1i('u_image');
     this.u_bump_map = this.shader_program.uniform1i('u_bump_map');
@@ -130,6 +132,9 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_bump_map.set(this.BUMP_MAP_IDX);
     this.u_light_map.set(this.LIGHT_MAP_IDX);
     this.u_shine_map.set(this.SHINE_MAP_IDX);
+    
+    this.u_phong = this.shader_program.uniform1i('u_phong');
+    this.u_phong.set(false);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -456,7 +461,8 @@ WebGLDrawer.Image.prototype.draw = function() {
 WebGLDrawer.PhongIlluminatedImage.prototype.draw = function() {
     var drawer = this.before_draw();
 
-    drawer.use_texture(this.image.width, this.image.height);
+    drawer.u_phong.set(true);
+    drawer.use_texture(this.size[0], this.size[1]);
     
     this.texture.bind(drawer.TEXTURE_IDX);
     this.bump_map.bind(drawer.BUMP_MAP_IDX);
@@ -464,6 +470,7 @@ WebGLDrawer.PhongIlluminatedImage.prototype.draw = function() {
     this.shine_map.bind(drawer.SHINE_MAP_IDX);
 
     this.slice.draw_triangles();
+    drawer.u_phong.set(false);
 
     this.after_draw();
 }
