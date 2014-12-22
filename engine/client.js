@@ -61,7 +61,7 @@ $(function() {
     new AsyncGroup(
         new FileLoader('shaders/', ['standard_vertex_shader.glsl', 'standard_fragment_shader.glsl']),
         Content
-        ,new ImageLoader('/artwork/shaders/irregular_pavement/', [
+        ,new ImageLoader('artwork/shaders/irregular_pavement/', [
             'irregular_pavement.png', 
             'irregular_pavement_bumpmap.png',
             'irregular_pavement_lightmap.png',
