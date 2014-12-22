@@ -110,7 +110,12 @@ Map.prototype.load_levels = function() {
         var extras = o[name][1];
         var floor_name = o[name][2];
         var regions = region_names.map(function(n){return this.region_hash[n]}.bind(this));
-        var level = new Level(this.drawer, regions, extras, this.image_closures[floor_name]);
+        var level = new Level(
+            this.drawer, 
+            regions, 
+            this.light_obstruction_obj[name], 
+            this.image_closures[floor_name]
+        );
         
         this.level_arr.push(level);
         this.level_hash[name] = level;
@@ -224,7 +229,7 @@ Map.prototype.run = function(then) {
         this.load_initial();
         this.load_lights();
         this.create_collision_processors();
-    
+
         then();
     }.bind(this));
 }
@@ -274,3 +279,8 @@ Map.prototype.create_vertices = function() {
 Map.prototype.update_lights = function() {
     this.level_arr.map(function(l){l.update_lights()});
 }
+
+Map.prototype.light_obstructions = function(light_obstruction_obj) {
+    this.light_obstruction_obj = light_obstruction_obj;
+}
+

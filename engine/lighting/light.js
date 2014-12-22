@@ -3,7 +3,7 @@ function Light(visibility_context, position, radius, colour, drawer) {
     this.position = position;
     this.radius = radius != undefined ? radius : 2000;
     this.colour = colour != undefined ? colour : [1, 1, 1, 1];
-    this.radial = drawer.dynamic_radial(this.position, [], 128, drawer.resolution[0], drawer.resolution[1]);
+    this.radial = drawer.dynamic_radial(this.position, [], 256, drawer.resolution[0], drawer.resolution[1]);
     this.position_buffer = vec3.create();
     this.visibility_context = visibility_context;
     this.capture = drawer.capture([0, 0], drawer.resolution);

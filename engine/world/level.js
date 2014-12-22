@@ -1,9 +1,9 @@
-function Level(drawer, regions, extras, floor) {
+function Level(drawer, regions, visible_segs, floor) {
     this.drawer = drawer;
     this.regions = regions;
-    this.visibility_context = VisibilityContext.from_regions(
-        regions,
-        extras
+    this.visibility_context = VisibilityContext.from_segs(
+        visible_segs,
+        []
     );
     this.lights = [];
     this.floor = floor;

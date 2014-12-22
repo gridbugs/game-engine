@@ -34,7 +34,7 @@ $(function() {
 
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
-    var pos = [200, 200];
+    var pos = [2400, 3300];
     agent = new Agent(pos, 0);
 
     canvas = document.getElementById('screen');
@@ -75,12 +75,12 @@ $(function() {
         var test_image = drawer.phong_illuminated_image(test_images[0], test_images[1], test_images[2], test_images[3], [200, 200], [128, 128]);
         //test_texture1 = drawer.glm.texture(test_images[0]);
 
-        var map_demo = Content.maps.map_demo;
+        var map_demo = Content.maps.dungeon1;
         
         map_demo.update_lights();
 
         var demo = Content.characters.warrior.instance('still');
-        agent.enter_region(map_demo.region_hash.r1);
+        agent.enter_region(map_demo.region_hash.west);
         agent.enter_level(map_demo.level_hash.level1);
         
         var filterer = drawer.filter_pipeline([0, 0], [canvas.width, canvas.height]);
@@ -96,7 +96,7 @@ $(function() {
 
         var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
 
-        var follow_light = drawer.light(1500, [1,1,1,0.3]);
+        var follow_light = drawer.light(1500, [1,1,1,0.5]);
         
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -136,7 +136,7 @@ $(function() {
             // reset the drawer
             drawer.glm.set_clear_colour([0,0,0,1]);
             drawer.clear();
-            drawer.glm.set_clear_colour([1,1,1,1]);
+            drawer.glm.set_clear_colour([0,0,0,1]);
             drawer.remove_filters();
         
             Scene.base(capture, drawer, scroll, agent, demo, map_demo);
@@ -148,7 +148,7 @@ $(function() {
 
             // draw the line segments and character
 
-            filterer.begin();
+            //filterer.begin();
             
             //drawer.u_opacity.set(0.3);
            // capture.draw();
@@ -156,13 +156,13 @@ $(function() {
             
             capture3.draw();
             
-            filterer.draw();
+            //filterer.draw();
 
 
             var mouse = Input.get_mouse_pos();
             drawer.u_mouse.set([mouse[0], canvas.height-mouse[1]]);
 
-            test_image.draw();
+            //test_image.draw();
             
             scroll.proceed();
 
@@ -171,7 +171,7 @@ $(function() {
             // progress the time
             demo.tick(time_delta);
             // repeat on the next frame
-            /requestAnimationFrame(t);
+            requestAnimationFrame(t);
 
             // record some stats
             fps_stats.end();

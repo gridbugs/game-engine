@@ -9,8 +9,8 @@ function WebGLDrawer(canvas, stack_size, preserve_drawing_buffer) {
     this.index_buffer = this.glm.element_buffer();
     this.texture_buffer = this.glm.array_buffer(2);
 
-    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(4096);
-    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(4096);
+    this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(8192);
+    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(8192);
     this.dynamic_index_buffer = this.glm.element_buffer();
 
     var line_segment_offset = 4;
@@ -152,7 +152,6 @@ WebGLDrawer.prototype.standard_shaders = function(vertex, fragment) {
 WebGLDrawer.prototype.update_resolution = function() {
     this.resolution = [this.canvas.width, this.canvas.height];
     if (this.u_resolution) {
-        console.debug('a');
         this.u_resolution.set([this.canvas.width, this.canvas.height]);
     }
 }
@@ -185,7 +184,6 @@ WebGLDrawer.prototype.draw_point = function(pt, colour, width) {
     
     this.point_slice.draw_points();
 
-    console.debug(width);
     this.restore();
 }
 
