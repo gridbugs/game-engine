@@ -402,7 +402,7 @@ WebGLDrawer.PhongIlluminatedSlidingWindow.prototype.draw = function() {
     drawer.u_sliding_window.set(true);
     drawer.u_sliding_window_offset.set(this.offset);
     drawer.u_phong.set(true);
-    drawer.use_texture(this.phong_map.image.width, this.phong_map.image.height);
+    drawer.use_texture(this.phong_map.width(), this.phong_map.height());
     
     this.phong_map.bind();
 

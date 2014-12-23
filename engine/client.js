@@ -90,6 +90,19 @@ $(function() {
         }
 
         var capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+
+        var bump_map_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var light_map_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var shine_map_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
+
+        var phong_capture = drawer.phong_map(
+            capture,
+            bump_map_capture,
+            light_map_capture,
+            shine_map_capture,
+            true
+        );
+
         var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
@@ -146,9 +159,9 @@ $(function() {
         
             Scene.base(capture, drawer, scroll, agent, demo, map_demo);
 
-            Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
+            //Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
 
-            Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
+            //Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
             
 
             // draw the line segments and character
@@ -159,7 +172,7 @@ $(function() {
            // capture.draw();
            // drawer.u_opacity.set(1);
             
-            capture3.draw();
+            capture.draw();
             
             //filterer.draw();
 
