@@ -105,7 +105,7 @@ $(function() {
         );
 
         var lighting_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
-        var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var visible_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
@@ -165,7 +165,7 @@ $(function() {
 
             Scene.lighting(lighting_capture, drawer, scroll, agent, dradial, follow_light, capture, phong_capture);
 
-            //Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
+            Scene.visible_area(visible_capture, drawer, scroll, agent, dradial, lighting_capture);
             
 
             // draw the line segments and character
@@ -176,7 +176,7 @@ $(function() {
            // capture.draw();
            // drawer.u_opacity.set(1);
             
-            lighting_capture.draw();
+            visible_capture.draw();
             
             //filterer.draw();
 
