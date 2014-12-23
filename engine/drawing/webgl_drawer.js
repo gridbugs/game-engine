@@ -139,6 +139,10 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_sliding_window = this.shader_program.uniform1i('u_sliding_window');
     this.u_sliding_window_offset = this.shader_program.uniform2fv('u_sliding_window_offset');
     this.u_sliding_window.set(false);
+
+    this.u_colour_override = this.shader_program.uniform1i('u_colour_override');
+    this.u_colour_override_value = this.shader_program.uniform4fv('u_colour_override_value');
+    this.u_colour_override.set(false);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -409,6 +413,20 @@ WebGLDrawer.PhongIlluminatedSlidingWindow.prototype.draw = function() {
     this.slice.draw_triangles();
     drawer.u_sliding_window.set(false);
     drawer.u_phong.set(false);
+
+    this.after_draw();
+}
+WebGLDrawer.PhongIlluminatedSlidingWindow.prototype.draw_flat = function(level) {
+    var drawer = this.before_draw();
+
+    drawer.u_sliding_window.set(true);
+    drawer.u_sliding_window_offset.set(this.offset);
+    drawer.use_texture(this.phong_map.width(), this.phong_map.height());
+    
+    this.phong_map[level].bind();
+
+    this.slice.draw_triangles();
+    drawer.u_sliding_window.set(false);
 
     this.after_draw();
 }

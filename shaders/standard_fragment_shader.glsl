@@ -38,6 +38,9 @@ uniform vec2 u_mouse;
 uniform bool u_sliding_window;
 uniform vec2 u_sliding_window_offset;
 
+uniform bool u_colour_override;
+uniform vec4 u_colour_override_value;
+
 vec4 phong_pix(sampler2D texture_image, sampler2D bump_map, 
                sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate);
 
@@ -68,7 +71,10 @@ void main() {
         vec2 screen_coord = v_tex_coord * u_tex_size;
         vec2 pixel_size = vec2(1,1)/u_tex_size;
         
-        if (u_pixelate == 1) {
+        if (u_colour_override) {
+            vec4 colour = texture2D(u_image, screen_coord / u_tex_size);
+            gl_FragColor = vec4(vec3(u_colour_override_value), colour[3]);
+        } else if (u_pixelate == 1) {
  
             // the dimension of a real pixel in texture coordinate units
             vec2 real_pixel_size = vec2(1,1)/u_tex_size;
@@ -130,12 +136,7 @@ void main() {
             gl_FragColor = colour * u_light_colour;
             
         } else {
-            vec4 colour = texture2D(u_image, screen_coord / u_tex_size)*u_opacity;
-            if (colour[3] == 0.0) {
-                gl_FragColor = colour;
-            } else {
-                gl_FragColor = colour;
-            }
+            gl_FragColor = texture2D(u_image, screen_coord / u_tex_size)*u_opacity;
         }
     
     } else {

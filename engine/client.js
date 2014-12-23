@@ -157,7 +157,10 @@ $(function() {
             drawer.glm.set_clear_colour([0,0,0,1]);
             drawer.remove_filters();
         
-            Scene.base(capture, drawer, scroll, agent, demo, map_demo);
+            Scene.base(capture, drawer, scroll, agent, demo, map_demo, 'image_texture');
+            Scene.base(bump_map_capture, drawer, scroll, agent, demo, map_demo, 'bump_map_texture');
+            Scene.base(light_map_capture, drawer, scroll, agent, demo, map_demo, 'light_map_texture');
+            Scene.base(shine_map_capture, drawer, scroll, agent, demo, map_demo, 'shine_map_texture');
 
             //Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
 
@@ -202,12 +205,12 @@ $(function() {
 });
 
 function Scene(){}
-Scene.base = function(capture, drawer, scroll, agent, character, map) {
+Scene.base = function(capture, drawer, scroll, agent, character, map, level) {
     // set up gl to draw to a framebuffer
     capture.begin();
 
     agent.level.floor.set_offset([-scroll.translate[0], -scroll.translate[1]]);
-    agent.level.draw_floor();
+    agent.level.draw_floor_flat(level);
     
     // apply global translation (for scrolling)
     drawer.save();
@@ -223,7 +226,31 @@ Scene.base = function(capture, drawer, scroll, agent, character, map) {
     
 
     // draw the character
-    character.draw();
+    switch(level) {
+    case 'image_texture':
+        character.draw();
+        break;
+    case 'bump_map_texture':
+        drawer.u_colour_override.set(true);
+        drawer.u_colour_override_value.set([0,0,0,1]);
+        character.draw();
+        drawer.u_colour_override.set(false);
+        break;
+    case 'light_map_texture':
+        drawer.u_colour_override.set(true);
+        drawer.u_colour_override_value.set([0.5,1,0,1]);
+        character.draw();
+        drawer.u_colour_override.set(false);
+        break;
+    case 'shine_map_texture':
+        drawer.u_colour_override.set(true);
+        drawer.u_colour_override_value.set([0,0,0,1]);
+        character.draw();
+        drawer.u_colour_override.set(false);
+        break;
+    }
+
+
 
     scroll.set_next(drawer.global_centre());
     

@@ -23,3 +23,6 @@ Level.prototype.update_lights = function() {
 Level.prototype.draw_floor = function() {
     this.floor.draw();
 }
+Level.prototype.draw_floor_flat = function(level) {
+    this.floor.draw_flat(level);
+}
