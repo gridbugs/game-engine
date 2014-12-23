@@ -55,3 +55,20 @@ Light.prototype.draw_with = function(texture, position, radial) {
 
     drawer.u_is_light.set(false);
 }
+
+Light.prototype.draw_phong = function(phong_map) {
+    var position = this.position;
+    var radial = this.radial;
+    var drawer = this.drawer;
+    var pos = this.position_buffer;
+    mat3.multiply(pos, drawer.mv_transform, [position[0], position[1], 1]);
+
+    drawer.u_phong.set(true);
+    drawer.u_mouse.set([pos[0], pos[1]]);
+    phong_map.bind();
+    
+ //   radial.draw(phong_map.image_texture);
+    radial.draw_simple();
+
+    drawer.u_phong.set(false);
+}

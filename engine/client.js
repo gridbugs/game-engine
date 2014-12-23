@@ -96,20 +96,21 @@ $(function() {
         var shine_map_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
 
         var phong_capture = drawer.phong_map(
-            capture,
-            bump_map_capture,
-            light_map_capture,
-            shine_map_capture,
-            true
+            capture.texture,
+            bump_map_capture.texture,
+            light_map_capture.texture,
+            shine_map_capture.texture,
+            true,
+            [canvas.width, canvas.height]
         );
 
-        var capture2 = drawer.capture([0, 0], [canvas.width, canvas.height]);
+        var lighting_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var capture3 = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
 
         var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
 
-        var follow_light = drawer.light(1500, [1,1,1,0.5]);
+//        var follow_light = drawer.light(1500, [1,1,1,0.5]);
         
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -162,7 +163,7 @@ $(function() {
             Scene.base(light_map_capture, drawer, scroll, agent, demo, map_demo, 'light_map_texture');
             Scene.base(shine_map_capture, drawer, scroll, agent, demo, map_demo, 'shine_map_texture');
 
-            //Scene.lighting(capture2, drawer, scroll, agent, dradial, follow_light, capture);
+            Scene.lighting(lighting_capture, drawer, scroll, agent, dradial, undefined, capture, phong_capture);
 
             //Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
             
@@ -175,7 +176,7 @@ $(function() {
            // capture.draw();
            // drawer.u_opacity.set(1);
             
-            capture.draw();
+            lighting_capture.draw();
             
             //filterer.draw();
 
@@ -265,7 +266,7 @@ Scene.base = function(capture, drawer, scroll, agent, character, map, level) {
     capture.end();
 }
 
-Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light, background) {
+Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light, background, phong_capture) {
     drawer.glm.set_clear_colour([0,0,0,1]);
     
     // fill a buffer with all the lit areas
@@ -295,18 +296,20 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
     
     
     agent.level.lights.map(function(l) {
-        l.draw(background.texture);
+        //l.draw(background.texture);
+//        l.draw(phong_capture.image_texture);
+        l.draw_phong(phong_capture);
     });
     
 
     drawer.glm.disable_blend();
-    follow_light.draw_to_buffer_with(background.texture, agent.pos, dradial);
+    //follow_light.draw_to_buffer_with(background.texture, agent.pos, dradial);
     drawer.glm.enable_blend();
     
     drawer.restore();
  
     capture.bind();
-    follow_light.draw_buffer();
+    //follow_light.draw_buffer();
     
     drawer.glm.general_blend();
 

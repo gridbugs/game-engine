@@ -92,3 +92,23 @@ WebGLDrawer.DynamicRadial.prototype.draw = function(texture) {
     this.after_draw();
 }
 
+WebGLDrawer.DynamicRadial.prototype.draw_simple = function() {
+    var drawer = this.before_draw();
+    drawer.select_attribute(drawer.vertex_position_attribute, drawer.dynamic_vertex_buffer);
+    drawer.select_attribute(drawer.texture_coord_attribute, drawer.dynamic_texture_buffer);
+
+    drawer.u_tex_from_position.set(true);
+
+//    drawer.no_texture();
+//    drawer.u_colour.set([1,0,0,1]);
+    
+    drawer.u_phong.set(true);
+    this.slice.draw_triangles();
+
+    drawer.u_tex_from_position.set(false);
+    drawer.select_attribute(drawer.vertex_position_attribute, drawer.vertex_buffer);
+    drawer.select_attribute(drawer.texture_coord_attribute, drawer.texture_buffer);
+
+    this.after_draw();
+}
+
