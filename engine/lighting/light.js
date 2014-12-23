@@ -26,9 +26,19 @@ Light.prototype.draw_to_buffer = function(texture) {
     this.draw(texture);
     this.capture.end();
 }
+Light.prototype.draw_phong_to_buffer = function(phong_map) {
+    this.capture.begin();
+    this.draw_phong(phong_map);
+    this.capture.end();
+}
 Light.prototype.draw_to_buffer_with = function(texture, position, radial) {
     this.capture.begin();
     this.draw_with(texture, position, radial);
+    this.capture.end();
+}
+Light.prototype.draw_phong_to_buffer_with = function(phong_map, position, radial) {
+    this.capture.begin();
+    this.draw_phong_with(phong_map, position, radial);
     this.capture.end();
 }
 Light.prototype.draw_buffer = function() {
@@ -57,8 +67,10 @@ Light.prototype.draw_with = function(texture, position, radial) {
 }
 
 Light.prototype.draw_phong = function(phong_map) {
-    var position = this.position;
-    var radial = this.radial;
+    this.draw_phong_with(phong_map, this.position, this.radial);
+}
+
+Light.prototype.draw_phong_with = function(phong_map, position, radial) {
     var drawer = this.drawer;
     var pos = this.position_buffer;
     mat3.multiply(pos, drawer.mv_transform, [position[0], position[1], 1]);

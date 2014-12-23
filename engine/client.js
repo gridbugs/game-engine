@@ -110,7 +110,7 @@ $(function() {
 
         var dradial = drawer.dynamic_radial([100, 100], [], 128, canvas.width, canvas.height);
 
-//        var follow_light = drawer.light(1500, [1,1,1,0.5]);
+        var follow_light = drawer.light(1500, [1,1,1,0.5]);
         
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -163,7 +163,7 @@ $(function() {
             Scene.base(light_map_capture, drawer, scroll, agent, demo, map_demo, 'light_map_texture');
             Scene.base(shine_map_capture, drawer, scroll, agent, demo, map_demo, 'shine_map_texture');
 
-            Scene.lighting(lighting_capture, drawer, scroll, agent, dradial, undefined, capture, phong_capture);
+            Scene.lighting(lighting_capture, drawer, scroll, agent, dradial, follow_light, capture, phong_capture);
 
             //Scene.visible_area(capture3, drawer, scroll, agent, dradial, capture2);
             
@@ -303,13 +303,13 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
     
 
     drawer.glm.disable_blend();
-    //follow_light.draw_to_buffer_with(background.texture, agent.pos, dradial);
+    follow_light.draw_phong_to_buffer_with(background.texture, agent.pos, dradial);
     drawer.glm.enable_blend();
     
     drawer.restore();
  
     capture.bind();
-    //follow_light.draw_buffer();
+    follow_light.draw_buffer();
     
     drawer.glm.general_blend();
 
