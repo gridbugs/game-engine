@@ -103,13 +103,18 @@ $(function() {
         var state = 1;
         var tm = new TimeManager();
        
-        scroll = new ScrollContext([0, 0], 200, [$(window).width(), $(window).height()]);
+        scroll = new ScrollContext([0, 0], 300, [$(window).width(), $(window).height()]);
         
+//        var background = drawer.sliding_window(agent.level.floor.image, [0, 0], [canvas.width, canvas.height], [0, 0]);
+
         drawer.sync_buffers();
+//        background.draw();
+//        return;
 
         var profile_tm = new TimeManager();
 
         t = function() {
+
             fps_stats.begin();
             ms_stats.begin();
             
@@ -188,11 +193,14 @@ Scene.base = function(capture, drawer, scroll, agent, character, map) {
     // set up gl to draw to a framebuffer
     capture.begin();
 
+    agent.level.floor.set_offset([-scroll.translate[0], -scroll.translate[1]]);
+    agent.level.draw_floor();
+    
     // apply global translation (for scrolling)
     drawer.save();
+    
     drawer.translate(scroll.translate);
    
-    agent.level.draw_floor();
     // draw the map line segments
     //map.draw();
     

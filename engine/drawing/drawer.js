@@ -7,6 +7,9 @@ Drawer.prototype.group = function(group) {
     return new DrawableGroup(this, Array.array_or_arguments(group, arguments));
 }
 
+Drawer.prototype.height = function() { return this.canvas.height }
+Drawer.prototype.width = function() {return this.canvas.width }
+
 function DrawableGroup(drawer, group) {
     this.drawer = drawer;
     this.group = group;
@@ -27,3 +30,4 @@ DrawableGroup.prototype.hide = function() {
     this.visible = false;
     return this;
 }
+

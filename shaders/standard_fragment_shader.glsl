@@ -35,6 +35,9 @@ uniform bool u_phong;
 
 uniform vec2 u_mouse;
 
+uniform bool u_sliding_window;
+uniform vec2 u_sliding_window_offset;
+
 vec4 phong_pix(sampler2D texture_image, sampler2D bump_map, 
                sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate);
 
@@ -44,7 +47,18 @@ void main() {
         
         gl_FragColor = phong_pix(u_image, u_bump_map, u_light_map, u_shine_map, v_tex_coord);
 
+    } else if (u_sliding_window) {
+        
+        // v_tex_coord is a coordinate in local vertex space (with the top left corner as 0, 0)
+        // u_sliding_window_offset is the position of the top left corner reletave to the texture in pixels
 
+        // compute this pixel's position inside the texture in pixels with 0, 0 at the top left
+        vec2 tex_pix_coord = v_tex_coord + u_sliding_window_offset;
+
+        // convert into text coords (between 0 and 1)
+        vec2 tex_coord = tex_pix_coord / u_tex_size;
+
+        gl_FragColor = texture2D(u_image, tex_coord);
     } else if (u_has_texture == 1) {
 
         vec2 screen_coord = v_tex_coord * u_tex_size;

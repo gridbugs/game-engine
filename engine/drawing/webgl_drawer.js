@@ -135,6 +135,10 @@ WebGLDrawer.prototype.init_uniforms = function() {
     
     this.u_phong = this.shader_program.uniform1i('u_phong');
     this.u_phong.set(false);
+
+    this.u_sliding_window = this.shader_program.uniform1i('u_sliding_window');
+    this.u_sliding_window_offset = this.shader_program.uniform2fv('u_sliding_window_offset');
+    this.u_sliding_window.set(false);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -361,6 +365,57 @@ WebGLDrawer.Radial.prototype.draw_with_texture = function(texture) {
 
     this.after_draw();
 
+}
+
+WebGLDrawer.SlidingWindow = function(image, position, size, initial_offset, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+
+    this.image = image;
+    this.size = size;
+    this.offset = initial_offset;
+
+    drawer.index_buffer.add(this.plus_v_offset(WebGLDrawer.Rect.indices));
+
+    drawer.vertex_buffer.add([
+        position[0], position[1],
+        position[0] + size[0], position[1],
+        position[0] + size[0], position[1] + size[1],
+        position[0], position[1] + size[1],
+    ]);
+
+    drawer.texture_buffer.add([
+        0, 0,
+        size[0], 0,
+        size[0], size[1],
+        0, size[1]
+    ]);
+    
+    this.texture = drawer.glm.texture(image);
+
+    this.slice = drawer.glm.slice(this.i_offset, 6);
+}
+WebGLDrawer.SlidingWindow.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.SlidingWindow.prototype.draw = function() {
+    var drawer = this.before_draw();
+
+    drawer.u_sliding_window.set(true);
+    drawer.u_sliding_window_offset.set(this.offset);
+    drawer.use_texture(this.image.width, this.image.height);
+    this.texture.bind();
+
+    this.slice.draw_triangles();
+    drawer.u_sliding_window.set(false);
+
+    this.after_draw();
+}
+
+WebGLDrawer.SlidingWindow.prototype.set_offset = function(offset) {
+    this.offset = offset;
+}
+
+WebGLDrawer.prototype.sliding_window = function(image, position, size, initial_offset, transform) {
+    return new WebGLDrawer.SlidingWindow(image, position, size, initial_offset, transform, this);
 }
 
 WebGLDrawer.Image = function(image, position, size, clip_start, clip_size, transform, drawer) {

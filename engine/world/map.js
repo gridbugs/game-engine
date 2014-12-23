@@ -114,7 +114,7 @@ Map.prototype.load_levels = function() {
             this.drawer, 
             regions, 
             this.light_obstruction_obj[name], 
-            this.image_closures[floor_name]
+            this.image_data[floor_name].image
         );
         
         this.level_arr.push(level);

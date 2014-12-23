@@ -6,7 +6,9 @@ function Level(drawer, regions, visible_segs, floor) {
         []
     );
     this.lights = [];
-    this.floor = floor;
+
+    this.floor = drawer.sliding_window(floor, [0, 0], [canvas.width, canvas.height], [0, 0]);
+    console.debug(this.floor);
 
 }
 
