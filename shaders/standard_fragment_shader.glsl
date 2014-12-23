@@ -187,8 +187,8 @@ vec4 phong_pix(sampler2D texture_image, sampler2D bump_map,
 
     vec3 pix_point = vec3(vec2(gl_FragCoord), bump_map_pix[PIXEL_HEIGHT]*256.0);
     
-    vec3 light_pos = vec3(u_mouse, 200.0);
-    vec3 eye_pos = vec3(u_resolution, 200.0);
+    vec3 light_pos = vec3(u_mouse, 100.0);
+    vec3 eye_pos = vec3(u_resolution/2.0, 400.0);
 
     vec3 normal = normalize(bump_map_to_normal(bump_map_pix));
     vec3 to_light = normalize(light_pos - pix_point);
@@ -198,17 +198,21 @@ vec4 phong_pix(sampler2D texture_image, sampler2D bump_map,
 
     float specular;
     if (diffuse > 0.0) {
-        specular = pow(max(dot(reflection, to_eye), 0.0), 1.0+shine_map_pix[SHINE_EXPONENT]*256.0);
+        specular = pow(max(dot(reflection, to_eye), 0.0), 1.0+(shine_map_pix[SHINE_EXPONENT]*255.0));
     } else {
         specular = 0.0;
     }
 
+
     vec4 pix_colour =
-        texture_image_pix * light_map_pix[1] * diffuse;
-            (light_map_pix[AMBIENT_COEF] +       // ambient light
+        texture_image_pix * 
+         
+         
+         (light_map_pix[AMBIENT_COEF] +       // ambient light
             diffuse*light_map_pix[DIFFUSE_COEF]) // diffuse light
+            
          + vec4(specular, specular, specular, 1)*
-            light_map_pix[SPECULAR_COEF];       // specular light
+           light_map_pix[SPECULAR_COEF];       // specular light
     
     pix_colour[3] = 1.0;
 

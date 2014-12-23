@@ -239,7 +239,7 @@ Scene.base = function(capture, drawer, scroll, agent, character, map, level) {
         break;
     case 'light_map_texture':
         drawer.u_colour_override.set(true);
-        drawer.u_colour_override_value.set([0.5,1,0,1]);
+        drawer.u_colour_override_value.set([0,0.8,0,1]);
         character.draw();
         drawer.u_colour_override.set(false);
         break;
