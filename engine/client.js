@@ -165,7 +165,7 @@ $(function() {
 
 
             var mouse = Input.get_mouse_pos();
-            drawer.u_mouse.set([mouse[0], canvas.height-mouse[1]]);
+            drawer.u_mouse.set([mouse[0], mouse[1]]);
 
             //test_image.draw();
             

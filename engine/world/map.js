@@ -62,6 +62,32 @@ Map.prototype.images = function(base, o) {
     this.image_loader = new AsyncGroup(image_loaders);
 }
 
+Map.prototype.phong_maps = function(base, o) {
+    if (o == undefined) {
+        o = base;
+        base = '';
+    }
+    this.phong_map_description = o;
+    this.phong_map_url_base = base;
+
+    this.phong_data = {};
+    var phong_loaders = [];
+
+    for (var name in o) {
+        var image_names = o[name];
+        var loaders = image_names.map(function(image_name) {return new SingleImageLoader(base + image_name)});
+        this.phong_data[name] = {
+            image: loaders[0].image,
+            bump_map: loaders[1].image,
+            light_map: loaders[2].image,
+            shine_map: loaders[3].image
+        };
+        phong_loaders.push(new AsyncGroup(loaders));
+    }
+
+    this.phong_loader = new AsyncGroup(phong_loaders);
+}
+
 Map.prototype.process_images = function() {
     this.image_closures = {};
     for (var name in this.image_data) {
@@ -72,6 +98,19 @@ Map.prototype.process_images = function() {
             data.size,
             data.clip_start,
             data.clip_size
+        );
+    }
+}
+
+Map.prototype.process_phong_maps = function() {
+    this.phong_map_hash = {};
+    for (var name in this.phong_data) {
+        var data = this.phong_data[name];
+        this.phong_map_hash[name] = this.drawer.phong_map(
+            data.image,
+            data.bump_map,
+            data.light_map,
+            data.shine_map
         );
     }
 }
@@ -114,7 +153,7 @@ Map.prototype.load_levels = function() {
             this.drawer, 
             regions, 
             this.light_obstruction_obj[name], 
-            this.image_data[floor_name].image
+            this.image_hash[floor_name]
         );
         
         this.level_arr.push(level);
@@ -217,10 +256,22 @@ Map.prototype.draw = function() {
     this.group_arr.map(function(g) {g.draw()}); 
 }
 
+Map.prototype.populate_image_hash = function() {
+    this.image_hash = {};
+    for (var name in this.image_data) {
+        this.image_hash[name] = this.image_data[name].image;
+    }
+    for (var name in this.phong_map_hash) {
+        this.image_hash[name] = this.phong_map_hash[name];
+    }
+}
+
 Map.prototype.run = function(then) {
-    this.image_loader.run(function() {
+    new AsyncGroup([this.image_loader, this.phong_loader]).run(function() {
 
         this.process_images();
+        this.process_phong_maps();
+        this.populate_image_hash();
 
         this.load_visible();
         this.create_vertices();

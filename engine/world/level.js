@@ -8,8 +8,7 @@ function Level(drawer, regions, visible_segs, floor) {
     this.lights = [];
 
     this.floor = drawer.sliding_window(floor, [0, 0], [canvas.width, canvas.height], [0, 0]);
-    console.debug(this.floor);
-
+    this.floor = drawer.phong_illuminated_sliding_window(floor, [0, 0], [canvas.width, canvas.height], [0, 0]);
 }
 
 Level.prototype.add_light = function(position, radius, colour) {

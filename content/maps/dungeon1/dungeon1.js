@@ -240,11 +240,15 @@ function Dungeon1() {
         floor: ['dungeon1.png', [0, 0]]
     });
 
+    this.phong_maps('content/maps/dungeon1/images/', {
+        floor_phong: ['dungeon1.png', 'dungeon1bumpmap.png', 'dungeon1lightmap.png', 'dungeon1shinemap.png']
+    });
+
     this.levels({
         level1: [[
                 'west', 'east', 'cave'
             ], 
-            [], 'floor'
+            [], 'floor_phong'
         ]
     });
 

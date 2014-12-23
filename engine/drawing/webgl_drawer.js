@@ -367,6 +367,56 @@ WebGLDrawer.Radial.prototype.draw_with_texture = function(texture) {
 
 }
 
+WebGLDrawer.PhongIlluminatedSlidingWindow = function(phong_map, position, size, initial_offset, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+
+    this.phong_map = phong_map;
+    this.size = size;
+    this.offset = initial_offset;
+
+    drawer.index_buffer.add(this.plus_v_offset(WebGLDrawer.Rect.indices));
+
+    drawer.vertex_buffer.add([
+        position[0], position[1],
+        position[0] + size[0], position[1],
+        position[0] + size[0], position[1] + size[1],
+        position[0], position[1] + size[1],
+    ]);
+
+    drawer.texture_buffer.add([
+        0, 0,
+        size[0], 0,
+        size[0], size[1],
+        0, size[1]
+    ]);
+ 
+
+    this.slice = drawer.glm.slice(this.i_offset, 6);
+
+}
+WebGLDrawer.PhongIlluminatedSlidingWindow.inherits_from(WebGLDrawer.Drawable);
+
+WebGLDrawer.PhongIlluminatedSlidingWindow.prototype.draw = function() {
+    var drawer = this.before_draw();
+
+    drawer.u_sliding_window.set(true);
+    drawer.u_sliding_window_offset.set(this.offset);
+    drawer.u_phong.set(true);
+    drawer.use_texture(this.phong_map.image.width, this.phong_map.image.height);
+    
+    this.phong_map.bind();
+
+    this.slice.draw_triangles();
+    drawer.u_sliding_window.set(false);
+    drawer.u_phong.set(false);
+
+    this.after_draw();
+}
+
+WebGLDrawer.prototype.phong_illuminated_sliding_window = function(phong_map, position, size, initial_offset, transform) {
+    return new WebGLDrawer.PhongIlluminatedSlidingWindow(phong_map, position, size, initial_offset, transform, this);
+}
+
 WebGLDrawer.SlidingWindow = function(image, position, size, initial_offset, transform, drawer) {
     WebGLDrawer.Drawable.call(this, transform, drawer);
 
@@ -408,6 +458,10 @@ WebGLDrawer.SlidingWindow.prototype.draw = function() {
     drawer.u_sliding_window.set(false);
 
     this.after_draw();
+}
+
+WebGLDrawer.PhongIlluminatedSlidingWindow.prototype.set_offset = function(offset) {
+    this.offset = offset;
 }
 
 WebGLDrawer.SlidingWindow.prototype.set_offset = function(offset) {
