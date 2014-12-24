@@ -171,15 +171,15 @@ $(function() {
 
             // draw the line segments and character
 
-            //filterer.begin();
+            filterer.begin();
             
             //drawer.u_opacity.set(0.3);
            // capture.draw();
            // drawer.u_opacity.set(1);
             
 //            bump_map_capture.draw();
-//            visible_capture.draw();
-            lighting_capture.draw();
+            visible_capture.draw();
+            //lighting_capture.draw();
             
             drawer.save();
             drawer.translate(scroll.translate);
@@ -187,7 +187,7 @@ $(function() {
             drawer.translate([2470, 3390]);
             drawer.restore();
             
-            //filterer.draw();
+            filterer.draw();
 
             //test_image.draw();
             
