@@ -490,6 +490,75 @@ WebGLDrawer.prototype.sliding_window = function(image, position, size, initial_o
     return new WebGLDrawer.SlidingWindow(image, position, size, initial_offset, transform, this);
 }
 
+WebGLDrawer.Sheet = function(image, drawer) {
+    this.image = image;
+    this.texture = drawer.glm.texture(image);
+    this.drawer = drawer;
+}
+WebGLDrawer.Sheet.prototype.sheet_image = function(position, size, clip_start, clip_size, transform) {
+    return new WebGLDrawer.SheetImage(this.image, position, size, clip_start, clip_size, transform, this.drawer);
+}
+WebGLDrawer.Sheet.prototype.bind = function() {
+    this.texture.bind();
+}
+WebGLDrawer.prototype.sheet = function(image) {
+    return new WebGLDrawer.Sheet(image, this);
+}
+
+/*
+ * In image which is part of a large texture.
+ * Drawing these images doesn't bind the texture, but assumes it's been
+ * previously bound. Use this to draw images made up of small components
+ * all stored in a single texture
+ */
+WebGLDrawer.SheetImage = function(image, position, size, clip_start, clip_size, transform, drawer) {
+    WebGLDrawer.Drawable.call(this, transform, drawer);
+    
+    this.image = image;
+    this.position = position;
+    this.size = size;
+    this.clip_start = clip_start;
+    this.clip_size = clip_size;
+
+    drawer.index_buffer.add(this.plus_v_offset(WebGLDrawer.Rect.indices));
+    
+    drawer.vertex_buffer.add([
+        position[0], position[1],
+        position[0] + size[0], position[1],
+        position[0] + size[0], position[1] + size[1],
+        position[0], position[1] + size[1],
+    ]);
+
+    var clip_top_left = [clip_start[0]/image.width, clip_start[1]/image.height];
+    var clip_bottom_right = [(clip_start[0]+clip_size[0])/image.width, (clip_start[1]+clip_size[1])/image.height];
+    drawer.texture_buffer.add([
+        clip_top_left[0], clip_top_left[1],
+        clip_bottom_right[0], clip_top_left[1],
+        clip_bottom_right[0], clip_bottom_right[1],
+        clip_top_left[0], clip_bottom_right[1]
+    ]);
+
+    this.slice = drawer.glm.slice(this.i_offset, 6);
+}
+WebGLDrawer.SheetImage.inherits_from(WebGLDrawer.Drawable)
+
+WebGLDrawer.SheetImage.prototype.draw = function() {
+    var drawer = this.before_draw();
+    this.slice.draw_triangles();
+    this.after_draw();
+}
+WebGLDrawer.SheetImage.prototype.clone = function() {
+    return new WebGLDrawer.SheetImage(
+        this.image,
+        this.position,
+        this.size,
+        this.clip_start,
+        this.clip_size,
+        this.clone_transform(),
+        this.drawer
+    );
+}
+
 WebGLDrawer.Image = function(image, position, size, clip_start, clip_size, transform, drawer) {
     WebGLDrawer.Drawable.call(this, transform, drawer);
     this.image = image;

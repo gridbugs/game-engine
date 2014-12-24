@@ -1,11 +1,22 @@
 function Character() {}
-Character.prototype.images = Map.prototype.images;
+Character.prototype.images = function(path, parts) {
+    this.image_loader = new SingleImageLoader(path);
+    this.image = this.image_loader.image;
+    this.image_parts = parts;
+}
 
 /* 
  * Creates the drawer.image objects for each image.
  * Must be called after images have loaded.
  */
-Character.prototype.process_images = Map.prototype.process_images;
+Character.prototype.process_images = function() {
+    this.sheet_images = {};
+    this.sheet = this.drawer.sheet(this.image);
+    for (var name in this.image_parts) {    
+        var part = this.image_parts[name];
+        this.sheet_images[name] = this.sheet.sheet_image(part[2], part[3], part[0], part[1]);
+    }
+}
 
 /*
  * Returns a new BodyPart from a given description.
@@ -17,7 +28,7 @@ Character.prototype.body_part_from_description = function(desc, state_name) {
         case String:
             // an image key only - use a constant image with no movement
             return new BodyPart(
-                new DiscreteValue(new ImageWrapper(this.image_closures[desc]))
+                new DiscreteValue(new ImageWrapper(this.sheet_images[desc]))
             );
         case Object:
             if (desc.copy) {
@@ -36,9 +47,9 @@ Character.prototype.body_part_from_description = function(desc, state_name) {
                 if (desc.image == undefined) {
                     image = null;
                 } else if (desc.image.constructor == String) {
-                    image = new DiscreteValue(new ImageWrapper(this.image_closures[desc.image]));
+                    image = new DiscreteValue(new ImageWrapper(this.sheet_images[desc.image]));
                 } else if (desc.image.constructor == Array) {
-                    var images = desc.image.map(function(x){return [x[0], this.image_closures[x[1]]]}.bind(this));
+                    var images = desc.image.map(function(x){return [x[0], this.sheet_images[x[1]]]}.bind(this));
                     image = new DiscreteInterpolator(ImageWrapper.from_seq(images));
                 }
                 
@@ -140,7 +151,8 @@ Character.prototype.create_sequence_manager = function(initial) {
     return new SequenceManager(this.seqs[initial]);
 }
 Character.prototype.create_scene_graph = function(sequence_manager) {
-    return new SceneGraph(this.drawer, sequence_manager, this.scene_graph_root,
+    return new SceneGraph(this.drawer, this.sheet,
+                            sequence_manager, this.scene_graph_root,
                             this.scene_graph_before_description,
                             this.scene_graph_after_description
     );
@@ -153,7 +165,7 @@ Character.prototype.scene_graph_replace = function(o) {
             this.scene_graph_replace(current);
         } else if (current.constructor == Object) {
             if (current.with_img) {
-                current.with_img = this.image_closures[current.with_img]
+                current.with_img = this.sheet_images[current.with_img]
             }
         }
     }
