@@ -23,7 +23,12 @@ function Warrior() {
     });
     */
 
-    this.images('content/characters/warrior/images/sheet.png', {
+    this.images([
+            'content/characters/warrior/images/sheet.png',
+            'content/characters/warrior/images/bumpmap.png',
+            'content/characters/warrior/images/lightmap.png',
+            'content/characters/warrior/images/shinemap.png'
+        ], {
         //          clip-start   clip-size   position  size       
         foot_front: [[379, 273], [31, 62], [-10, -30], [15, 40]],
         foot_back: [[424, 284], [41, 36], [-8, -8], [16, 16]],

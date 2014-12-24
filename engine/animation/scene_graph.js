@@ -1,6 +1,6 @@
-function SceneGraph(drawer, sheet, m, root_idx, before, after) {
+function SceneGraph(drawer, layers, m, root_idx, before, after) {
     this.sequence_manager = m;
-    this.sheet = sheet;
+    this.layers = layers;
     this.drawer = drawer;
     this.root = SceneGraph.Node.from_sequence(
         drawer,
@@ -103,8 +103,8 @@ SceneGraph.Node.prototype.draw = function() {
     drawer.restore();
 }
 
-SceneGraph.prototype.draw = function() {
-    this.sheet.bind();
+SceneGraph.prototype.draw = function(layer) {
+    this.layers[layer].bind();
     this.root.draw();
 }
 

@@ -143,6 +143,9 @@ WebGLDrawer.prototype.init_uniforms = function() {
     this.u_colour_override = this.shader_program.uniform1i('u_colour_override');
     this.u_colour_override_value = this.shader_program.uniform4fv('u_colour_override_value');
     this.u_colour_override.set(false);
+
+    this.u_rotation_offset = this.shader_program.uniform1f('u_rotation_offset');
+    this.u_rotation_offset.set(0);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -495,8 +498,8 @@ WebGLDrawer.Sheet = function(image, drawer) {
     this.texture = drawer.glm.texture(image);
     this.drawer = drawer;
 }
-WebGLDrawer.Sheet.prototype.sheet_image = function(position, size, clip_start, clip_size, transform) {
-    return new WebGLDrawer.SheetImage(this.image, position, size, clip_start, clip_size, transform, this.drawer);
+WebGLDrawer.prototype.sheet_image = function(image_size, position, size, clip_start, clip_size, transform) {
+    return new WebGLDrawer.SheetImage(image_size, position, size, clip_start, clip_size, transform, this);
 }
 WebGLDrawer.Sheet.prototype.bind = function() {
     this.texture.bind();
@@ -511,10 +514,10 @@ WebGLDrawer.prototype.sheet = function(image) {
  * previously bound. Use this to draw images made up of small components
  * all stored in a single texture
  */
-WebGLDrawer.SheetImage = function(image, position, size, clip_start, clip_size, transform, drawer) {
+WebGLDrawer.SheetImage = function(image_size, position, size, clip_start, clip_size, transform, drawer) {
     WebGLDrawer.Drawable.call(this, transform, drawer);
     
-    this.image = image;
+    this.image_size = image_size;
     this.position = position;
     this.size = size;
     this.clip_start = clip_start;
@@ -529,8 +532,9 @@ WebGLDrawer.SheetImage = function(image, position, size, clip_start, clip_size, 
         position[0], position[1] + size[1],
     ]);
 
-    var clip_top_left = [clip_start[0]/image.width, clip_start[1]/image.height];
-    var clip_bottom_right = [(clip_start[0]+clip_size[0])/image.width, (clip_start[1]+clip_size[1])/image.height];
+    var clip_top_left = [clip_start[0]/image_size[0], clip_start[1]/image_size[1]];
+    var clip_bottom_right = [(clip_start[0]+clip_size[0])/image_size[0], 
+                                (clip_start[1]+clip_size[1])/image_size[1]];
     drawer.texture_buffer.add([
         clip_top_left[0], clip_top_left[1],
         clip_bottom_right[0], clip_top_left[1],
@@ -544,12 +548,14 @@ WebGLDrawer.SheetImage.inherits_from(WebGLDrawer.Drawable)
 
 WebGLDrawer.SheetImage.prototype.draw = function() {
     var drawer = this.before_draw();
+    //drawer.no_texture();
+    //drawer.u_colour.set(tc('red'));
     this.slice.draw_triangles();
     this.after_draw();
 }
 WebGLDrawer.SheetImage.prototype.clone = function() {
     return new WebGLDrawer.SheetImage(
-        this.image,
+        this.image_size,
         this.position,
         this.size,
         this.clip_start,

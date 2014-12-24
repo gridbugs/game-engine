@@ -41,6 +41,8 @@ uniform vec2 u_sliding_window_offset;
 uniform bool u_colour_override;
 uniform vec4 u_colour_override_value;
 
+uniform float u_rotation_offset;
+
 vec4 phong_pix(sampler2D texture_image, sampler2D bump_map, 
                sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate);
 
@@ -155,13 +157,14 @@ void main() {
 #define SPECULAR_COEF 2
 
 #define SHINE_EXPONENT 0
+#define USE_ROTATION_OFFSET 1
 
 #define PI 3.141592653589793
 #define TWO_PI 6.283185307179586
 #define HALF_PI 1.5707963267948966
 
-vec3 bump_map_to_normal(vec4 bump_map_pix) {
-    float theta = bump_map_pix[0] * TWO_PI;
+vec3 bump_map_to_normal(vec4 bump_map_pix, float rotation_offset) {
+    float theta = bump_map_pix[0] * TWO_PI + rotation_offset;
     float phi = (1.0 - bump_map_pix[1]) * HALF_PI;
 
     float z = sin(phi);
@@ -190,7 +193,9 @@ vec4 phong_pix(sampler2D texture_image, sampler2D bump_map,
     vec3 light_pos = vec3(u_mouse, 100.0);
     vec3 eye_pos = vec3(u_resolution/2.0, 400.0);
 
-    vec3 normal = normalize(bump_map_to_normal(bump_map_pix));
+    float rotation_offset = u_rotation_offset * shine_map_pix[USE_ROTATION_OFFSET];
+
+    vec3 normal = normalize(bump_map_to_normal(bump_map_pix, rotation_offset));
     vec3 to_light = normalize(light_pos - pix_point);
     float diffuse = max(dot(to_light, normal), 0.0);
     vec3 reflection = normalize(refl(normal, to_light));
@@ -209,8 +214,7 @@ vec4 phong_pix(sampler2D texture_image, sampler2D bump_map,
          
          
          (light_map_pix[AMBIENT_COEF] +       // ambient light
-            diffuse*light_map_pix[DIFFUSE_COEF]) // diffuse light
-            
+     2.0*       diffuse*light_map_pix[DIFFUSE_COEF]) // diffuse light
          + vec4(specular, specular, specular, 1)*
            light_map_pix[SPECULAR_COEF];       // specular light
     

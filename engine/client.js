@@ -9,6 +9,7 @@ var cu;
 var test_texture1;
 var test_texture2;
 var canvas;
+var test_rect;
 
 $(function() {
 
@@ -112,6 +113,8 @@ $(function() {
 
         var follow_light = drawer.light(1500, [1,1,1,0.5]);
         
+        test_rect = drawer.rect([0, 0], [10, 10], tc('blue'));
+
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
         var state = 1;
@@ -176,13 +179,18 @@ $(function() {
            // capture.draw();
            // drawer.u_opacity.set(1);
             
-            visible_capture.draw();
+//            bump_map_capture.draw();
+//            visible_capture.draw();
+            lighting_capture.draw();
+            
+            drawer.save();
+            drawer.translate(scroll.translate);
+            //drawer.translate(agent.pos);
+            drawer.translate([2470, 3390]);
+            test_rect.draw();
+            drawer.restore();
             
             //filterer.draw();
-
-
-            var mouse = Input.get_mouse_pos();
-            drawer.u_mouse.set([mouse[0], mouse[1]]);
 
             //test_image.draw();
             
@@ -225,32 +233,23 @@ Scene.base = function(capture, drawer, scroll, agent, character, map, level) {
     drawer.save();
     drawer.translate(agent.pos).rotate(agent.facing+Math.PI/2);
     
+    drawer.u_rotation_offset.set(-Math.PI/2-agent.facing);
 
     // draw the character
     switch(level) {
     case 'image_texture':
-        character.draw();
+        character.draw('image');
         break;
     case 'bump_map_texture':
-        drawer.u_colour_override.set(true);
-        drawer.u_colour_override_value.set([0,0,0,1]);
-        character.draw();
-        drawer.u_colour_override.set(false);
+        character.draw('bump_map');
         break;
     case 'light_map_texture':
-        drawer.u_colour_override.set(true);
-        drawer.u_colour_override_value.set([0,0.8,0,1]);
-        character.draw();
-        drawer.u_colour_override.set(false);
+        character.draw('light_map');
         break;
     case 'shine_map_texture':
-        drawer.u_colour_override.set(true);
-        drawer.u_colour_override_value.set([0,0,0,1]);
-        character.draw();
-        drawer.u_colour_override.set(false);
+        character.draw('shine_map');
         break;
     }
-
 
 
     scroll.set_next(drawer.global_centre());
@@ -261,6 +260,7 @@ Scene.base = function(capture, drawer, scroll, agent, character, map, level) {
 
     // remove all transformations
     drawer.restore();
+    
     
     // capture contains all the line segments and the character
     capture.end();
@@ -303,13 +303,13 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
     
 
     drawer.glm.disable_blend();
-    follow_light.draw_phong_to_buffer_with(background.texture, agent.pos, dradial);
+    //follow_light.draw_phong_to_buffer_with(background.texture, agent.pos, dradial);
     drawer.glm.enable_blend();
     
     drawer.restore();
  
     capture.bind();
-    follow_light.draw_buffer();
+    //follow_light.draw_buffer();
     
     drawer.glm.general_blend();
 

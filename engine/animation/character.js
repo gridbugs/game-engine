@@ -1,7 +1,6 @@
 function Character() {}
-Character.prototype.images = function(path, parts) {
-    this.image_loader = new SingleImageLoader(path);
-    this.image = this.image_loader.image;
+Character.prototype.images = function(images, parts) {
+    this.image_loader = new ImageLoader(images);
     this.image_parts = parts;
 }
 
@@ -11,10 +10,18 @@ Character.prototype.images = function(path, parts) {
  */
 Character.prototype.process_images = function() {
     this.sheet_images = {};
-    this.sheet = this.drawer.sheet(this.image);
+    
+    this.image_atlas = this.drawer.sheet(this.image_objs[0]);
+    this.bump_map_atlas = this.drawer.sheet(this.image_objs[1]);
+    this.light_map_atlas = this.drawer.sheet(this.image_objs[2]);
+    this.shine_map_atlas = this.drawer.sheet(this.image_objs[3]);
+    
     for (var name in this.image_parts) {    
         var part = this.image_parts[name];
-        this.sheet_images[name] = this.sheet.sheet_image(part[2], part[3], part[0], part[1]);
+        this.sheet_images[name] = this.drawer.sheet_image(
+            [this.image_objs[0].width, this.image_objs[0].height],
+            part[2], part[3], part[0], part[1]
+        );
     }
 }
 
@@ -151,7 +158,14 @@ Character.prototype.create_sequence_manager = function(initial) {
     return new SequenceManager(this.seqs[initial]);
 }
 Character.prototype.create_scene_graph = function(sequence_manager) {
-    return new SceneGraph(this.drawer, this.sheet,
+    return new SceneGraph(this.drawer, 
+    {
+        image: this.image_atlas,
+        bump_map: this.bump_map_atlas,
+        light_map: this.light_map_atlas,
+        shine_map: this.shine_map_atlas
+    },
+    
                             sequence_manager, this.scene_graph_root,
                             this.scene_graph_before_description,
                             this.scene_graph_after_description
@@ -185,7 +199,9 @@ Character.prototype.set_drawer = function(drawer) {
 }
 
 Character.prototype.run = function(then) {
-    this.image_loader.run(function() {
+    this.image_loader.run(function(images) {
+
+        this.image_objs = images;
 
         this.process_images();
         this.process_states();
@@ -211,8 +227,8 @@ Character.Instance.prototype.tick = function(time_delta) {
 Character.Instance.prototype.draw_at = function(translate, rotate, scale) {
     this.sg.draw_at(translate, rotate, scale);
 }
-Character.Instance.prototype.draw = function() {
-    this.sg.draw();
+Character.Instance.prototype.draw = function(layer) {
+    this.sg.draw(layer);
 }
 Character.Instance.prototype.update = function(seq_name, duration, offset) {
     this.sm.update(this.character.seqs[seq_name], duration, offset);
