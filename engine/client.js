@@ -9,7 +9,6 @@ var cu;
 var test_texture1;
 var test_texture2;
 var canvas;
-var test_rect;
 
 $(function() {
 
@@ -113,7 +112,6 @@ $(function() {
 
         var follow_light = drawer.light(1500, [1,1,1,0.5]);
         
-        test_rect = drawer.rect([0, 0], [10, 10], tc('blue'));
 
         agent.facing = -Math.PI/2;
         agent.move_speed = 400;
@@ -187,7 +185,6 @@ $(function() {
             drawer.translate(scroll.translate);
             //drawer.translate(agent.pos);
             drawer.translate([2470, 3390]);
-            test_rect.draw();
             drawer.restore();
             
             //filterer.draw();
