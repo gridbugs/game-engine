@@ -5,6 +5,7 @@ var gl;
 function WebGLManager(canvas, options) {
     this.canvas = canvas;
     this.gl = canvas.getContext('webgl', options);
+//    this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
     gl = this.gl;
 }
 
