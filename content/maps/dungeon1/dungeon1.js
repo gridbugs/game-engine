@@ -242,6 +242,7 @@ function Dungeon1() {
 
     this.phong_maps('content/maps/dungeon1/images/', {
         floor_phong: ['dungeon1.png', 'dungeon1bumpmap.png', 'dungeon1lightmap.png', 'dungeon1shinemap.png']
+        //floor_phong: ['white.png', 'black.png', 'green.png', 'black.png']
     });
 
     this.levels({

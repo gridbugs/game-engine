@@ -146,6 +146,9 @@ WebGLDrawer.prototype.init_uniforms = function() {
 
     this.u_rotation_offset = this.shader_program.uniform1f('u_rotation_offset');
     this.u_rotation_offset.set(0);
+
+    this.u_ambient = this.shader_program.uniform1i('u_ambient');
+    this.u_ambient.set(false);
 }
 
 WebGLDrawer.prototype.use_texture = function(width, height) {
@@ -289,6 +292,16 @@ WebGLDrawer.Rect.indices = [0,1,2,0,2,3];
 
 WebGLDrawer.Rect.prototype.set_colour = function(colour) {
     this.colour = colour;
+}
+
+
+WebGLDrawer.Rect.prototype.draw_simple = function() {
+    var drawer = this.before_draw();
+
+    this.slice.draw_triangles();
+
+    this.after_draw();
+
 }
 
 WebGLDrawer.Rect.prototype.draw = function() {

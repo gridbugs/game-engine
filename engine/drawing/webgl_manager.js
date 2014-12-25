@@ -30,7 +30,7 @@ WebGLManager.prototype.general_blend = function() {
 
 WebGLManager.prototype.light_blend = function() {
     var gl = this.gl;
-    gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
+    gl.blendFunc(gl.ONE, gl.ONE);
 }
 
 WebGLManager.prototype.disable_blend = function() {

@@ -42,8 +42,12 @@ uniform bool u_colour_override;
 uniform vec4 u_colour_override_value;
 
 uniform float u_rotation_offset;
+uniform bool u_ambient;
 
 vec4 phong_pix(sampler2D texture_image, sampler2D bump_map, 
+               sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate);
+
+vec4 ambient_pix(sampler2D texture_image, sampler2D bump_map, 
                sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate);
 
 vec2 sliding_window_texture_coord() {
@@ -65,7 +69,8 @@ void main() {
         } else {
             gl_FragColor = phong_pix(u_image, u_bump_map, u_light_map, u_shine_map, v_tex_coord);
         }
-
+    } else if (u_ambient) {
+        gl_FragColor = ambient_pix(u_image, u_bump_map, u_light_map, u_shine_map, v_tex_coord);
     } else if (u_sliding_window) {
         gl_FragColor = texture2D(u_image, sliding_window_texture_coord());
     } else if (u_has_texture == 1) {
@@ -180,6 +185,20 @@ vec3 refl(vec3 norm, vec3 to_light) {
     return 2.0*(dot(to_light, norm))*norm - to_light;
 }
 
+vec4 ambient_pix(sampler2D texture_image, sampler2D bump_map, 
+               sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate) {
+    
+    vec4 texture_image_pix = texture2D(texture_image, texture_coordinate);
+    vec4 light_map_pix = texture2D(light_map, texture_coordinate);
+
+    vec4 pix_colour =
+        texture_image_pix * light_map_pix[AMBIENT_COEF];
+
+    pix_colour[3] = 1.0;
+    return pix_colour;
+}
+
+
 vec4 phong_pix(sampler2D texture_image, sampler2D bump_map, 
                sampler2D light_map, sampler2D shine_map, vec2 texture_coordinate) {
 
@@ -213,12 +232,18 @@ vec4 phong_pix(sampler2D texture_image, sampler2D bump_map,
         texture_image_pix * 
          
          
-         (light_map_pix[AMBIENT_COEF] +       // ambient light
-     2.0*       diffuse*light_map_pix[DIFFUSE_COEF]) // diffuse light
+     /*    (light_map_pix[AMBIENT_COEF] +  */     // ambient light
+          diffuse*light_map_pix[DIFFUSE_COEF] // diffuse light
          + vec4(specular, specular, specular, 1)*
            light_map_pix[SPECULAR_COEF];       // specular light
-    
-    pix_colour[3] = 1.0;
+    /*
+    return vec4(
+        0.0*light_map_pix[AMBIENT_COEF] + diffuse * light_map_pix[DIFFUSE_COEF] * 0.5,
+        specular * light_map_pix[SPECULAR_COEF],
+        0, 1
+    );
+    */
 
+    pix_colour[3] = 1.0;
     return pix_colour;
 }

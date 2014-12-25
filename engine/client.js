@@ -9,6 +9,7 @@ var cu;
 var test_texture1;
 var test_texture2;
 var canvas;
+var test_rect;
 
 $(function() {
 
@@ -104,6 +105,8 @@ $(function() {
             [canvas.width, canvas.height]
         );
 
+        test_rect = drawer.rect([0, 0], [canvas.width, canvas.height]);
+
         var lighting_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         var visible_capture = drawer.capture([0, 0], [canvas.width, canvas.height]);
         circle = drawer.circle([0, 0], agent.rad, [0,0,0,0.5]);
@@ -178,8 +181,8 @@ $(function() {
            // drawer.u_opacity.set(1);
             
 //            bump_map_capture.draw();
-            visible_capture.draw();
-            //lighting_capture.draw();
+            //visible_capture.draw();
+            lighting_capture.draw();
             
             drawer.save();
             drawer.translate(scroll.translate);
@@ -273,11 +276,13 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
      * is used to texture the visible area the original drawing is also present
      */
     
-    /*
-    drawer.u_opacity.set(0.3);
-    background.draw();
-    drawer.u_opacity.set(1);
-    */
+    drawer.glm.light_blend();
+    
+    drawer.u_ambient.set(true);
+    phong_capture.bind();
+    test_rect.draw_simple();
+    drawer.u_ambient.set(false);
+    
 
     // translate back to the scroll position
     drawer.save();
@@ -287,7 +292,6 @@ Scene.lighting = function(capture, drawer, scroll, agent, dradial, follow_light,
 
     // draw lit areas to a buffer
 
-    drawer.glm.light_blend();
     var lights = agent.level.lights;
     
     
