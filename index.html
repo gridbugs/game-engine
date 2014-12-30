@@ -12,6 +12,8 @@
 <script type="application/x-javascript" src="engine/lib/gl-matrix-min.js"></script>
 <script type="application/x-javascript" src="engine/lib/webgl-debug.js"></script>
 
+<script type="application/x-javascript" src="engine/util/init.js"></script>
+
 <script type="application/x-javascript" src="engine/util/language.js"></script>
 <script type="application/x-javascript" src="engine/util/util.js"></script>
 <script type="application/x-javascript" src="engine/util/array.js"></script>
@@ -31,6 +33,7 @@
 <script type="application/x-javascript" src="engine/control/input.js"></script>
 <script type="application/x-javascript" src="engine/control/agent.js"></script>
 
+<script type="application/x-javascript" src="engine/debug/debug.js"></script>
 <script type="application/x-javascript" src="engine/debug/colour.js"></script>
 <script type="application/x-javascript" src="engine/debug/graph.js"></script>
 <script type="application/x-javascript" src="engine/debug/console.js"></script>
@@ -38,6 +41,7 @@
 
 <script type="application/x-javascript" src="engine/loaders/file_path.js"></script>
 <script type="application/x-javascript" src="engine/loaders/file_loader.js"></script>
+<script type="application/x-javascript" src="engine/loaders/shader_program_loader.js"></script>
 <script type="application/x-javascript" src="engine/loaders/image_loader.js"></script>
 <script type="application/x-javascript" src="engine/loaders/content_loader.js"></script>
 
@@ -57,6 +61,8 @@
 <script type="application/x-javascript" src="engine/drawing/webgl_dynamic.js"></script>
 <script type="application/x-javascript" src="engine/drawing/webgl_filter.js"></script>
 <script type="application/x-javascript" src="engine/drawing/webgl_text.js"></script>
+<script type="application/x-javascript" src="engine/drawing/webgl_image_renderer.js"></script>
+<script type="application/x-javascript" src="engine/drawing/webgl_phong_image_renderer.js"></script>
 
 <script type="application/x-javascript" src="engine/lighting/light.js"></script>
 <script type="application/x-javascript" src="engine/lighting/visibility_context.js"></script>
@@ -78,7 +84,7 @@
     <div id="info-overlay">
     </div>
 
-    <div id="console-container">
+    <div id="console-container" style="display:none">
         <div id="console-output">
         </div>
         <input id="console-input"/>

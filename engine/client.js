@@ -1,40 +1,34 @@
-var vis;
-var scroll;
-var circle;
-var t;
-var drawer;
-var game_console;
-var agent;
-var cu;
-var test_texture1;
-var test_texture2;
-var canvas;
-var test_rect;
-
 $(function() {
-
-    game_console = new Console(
-        document.getElementById("console-input"),
-        document.getElementById("console-output"),
-        new Echoer()
-    );
-    game_console.setup_keys();
-    $("#console-container").hide();
-    $("#info-overlay").hide();
-
-    var fps_stats = new Stats();
-    fps_stats.setMode(0);
-    fps_stats.domElement.style.position = 'relative';
-    fps_stats.domElement.style.float = 'left';
-    document.getElementById('info-overlay').appendChild(fps_stats.domElement);
-    var ms_stats = new Stats();
-    ms_stats.setMode(1);
-    ms_stats.domElement.style.position = 'relative';
-    document.getElementById('info-overlay').appendChild(ms_stats.domElement);
-
-
+    Debug.init();
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
+    
+    // grab the canvas html element
+    var canvas = document.getElementById('screen');
+    
+    // initialize webgl context on the canvas
+    var glm = new WebGLManager(canvas, {
+        preserveDrawingBuffer: false
+    }).init_2d();
+
+    var vertex_manager = new WebGLVertexManager(glm);
+    var texture_manager = new WebGLPhongTextureManager(glm);
+    var content_manager = new ContentManager();
+
+    new AsyncGroup(
+        vertex_manager,
+        texture_manager,
+        content_manager
+    ).run(function() {
+
+
+    });
+});
+
+function aa(){}
+aa(function() {
+
+
     var pos = [2400, 3300];
     agent = new Agent(pos, 0);
 
@@ -181,8 +175,7 @@ $(function() {
            // drawer.u_opacity.set(1);
             
 //            bump_map_capture.draw();
-            //visible_capture.draw();
-            lighting_capture.draw();
+            visible_capture.draw();
             
             drawer.save();
             drawer.translate(scroll.translate);
