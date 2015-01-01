@@ -12,7 +12,6 @@ var canvas;
 var test_rect;
 
 $(function() {
-
     game_console = new Console(
         document.getElementById("console-input"),
         document.getElementById("console-output"),
@@ -39,7 +38,7 @@ $(function() {
     agent = new Agent(pos, 0);
 
     canvas = document.getElementById('screen');
-    
+ 
     $(document).resize(function() {
         canvas.width = $(window).width();
         canvas.height = $(window).height();
@@ -47,6 +46,23 @@ $(function() {
 
     canvas.width = $(window).width();
     canvas.height = $(window).height();
+
+    var glm = new WebGLManager(canvas, {preserveDrawingBuffer: false}).init_2d();
+    var vtxmgr = new WebGLVertexManager(glm);
+
+    console.debug(vtxmgr);
+
+    var rect = vtxmgr.rectangle([20, 100], [200, 100]);
+
+    console.debug(rect);
+
+    vtxmgr.sync_buffers();
+
+    rect.draw_without_static_transform();
+})
+function aa() {
+   
+
     if (window.location.hash == '#canvas') {
         drawer = new CanvasDrawer(canvas);
         cu = new CanvasUtil(canvas);
@@ -211,7 +227,7 @@ $(function() {
 
 
     }.arr_args());
-});
+}
 
 function Scene(){}
 Scene.base = function(capture, drawer, scroll, agent, character, map, level) {
