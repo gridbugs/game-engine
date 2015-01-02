@@ -21,6 +21,7 @@ function WebGLVertexManager(glm, stack_size) {
 
     TransformStack.call(this, stack_size);
 }
+WebGLVertexManager.inherits_from(TransformStack);
 
 // add a vertex at 0, 0 to use when drawing points
 WebGLVertexManager.prototype.init_presets = function() {
