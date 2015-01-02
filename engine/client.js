@@ -50,16 +50,40 @@ $(function() {
     var glm = new WebGLManager(canvas, {preserveDrawingBuffer: false}).init_2d();
     var vtxmgr = new WebGLVertexManager(glm);
 
-    console.debug(vtxmgr);
+    new AsyncGroup(
+    /*
+        new ShaderProgramLoader(
+            glm,
+            'shaders/standard_fragment_shader.glsl',
+            'shaders/standard_vertex_shader.glsl'
+        ),
+        */
+        new ShaderProgramLoader(
+            glm,
+            'shaders/simple_vertex_shader.glsl',
+            'shaders/red_fragment_shader.glsl'
+        )
+    ).run(function(/*standard_shader, */red_shader) {
 
-    var rect = vtxmgr.rectangle([20, 100], [200, 100]);
+        red_shader.use();
 
-    console.debug(rect);
+        red_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
+        red_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
 
-    vtxmgr.sync_buffers();
+        var rect = vtxmgr.rectangle([20, 100], [200, 100]);
 
-    rect.draw_without_static_transform();
+        vtxmgr.sync_buffers();
+        
+        vtxmgr.enable_vertex_attribute(red_shader.attribute('a_position'));
+
+
+        rect.draw_without_static_transform();
+
+
+    }.arr_args());
+
 })
+
 function aa() {
    
 

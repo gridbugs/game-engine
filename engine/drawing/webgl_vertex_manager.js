@@ -49,6 +49,12 @@ WebGLVertexManager.prototype.sync_buffers = function() {
     this.index_buffer.bind().upload_static();
 }
 
+WebGLVertexManager.prototype.enable_vertex_attribute = function(attr) {
+    attr.set(this.vertex_buffer.bind());
+}
+WebGLVertexManager.prototype.enable_texture_attribute = function(attr) {
+    attr.set(this.texture_buffer.bind());
+}
 
 WebGLVertexManager.Drawable = function(transform, vertex_manager) {
     // this line allows this class to be instantiated as a prototype
@@ -89,13 +95,13 @@ WebGLVertexManager.Drawable.prototype.index_index_base = function() {
  * vertex index base.
  */
 WebGLVertexManager.Drawable.prototype.insert_indices = function(idxs) {
+    var i_offset = this.index_index_base();
+    
     idxs = Array.array_or_arguments(idxs, arguments);
     var v_offset = this.vertex_index_base();
     this.vertex_manager.index_buffer.add(
         idxs.map(function(i){return i + v_offset})
     );
-
-    var i_offset = this.index_index_base();
 
     this.slice = this.vertex_manager.glm.slice(i_offset, idxs.length);
 }
