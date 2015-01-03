@@ -45,3 +45,15 @@ AsyncGroup.prototype.run_parts = function(thens) {
     thens = Array.array_or_arguments(thens, arguments);
     Async.do_all(this.tasks, thens[0], thens.slice(1));
 }
+
+function AsyncThenSync(async, then) {
+    this.task = async;
+    this.then = then;
+}
+
+AsyncThenSync.prototype.run = function(then) {
+    this.task.run(function(result) {
+        this.then(result);
+        then(result);
+    }.bind(this));
+}

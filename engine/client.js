@@ -54,16 +54,22 @@ $(function() {
         new ContentManager(vtxmgr),
         new MultiShaderLoader(glm, [
             ['shaders/scroll_vertex_shader.glsl', 'shaders/scroll_fragment_shader.glsl'],
+            ['shaders/texture_vertex_shader.glsl', 'shaders/texture_fragment_shader.glsl'],
             ['shaders/simple_vertex_shader.glsl', 'shaders/red_fragment_shader.glsl']
         ]),
         new ImageLoader([
             'content/maps/dungeon1/images/dungeon1.png'
         ])
     ).run(function(content, shaders, images) {
+        
         var scroll_shader = shaders[0];
-        var red_shader = shaders[1];
+        var texture_shader = shaders[1];
+        var red_shader = shaders[2];
         var test_image = images[0];
         var test_texture = glm.texture(test_image);
+
+        var warrior = content.characters.warrior.instance('still');
+        var warrior_texture = glm.texture(content.characters.warrior.images[0]);
         
         scroll_shader.use();
         
@@ -77,15 +83,41 @@ $(function() {
         red_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
         red_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
 
-        var fullscreen_rect = vtxmgr.rectangle([0, 0], [canvas.width, canvas.height]);
+        texture_shader.use();
+        var u_model_view = 
+        texture_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
+        texture_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
+        texture_shader.uniform2fv('u_tex_size').set([512, 512]);
+        texture_shader.uniform1i('u_texture').set(0);
+        warrior.set_model_view(u_model_view);
 
+
+        var head = vtxmgr.atlas_range(
+            [200, 200],
+            [100, 100],
+            [512, 512],
+            [212, 23],
+            [80, 50]
+        );
+
+        console.debug(head);
+
+        var fullscreen_rect = vtxmgr.rectangle([0, 0], [canvas.width, canvas.height]);
+        var rect0 = vtxmgr.rectangle([0, 0], [20, 20]);
         vtxmgr.sync_buffers();
         
-        vtxmgr.enable_vertex_attribute(red_shader.attribute('a_position'));
+        vtxmgr.enable_vertex_attribute(texture_shader.attribute('a_position'));
+        vtxmgr.enable_texture_attribute(texture_shader.attribute('a_tex_coord'));
 
-        console.debug(content);
 
-//        fullscreen_rect.draw_without_static_transform();
+        texture_shader.use();
+        warrior_texture.bind(0);
+        
+        vtxmgr.translate([200, 200]);
+//        head.draw_without_static_transform(u_model_view);
+//        rect0.draw_without_static_transform(u_model_view);
+        warrior.draw();
+//        fullscreen_rect.draw_without_static_transform(u_model_view);
 
 
     }.arr_args());

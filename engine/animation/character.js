@@ -14,7 +14,7 @@ Character.prototype.images = function(images, parts) {
 }
 
 /* 
- * Creates the drawer.image objects for each image.
+ * Creates the vertex_manager.image objects for each image.
  * Must be called after images have loaded.
  */
 Character.prototype.process_images = function() {
@@ -31,14 +31,14 @@ Character.prototype.process_images = function() {
 /*
     this.sheet_images = {};
     
-    this.image_atlas = this.drawer.sheet(this.image_objs[0]);
-    this.bump_map_atlas = this.drawer.sheet(this.image_objs[1]);
-    this.light_map_atlas = this.drawer.sheet(this.image_objs[2]);
-    this.shine_map_atlas = this.drawer.sheet(this.image_objs[3]);
+    this.image_atlas = this.vertex_manager.sheet(this.image_objs[0]);
+    this.bump_map_atlas = this.vertex_manager.sheet(this.image_objs[1]);
+    this.light_map_atlas = this.vertex_manager.sheet(this.image_objs[2]);
+    this.shine_map_atlas = this.vertex_manager.sheet(this.image_objs[3]);
     
     for (var name in this.image_parts) {    
         var part = this.image_parts[name];
-        this.sheet_images[name] = this.drawer.sheet_image(
+        this.sheet_images[name] = this.vertex_manager.sheet_image(
             [this.image_objs[0].width, this.image_objs[0].height],
             part[2], part[3], part[0], part[1]
         );
@@ -179,14 +179,7 @@ Character.prototype.create_sequence_manager = function(initial) {
     return new SequenceManager(this.seqs[initial]);
 }
 Character.prototype.create_scene_graph = function(sequence_manager) {
-    return new SceneGraph(this.drawer, 
-    {
-        image: this.image_atlas,
-        bump_map: this.bump_map_atlas,
-        light_map: this.light_map_atlas,
-        shine_map: this.shine_map_atlas
-    },
-    
+    return new SceneGraph(this.vertex_manager, 
                             sequence_manager, this.scene_graph_root,
                             this.scene_graph_before_description,
                             this.scene_graph_after_description
@@ -256,5 +249,7 @@ Character.Instance.prototype.draw = function(layer) {
 Character.Instance.prototype.update = function(seq_name, duration, offset) {
     this.sm.update(this.character.seqs[seq_name], duration, offset);
 }
-
+Character.Instance.prototype.set_model_view = function(u_model_view) {
+    this.sg.set_model_view(u_model_view);
+}
 

@@ -23,5 +23,7 @@ function ContentManager(vertex_manager) {
 }
 
 ContentManager.prototype.run = function(then) {
-    new AsyncGroup(this.to_load).run(then);
+    new AsyncGroup(this.to_load).run(function() {
+        then(this);
+    }.bind(this));
 }

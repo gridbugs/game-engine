@@ -1,18 +1,22 @@
-function SceneGraph(drawer, layers, m, root_idx, before, after) {
+function SceneGraph(vertex_manager, m, root_idx, before, after) {
     this.sequence_manager = m;
-    this.layers = layers;
-    this.drawer = drawer;
+    this.vertex_manager = vertex_manager;
     this.root = SceneGraph.Node.from_sequence(
-        drawer,
+        vertex_manager,
         m,
         root_idx,
-        SceneGraph.parse(drawer, m, before),
-        SceneGraph.parse(drawer, m, after)
+        SceneGraph.parse(vertex_manager, m, before),
+        SceneGraph.parse(vertex_manager, m, after)
     );
         
     this.root.idx = root_idx;
 }
-SceneGraph.parse = function(drawer, m, arr) {
+
+SceneGraph.prototype.set_model_view = function(u_model_view) {
+    this.model_view = u_model_view;
+}
+
+SceneGraph.parse = function(vertex_manager, m, arr) {
     var nodes = [];
     var i = 0;
     while (i < arr.length) {
@@ -23,14 +27,14 @@ SceneGraph.parse = function(drawer, m, arr) {
             var before = arr[i+1];
             var after = arr[i+2];
             if (before && before.constructor == Array) {
-                before_nodes = SceneGraph.parse(drawer, m, before);
+                before_nodes = SceneGraph.parse(vertex_manager, m, before);
                 ++i;
                 if (after && after.constructor == Array) {
-                    after_nodes = SceneGraph.parse(drawer, m, after);
+                    after_nodes = SceneGraph.parse(vertex_manager, m, after);
                     ++i;
                 }
             }
-            nodes.push(SceneGraph.Node.from_sequence(drawer, m, element, before_nodes, after_nodes));
+            nodes.push(SceneGraph.Node.from_sequence(vertex_manager, m, element, before_nodes, after_nodes));
         } else if (element.constructor == Object) {
             var connect_idx = element.connect_to;
             var connect_img;
@@ -40,7 +44,7 @@ SceneGraph.parse = function(drawer, m, arr) {
                 connect_img = new ConstantValue(new ImageWrapper(element.with_img));
             }
             var body_part = m.g(connect_idx+'_t').connect(connect_img);
-            nodes.push(SceneGraph.Node.from_body_part(drawer, body_part, [], []));
+            nodes.push(SceneGraph.Node.from_body_part(vertex_manager, body_part, [], []));
         }
 
         ++i;
@@ -49,8 +53,8 @@ SceneGraph.parse = function(drawer, m, arr) {
     return nodes;
 }
 
-SceneGraph.Node = function(drawer, image, translate, rotate, scale, pr_translate, pr_rotate, pr_scale, before, after) {
-    this.drawer = drawer;
+SceneGraph.Node = function(vertex_manager, image, translate, rotate, scale, pr_translate, pr_rotate, pr_scale, before, after) {
+    this.vertex_manager = vertex_manager;
     this.image = image;
     this.translate = translate;
     this.rotate = rotate;
@@ -62,7 +66,7 @@ SceneGraph.Node = function(drawer, image, translate, rotate, scale, pr_translate
     this.after = after;
 }
 
-SceneGraph.Node.prototype.draw = function() {
+SceneGraph.Node.prototype.draw = function(model_view) {
     var t = this.translate.get_value();
     var r = this.rotate.get_value();
     var s = this.scale.get_value();
@@ -70,57 +74,55 @@ SceneGraph.Node.prototype.draw = function() {
     var pr = this.private_rotate.get_value();
     var ps = this.private_scale.get_value();
 
-    var drawer = this.drawer;
-    drawer.save();
+    var vertex_manager = this.vertex_manager;
+    vertex_manager.save();
 
-    drawer.translate(t);
-    drawer.rotate(r);
-    drawer.scale(s);
+    vertex_manager.translate(t);
+    vertex_manager.rotate(r);
+    vertex_manager.scale(s);
     
     var before = this.before;
     for (var i = 0,len = before.length;i!=len;++i) {
-        before[i].draw();
+        before[i].draw(model_view);
     }
   
     
     var i = this.image;
     if (i) {
         i = i.get_value();
-        drawer.save();
-        drawer.translate(pt);
-        drawer.rotate(pr);
-        drawer.scale(ps);
-        i.draw();
-        //drawer.draw_point([0, 0], tc('blue'), 4);
-        drawer.restore();
+        vertex_manager.save();
+        vertex_manager.translate(pt);
+        vertex_manager.rotate(pr);
+        vertex_manager.scale(ps);
+        i.draw_without_static_transform(model_view);
+        vertex_manager.restore();
     }
 
     var after = this.after;
     for (var i = 0,len = after.length;i!=len;++i) {
-        after[i].draw();
+        after[i].draw(model_view);
     }
 
-    drawer.restore();
+    vertex_manager.restore();
 }
 
-SceneGraph.prototype.draw = function(layer) {
-    this.layers[layer].bind();
-    this.root.draw();
+SceneGraph.prototype.draw = function() {
+    this.root.draw(this.model_view);
 }
 
 SceneGraph.prototype.draw_at = function(translate, rotate, scale) {
-    var drawer = this.drawer;
-    drawer.save();
-    translate && drawer.translate(translate);
-    rotate && drawer.rotate(rotate);
-    scale && drawer.scale(scale);
+    var vertex_manager = this.vertex_manager;
+    vertex_manager.save();
+    translate && vertex_manager.translate(translate);
+    rotate && vertex_manager.rotate(rotate);
+    scale && vertex_manager.scale(scale);
     this.root.draw();
-    drawer.restore();
+    vertex_manager.restore();
 }
 
-SceneGraph.Node.from_body_part = function(drawer, b, before, after) {
+SceneGraph.Node.from_body_part = function(vertex_manager, b, before, after) {
     return new SceneGraph.Node(
-        drawer,
+        vertex_manager,
         b.image,
         b.translate,
         b.rotate,
@@ -133,9 +135,9 @@ SceneGraph.Node.from_body_part = function(drawer, b, before, after) {
     );
 }
 
-SceneGraph.Node.from_sequence = function(drawer, m, idx, before, after) {
+SceneGraph.Node.from_sequence = function(vertex_manager, m, idx, before, after) {
     var node = new SceneGraph.Node(
-        drawer, 
+        vertex_manager, 
         m.g(idx+'_i'),
         m.g(idx+'_t'),
         m.g(idx+'_r'),

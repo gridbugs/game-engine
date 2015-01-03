@@ -93,7 +93,8 @@ ImageWrapper.from_seq = function(seq) {
     return seq.map(function(x){return [x[0], new ImageWrapper(x[1])]});
 }
 ImageWrapper.prototype.flip_x = function() {
-    return new ImageWrapper(this.v.clone().scale([-1, 1]));
+    //return new ImageWrapper(this.v.clone().scale([-1, 1]));
+    return new ImageWrapper(this.v.clone_flip_x());
 }
 ImageWrapper.prototype.val = function() {
     return this.v;

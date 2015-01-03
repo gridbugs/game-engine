@@ -145,8 +145,13 @@ WebGLVertexManager.Drawable.prototype.draw_with_static_transform = function(u_mo
  * saving some computation. Use this when the local
  * transform is the identity.
  */
-WebGLVertexManager.Drawable.prototype.draw_without_static_transform = function() {
-    this.vertex_manager.index_buffer.bind();
+WebGLVertexManager.Drawable.prototype.draw_without_static_transform = function(u_model_view) {
+    var vtxmgr = this.vertex_manager;
+
+    u_model_view.set(vtxmgr.mv_transform);
+
+    vtxmgr.index_buffer.bind();
+
     this.slice.draw_triangles();
 }
 
@@ -201,12 +206,13 @@ WebGLVertexManager.AtlasRange = function(position, size, atlas_size, atlas_range
 
     this.insert_rectangle_indices();
     this.insert_rectangle_vertices(position, size);
-    this.insert_texture_coords(
-        [atlas_range_offset[0]/atlas_size[0], atlas_range_offset[1]/atlas_size[1]], [
-            (atlas_range_offset[0]+atlas_range_size[0])/atlas_size[0],
-            (atlas_range_offset[1]+atlas_range_size[1])/atlas_size[1]
-        ]
+    
+    this.insert_rectangle_texture_coords(
+        [atlas_range_offset[0]/atlas_size[0], atlas_range_offset[1]/atlas_size[1]], 
+        [atlas_range_size[0]/atlas_size[0], atlas_range_size[1]/atlas_size[1]]
     );
+    
+    
 }
 WebGLVertexManager.AtlasRange.inherits_from(WebGLVertexManager.Drawable);
 
@@ -220,3 +226,16 @@ WebGLVertexManager.AtlasRange.prototype.clone = function() {
         this.clone_transform()
     );
 }
+
+WebGLVertexManager.AtlasRange.prototype.clone_flip_x = function() {
+    return this.vertex_manager.atlas_range(
+        this.position.v2_mult([-1, 1]),
+        this.size.v2_mult([-1, 1]),
+        this.atlas_size,
+        this.atlas_range_offset,
+        this.atlas_range_size,
+        this.clone_transform()
+    );
+}
+
+
