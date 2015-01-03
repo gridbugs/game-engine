@@ -19,7 +19,6 @@ BodyPart.prototype.pr = function() {return this.private_rotate}
 BodyPart.prototype.ps = function() {return this.private_scale}
 
 BodyPart.prototype.flip_x = function() {
-    console.debug(this.image);
     return new BodyPart(
         this.image == undefined ? undefined : this.image.flip_x(),
         this.translate.flip_x(),

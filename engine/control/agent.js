@@ -80,7 +80,7 @@ Agent.prototype.absolute_control_tick = function(time_delta) {
     vec = vec.v2_unit();
     
     var final_facing = vec.v2_angle();
-    agent.turn_towards_angle(final_facing);
+    this.turn_towards_angle(final_facing);
 
     var dest = this.pos.v2_add(vec.v2_smult(this.move_speed*time_delta/1000));
     this.last_pos = this.pos;

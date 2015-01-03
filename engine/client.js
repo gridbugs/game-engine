@@ -10,6 +10,8 @@ var test_texture1;
 var test_texture2;
 var canvas;
 var test_rect;
+var scroll_context;
+var vtxmgr;
 
 $(function() {
     game_console = new Console(
@@ -31,11 +33,12 @@ $(function() {
     ms_stats.domElement.style.position = 'relative';
     document.getElementById('info-overlay').appendChild(ms_stats.domElement);
 
-
     Input.set_canvas_offset(parseInt($("#screen").css("left")), parseInt($("#screen").css("top")));
     Input.init();
-    var pos = [2400, 3300];
-    agent = new Agent(pos, 0);
+    
+    var agent = new Agent([500, 700], 0);
+    agent.facing = -Math.PI/2;
+    agent.move_speed = 400;
 
     canvas = document.getElementById('screen');
  
@@ -48,7 +51,7 @@ $(function() {
     canvas.height = $(window).height();
 
     var glm = new WebGLManager(canvas, {preserveDrawingBuffer: false}).init_2d();
-    var vtxmgr = new WebGLVertexManager(glm);
+    vtxmgr = new WebGLVertexManager(glm);
 
     new AsyncGroup(
         new ContentManager(vtxmgr),
@@ -62,63 +65,120 @@ $(function() {
         ])
     ).run(function(content, shaders, images) {
         
+        var character = content.characters.warrior.instance('still');
+
+        var map = content.maps.dungeon1;
+
+        agent.enter_level(map.level_hash['level1']);
+        agent.enter_region(map.region_hash['west']);
+
+        
+        // initialize textures
+        var bg_image = map.level_images['level1_floor'][0];
+        var bg_image_tex = glm.texture(bg_image);
+        bg_image_tex.bind(1);
+
+        var character_atlas = character.images[0];
+        var character_atlas_tex = glm.texture(character_atlas);
+        character_atlas_tex.bind(2);
+
+        // look up shaders
         var scroll_shader = shaders[0];
         var texture_shader = shaders[1];
-        var red_shader = shaders[2];
-        var test_image = images[0];
-        var test_texture = glm.texture(test_image);
 
-        var warrior = content.characters.warrior.instance('still');
-        var warrior_texture = glm.texture(content.characters.warrior.images[0]);
-        
+
+        // initialize scroll shader
         scroll_shader.use();
-        
         scroll_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
-        scroll_shader.uniform2fv('u_tex_size').set([test_image.width, test_image.height]);
-        scroll_shader.uniform2fv('u_scroll_position').set([400, 800]);
-        scroll_shader.uniform1i('u_texture').set(0);
+        var u_scroll_position = scroll_shader.uniform2fv('u_scroll_position').set([0, 0]);
+        scroll_shader.uniform2fv('u_tex_size').set([bg_image.width, bg_image.height]);
+        scroll_shader.uniform1i('u_texture').set(1);
+
+        vtxmgr.enable_vertex_attribute(scroll_shader.attribute('a_position'));
 
 
-        red_shader.use();
-        red_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
-        red_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
-
+        // initialize texture shader
         texture_shader.use();
-        var u_model_view = 
-        texture_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
         texture_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
-        texture_shader.uniform2fv('u_tex_size').set([512, 512]);
-        texture_shader.uniform1i('u_texture').set(0);
-        warrior.set_model_view(u_model_view);
+        texture_shader.uniform1i('u_texture').set(2);
+        var u_model_view = texture_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
 
-
-        var head = vtxmgr.atlas_range(
-            [200, 200],
-            [100, 100],
-            [512, 512],
-            [212, 23],
-            [80, 50]
-        );
-
-        console.debug(head);
-
-        var fullscreen_rect = vtxmgr.rectangle([0, 0], [canvas.width, canvas.height]);
-        var rect0 = vtxmgr.rectangle([0, 0], [20, 20]);
-        vtxmgr.sync_buffers();
-        
         vtxmgr.enable_vertex_attribute(texture_shader.attribute('a_position'));
         vtxmgr.enable_texture_attribute(texture_shader.attribute('a_tex_coord'));
 
-
-        texture_shader.use();
-        warrior_texture.bind(0);
+        character.set_model_view(u_model_view);
         
-        vtxmgr.translate([200, 200]);
-//        head.draw_without_static_transform(u_model_view);
-//        rect0.draw_without_static_transform(u_model_view);
-        warrior.draw();
-//        fullscreen_rect.draw_without_static_transform(u_model_view);
+        var fullscreen_rect = vtxmgr.rectangle([0, 0], [canvas.width, canvas.height]);
+        
+        scroll_context = new ScrollContext([0, 0], 200, [canvas.width, canvas.height]);
+        var time_manager = new TimeManager();
+        vtxmgr.sync_buffers();
 
+        
+        const WALK = 0;
+        const STILL = 1;
+        var agent_state = STILL;
+
+        const HALF_PI = Math.PI/2;
+
+        function frame() {
+            fps_stats.begin();
+            ms_stats.begin();
+
+            // work out how much time passed since the last frame
+            var time_delta = time_manager.get_delta();
+
+            // compute new position of character
+            // has_moved will be set to true iff the character moved a non-zero distance
+            var has_moved = agent.absolute_control_tick(time_delta);
+            
+            // update animation state
+            if (agent_state == STILL && has_moved) {
+                agent_state = WALK;
+                character.update('walk', 1, -200);
+            } else if (agent_state == WALK && !has_moved) {
+                agent_state = STILL;
+                character.update('still');
+            }
+
+            // switch current region if necessary
+            agent.border_detect();
+
+            // show/hide regions if necessary
+            agent.level_detect();
+
+            // drawing starts here
+
+            scroll_shader.use();
+            u_scroll_position.set([
+                -scroll_context.translate[0],
+                -scroll_context.translate[1]]);
+            fullscreen_rect.draw();
+
+            texture_shader.use();
+            vtxmgr.save();
+            vtxmgr.translate(scroll_context.translate);
+            vtxmgr.translate(agent.pos).rotate(agent.facing + HALF_PI);
+
+            character.draw();
+            scroll_context.set_next(vtxmgr.global_centre());
+
+            vtxmgr.restore();
+
+            // apply the scroll
+            scroll_context.proceed();
+
+            // progress the character animation
+            character.tick(time_delta);
+            
+
+            //vtxmgr.sync_gpu();
+            requestAnimationFrame(frame);
+
+            fps_stats.end();
+            ms_stats.end();
+        };
+        frame();
 
     }.arr_args());
 

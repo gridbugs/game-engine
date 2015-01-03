@@ -10,6 +10,7 @@ function Region(segs, drawer, map) {
     this.level_detectors = [];
     this.vertices = [];
     this.map = map;
+    this.visible = true;
 }
 
 Region.prototype.connect = function(region, segment) {
@@ -42,14 +43,14 @@ Region.prototype.border_detect = function(agent) {
 Region.prototype.add_level_detector = function(left, right, segment) {
     this.level_detectors.push(new DetectorSegment(segment, 
         function(path, agent) {
-            left.regions.map(function(d){d.group.hide()});
-            right.regions.map(function(d){d.group.show()});
+            left.regions.map(function(r){r.visible = false});
+            right.regions.map(function(r){r.visible = true});
             agent.enter_level(right);
             this.create_collision_processor();
         }.bind(this),
         function(path, agent) {
-            right.regions.map(function(d){d.group.hide()});
-            left.regions.map(function(d){d.group.show()});
+            left.regions.map(function(r){r.visible = true});
+            right.regions.map(function(r){r.visible = false});
             agent.enter_level(left);
             this.create_collision_processor();
         }.bind(this)
@@ -113,7 +114,7 @@ Region.prototype.create_collision_processor = function() {
     var segs = this.segs;
     for (var i = 0;i<this.neighbours.length;++i) {
         var nei = this.neighbours[i];
-        if (nei.group.visible) {
+        if (nei.visible) {
             segs = segs.concat(nei.segs);
         }
     }

@@ -236,6 +236,7 @@ Character.Instance = function(character, initial) {
     this.sm = character.create_sequence_manager(initial);
     this.sg = character.create_scene_graph(this.sm);
     this.character = character;
+    this.images = character.images;
 }
 Character.Instance.prototype.tick = function(time_delta) {
     this.sm.tick(time_delta);

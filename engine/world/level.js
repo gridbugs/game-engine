@@ -7,7 +7,6 @@ function Level(vertex_manager, regions, visible_segs, images) {
     );
     this.lights = [];
     this.images = images;
-    console.debug(images);
 }
 
 Level.prototype.add_light = function(position, radius, colour) {

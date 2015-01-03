@@ -88,7 +88,7 @@ SceneGraph.Node.prototype.draw = function(model_view) {
   
     
     var i = this.image;
-    if (i) {
+    if (i != undefined) {
         i = i.get_value();
         vertex_manager.save();
         vertex_manager.translate(pt);

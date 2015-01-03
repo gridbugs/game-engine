@@ -155,6 +155,11 @@ WebGLVertexManager.Drawable.prototype.draw_without_static_transform = function(u
     this.slice.draw_triangles();
 }
 
+WebGLVertexManager.Drawable.prototype.draw = function() {
+    this.vertex_manager.index_buffer.bind();
+    this.slice.draw_triangles();
+}
+
 WebGLVertexManager.Drawable.prototype.insert_rectangle_indices = function() {
     this.insert_indices(0, 1, 2, 0, 2, 3);
 }

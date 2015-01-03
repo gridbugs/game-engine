@@ -36,32 +36,6 @@ Map.prototype.visible = function(o) {
     this.visible_obj = o;
 }
 
-Map.prototype.images = function(base, o) {
-    if (o == undefined) {
-        o = base;
-        base = '';
-    }
-    this.image_description = o;
-    this.image_url_base = base;
-
-    this.image_data = {};
-    var image_loaders = [];
-    for (var name in o) {
-        var desc = o[name];
-        var loader = new SingleImageLoader(base + desc[0]);
-        image_loaders.push(loader);
-        this.image_data[name] = {
-            image: loader.image,
-            translate: desc[1],
-            size: desc[2],
-            clip_start: desc[3],
-            clip_size: desc[4]
-        };
-    }
-
-    this.image_loader = new AsyncGroup(image_loaders);
-}
-
 Map.prototype.image_files = function(base, o) {
     var image_loaders = [];
 
@@ -217,29 +191,6 @@ Map.prototype.load_level_detectors = function() {
 Map.prototype.initial = function(level_name) {
     this.initial_level_name = level_name;
 }
-Map.prototype.load_initial = function() {
-    var vertex_manager = this.vertex_manager;
-    var level = this.level_hash[this.initial_level_name];
-    this.group_hash = {};
-    this.group_arr = [];
-    
-    for (var name in this.region_hash) {
-        var region = this.region_hash[name];
-        var group = vertex_manager.group(region.segs.map(function(s) {
-            return vertex_manager.line_segment(s[0], s[1], 1)
-        }));
-        this.group_hash[name] = group;
-        this.group_arr.push(group);
-        group.hide();
-
-        region.group = group;
-    }
-
-    for (var i = 0;i<level.regions.length;i++) {
-        var region = level.regions[i];
-        region.group.show();
-    }
-}
 
 Map.prototype.visible_regions = function() {
     var ret = [];
@@ -296,9 +247,8 @@ Map.prototype.run = function(then) {
         this.create_vertices();
         this.load_levels();
         this.load_level_detectors();
-//        this.load_initial();
 //        this.load_lights();
-//        this.create_collision_processors();
+        this.create_collision_processors();
 
         then();
     }.bind(this));
