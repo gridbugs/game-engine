@@ -1,28 +1,37 @@
 function Warrior() {
-    /*
-    this.images('content/characters/warrior/images/', {
-        foot_front: ['foot-front.png', [-10, -30], [15, 40]],
-        foot_back: ['foot-back.png', [-8, -8], [16, 16]],
-        lower_leg_front: ['lower-leg-front.png', [-11, -60], [20, 50]],
-        lower_leg_back: ['lower-leg-back.png', [-10, -50], [20, 60]],
-        knee_front: ['knee-front.png', [-10, -10], [20, 20]],
-        knee_back: ['knee-back.png', [-10, -10], [20, 20]],
-        upper_leg_front: ['upper-leg-front.png', [-8, -60], [20, 60]],
-        upper_leg_back: ['upper-leg-back.png', [-10, -60], [20, 60]],
-        torso: ['torso.png', [-30, -6], [60, 25]],
-        head: ['head.png', [-12, -5], [24, 24]],
-        shoulder: ['shoulder.png', [-18, -10], [20, 20]],
-        elbow_back: ['elbow-back.png', [-8, -8], [16, 16]],
-        elbow_front: ['elbow-front.png', [-8, -8], [16, 16]],
-        hand_front: ['hand-front.png', [-8, -8], [16, 16]],
-        hand_back: ['hand-back.png', [-8, -8], [16, 16]],
-        upper_arm_front: ['upper-arm-front.png', [-14, -40], [20, 40]],
-        upper_arm_back: ['upper-arm-back.png', [-7, -50], [20, 50]],
-        lower_arm_front: ['lower-arm-front.png', [-11, -40], [20, 40]],
-        lower_arm_back: ['lower-arm-back.png', [-10, -40], [20, 40]]
-    });
-    */
 
+    this.atlas_files([
+        'content/characters/warrior/images/sheet.png',
+        'content/characters/warrior/images/bumpmap.png',
+        'content/characters/warrior/images/lightmap.png',
+        'content/characters/warrior/images/shinemap.png'
+    ]);
+
+    this.atlas_range_descriptions({
+        //          clip-start   clip-size   position  size       
+        foot_front: [[379, 273], [31, 62], [-10, -30], [15, 40]],
+        foot_back: [[424, 284], [41, 36], [-8, -8], [16, 16]],
+        lower_leg_front: [[253, 272], [39, 61], [-11, -60], [20, 50]],
+        lower_leg_back: [[302, 253], [60, 102], [-10, -50], [20, 60]],
+        knee_front: [[187, 240], [51, 47], [-10, -10], [20, 20]],
+        knee_back: [[185, 304], [55, 48], [-10, -10], [20, 20]],
+        upper_leg_front: [[20, 256], [68, 77], [-8, -60], [20, 60]],
+        upper_leg_back: [[106, 255], [60, 85], [-10, -60], [20, 60]],
+        torso: [[15, 15], [180, 75], [-30, -6], [60, 25]],
+        head: [[211, 23], [73, 60], [-12, -5], [24, 24]],
+        shoulder: [[18, 128], [65, 51], [-18, -10], [20, 20]],
+        elbow_back: [[242, 191], [53, 47], [-8, -8], [16, 16]],
+        elbow_front: [[247, 111], [42, 20], [-8, -8], [16, 16]],
+        hand_front: [[450, 110], [44, 41], [-8, -8], [16, 16]],
+        hand_back: [[453, 169], [38, 31], [-8, -8], [16, 16]],
+        upper_arm_front: [[99, 102], [52, 108], [-14, -40], [20, 40]],
+        upper_arm_back: [[167, 112], [60, 90], [-7, -50], [20, 50]],
+        lower_arm_front: [[307, 118], [58, 70], [-11, -40], [20, 40]],
+        lower_arm_back: [[385, 123], [43, 63], [-10, -40], [20, 40]]
+
+    });
+
+/*
     this.images([
             'content/characters/warrior/images/sheet.png',
             'content/characters/warrior/images/bumpmap.png',
@@ -50,6 +59,7 @@ function Warrior() {
         lower_arm_front: [[307, 118], [58, 70], [-11, -40], [20, 40]],
         lower_arm_back: [[385, 123], [43, 63], [-10, -40], [20, 40]]
     });
+*/
 
     var foot_switch = [210, 580];
     var knee_switch = [230, 600];

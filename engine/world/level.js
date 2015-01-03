@@ -1,14 +1,13 @@
-function Level(drawer, regions, visible_segs, floor) {
-    this.drawer = drawer;
+function Level(vertex_manager, regions, visible_segs, images) {
+    this.vertex_manager = vertex_manager;
     this.regions = regions;
     this.visibility_context = VisibilityContext.from_segs(
         visible_segs,
         []
     );
     this.lights = [];
-
-    this.floor = drawer.sliding_window(floor, [0, 0], [canvas.width, canvas.height], [0, 0]);
-    this.floor = drawer.phong_illuminated_sliding_window(floor, [0, 0], [canvas.width, canvas.height], [0, 0]);
+    this.images = images;
+    console.debug(images);
 }
 
 Level.prototype.add_light = function(position, radius, colour) {

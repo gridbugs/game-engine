@@ -4,7 +4,7 @@ Map.prototype.regions = function(o) {
     this.region_hash = {};
     this.region_arr = [];
     for (var name in o) {
-        var r = new Region(o[name], this.drawer, this);
+        var r = new Region(o[name], this.vertex_manager, this);
         this.region_hash[name] = r;
         this.region_arr.push(r);
     }
@@ -62,6 +62,25 @@ Map.prototype.images = function(base, o) {
     this.image_loader = new AsyncGroup(image_loaders);
 }
 
+Map.prototype.image_files = function(base, o) {
+    var image_loaders = [];
+
+    this.level_images = {};
+
+    for (var name in o) {
+        this.level_images[name] = [];
+        var level_image_names = o[name];
+        for (var i = 0;i<level_image_names.length;i++) {
+            var level_image_name = level_image_names[i];
+            var loader = new SingleImageLoader(base + level_image_name);
+            image_loaders.push(loader);
+            this.level_images[name].push(loader.image);
+        }
+    }
+    
+    this.image_loader = new AsyncGroup(image_loaders);
+}
+
 Map.prototype.phong_maps = function(base, o) {
     if (o == undefined) {
         o = base;
@@ -92,7 +111,7 @@ Map.prototype.process_images = function() {
     this.image_closures = {};
     for (var name in this.image_data) {
         var data = this.image_data[name];
-        this.image_closures[name] = this.drawer.image(
+        this.image_closures[name] = this.vertex_manager.image(
             data.image,
             data.translate,
             data.size,
@@ -106,7 +125,7 @@ Map.prototype.process_phong_maps = function() {
     this.phong_map_hash = {};
     for (var name in this.phong_data) {
         var data = this.phong_data[name];
-        this.phong_map_hash[name] = this.drawer.phong_map(
+        this.phong_map_hash[name] = this.vertex_manager.phong_map(
             data.image,
             data.bump_map,
             data.light_map,
@@ -120,10 +139,10 @@ Map.prototype.load_visible = function() {
     var o = this.visible_obj;
     this.group_hash = {};
     this.group_arr = [];
-    var drawer = this.drawer;
+    var vertex_manager = this.vertex_manager;
     for (var name in o) {
-        var group = drawer.group(this.region_hash[name].segs.map(function(s) {
-            return drawer.line_segment(s[0], s[1], 1)
+        var group = vertex_manager.group(this.region_hash[name].segs.map(function(s) {
+            return vertex_manager.line_segment(s[0], s[1], 1)
         }));
         this.group_hash[name] = group;
         this.group_arr.push(group);
@@ -150,10 +169,10 @@ Map.prototype.load_levels = function() {
         var floor_name = o[name][2];
         var regions = region_names.map(function(n){return this.region_hash[n]}.bind(this));
         var level = new Level(
-            this.drawer, 
+            this.vertex_manager, 
             regions, 
             this.light_obstruction_obj[name], 
-            this.image_hash[floor_name]
+            this.level_images[floor_name]
         );
         
         this.level_arr.push(level);
@@ -199,15 +218,15 @@ Map.prototype.initial = function(level_name) {
     this.initial_level_name = level_name;
 }
 Map.prototype.load_initial = function() {
-    var drawer = this.drawer;
+    var vertex_manager = this.vertex_manager;
     var level = this.level_hash[this.initial_level_name];
     this.group_hash = {};
     this.group_arr = [];
     
     for (var name in this.region_hash) {
         var region = this.region_hash[name];
-        var group = drawer.group(region.segs.map(function(s) {
-            return drawer.line_segment(s[0], s[1], 1)
+        var group = vertex_manager.group(region.segs.map(function(s) {
+            return vertex_manager.line_segment(s[0], s[1], 1)
         }));
         this.group_hash[name] = group;
         this.group_arr.push(group);
@@ -267,8 +286,8 @@ Map.prototype.populate_image_hash = function() {
 }
 
 Map.prototype.run = function(then) {
-    new AsyncGroup([this.image_loader, this.phong_loader]).run(function() {
 
+    this.image_loader.run(function() {
         this.process_images();
         this.process_phong_maps();
         this.populate_image_hash();
@@ -277,16 +296,16 @@ Map.prototype.run = function(then) {
         this.create_vertices();
         this.load_levels();
         this.load_level_detectors();
-        this.load_initial();
-        this.load_lights();
-        this.create_collision_processors();
+//        this.load_initial();
+//        this.load_lights();
+//        this.create_collision_processors();
 
         then();
     }.bind(this));
 }
 
-Map.prototype.set_drawer = function(drawer) {
-    this.drawer = drawer;
+Map.prototype.set_vertex_manager = function(vertex_manager) {
+    this.vertex_manager = vertex_manager;
 }
 
 Map.prototype.insert_seg_vertices = function(seg, region) {

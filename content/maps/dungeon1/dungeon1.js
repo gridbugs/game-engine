@@ -236,20 +236,15 @@ function Dungeon1() {
         ['cave', 'east', [[3478, 2077], [3765, 2303]]]
     );
 
-    this.images('content/maps/dungeon1/images/', {
-        floor: ['dungeon1.png', [0, 0]]
-    });
-
-    this.phong_maps('content/maps/dungeon1/images/', {
-        floor_phong: ['dungeon1.png', 'dungeon1bumpmap.png', 'dungeon1lightmap.png', 'dungeon1shinemap.png']
-        //floor_phong: ['white.png', 'black.png', 'green.png', 'black.png']
+    this.image_files('content/maps/dungeon1/images/', {
+        level1_floor: ['dungeon1.png', 'dungeon1bumpmap.png', 'dungeon1lightmap.png', 'dungeon1shinemap.png']
     });
 
     this.levels({
         level1: [[
                 'west', 'east', 'cave'
             ], 
-            [], 'floor_phong'
+            [], 'level1_floor'
         ]
     });
 

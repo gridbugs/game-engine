@@ -50,37 +50,43 @@ $(function() {
     var glm = new WebGLManager(canvas, {preserveDrawingBuffer: false}).init_2d();
     var vtxmgr = new WebGLVertexManager(glm);
 
-    new MultiShaderLoader(glm, [
-        ['shaders/simple_vertex_shader.glsl', 'shaders/red_fragment_shader.glsl'],
-        ['shaders/simple_vertex_shader.glsl', 'shaders/green_fragment_shader.glsl']
-    ]).run(function(red_shader, green_shader) {
+    new AsyncGroup(
+        new ContentManager(vtxmgr),
+        new MultiShaderLoader(glm, [
+            ['shaders/scroll_vertex_shader.glsl', 'shaders/scroll_fragment_shader.glsl'],
+            ['shaders/simple_vertex_shader.glsl', 'shaders/red_fragment_shader.glsl']
+        ]),
+        new ImageLoader([
+            'content/maps/dungeon1/images/dungeon1.png'
+        ])
+    ).run(function(content, shaders, images) {
+        var scroll_shader = shaders[0];
+        var red_shader = shaders[1];
+        var test_image = images[0];
+        var test_texture = glm.texture(test_image);
+        
+        scroll_shader.use();
+        
+        scroll_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
+        scroll_shader.uniform2fv('u_tex_size').set([test_image.width, test_image.height]);
+        scroll_shader.uniform2fv('u_scroll_position').set([400, 800]);
+        scroll_shader.uniform1i('u_texture').set(0);
+
 
         red_shader.use();
-        
         red_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
         red_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
 
-        green_shader.use();
-
-        green_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
-        green_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
-
-        var rect0 = vtxmgr.rectangle([20, 100], [200, 100]);
-        var rect1 = vtxmgr.rectangle([100, 50], [100, 100]);
+        var fullscreen_rect = vtxmgr.rectangle([0, 0], [canvas.width, canvas.height]);
 
         vtxmgr.sync_buffers();
         
         vtxmgr.enable_vertex_attribute(red_shader.attribute('a_position'));
-        vtxmgr.enable_vertex_attribute(green_shader.attribute('a_position'));
 
-        red_shader.use();
-        
-        rect0.draw_without_static_transform();
+        console.debug(content);
 
-        green_shader.use();
+//        fullscreen_rect.draw_without_static_transform();
 
-        rect1.draw_without_static_transform();
-        
 
     }.arr_args());
 

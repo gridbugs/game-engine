@@ -1,6 +1,6 @@
-Content.characters = {
+ContentManager.characters = {
     warrior: Warrior
 }
-Content.maps = {
+ContentManager.maps = {
     dungeon1: Dungeon1
 }

@@ -1,4 +1,13 @@
 function Character() {}
+
+Character.prototype.atlas_files = function(files) {
+    this.image_loader = new ImageLoader(files);
+}
+
+Character.prototype.atlas_range_descriptions = function(obj) {
+    this.atlas_range_description_obj = obj;
+}
+
 Character.prototype.images = function(images, parts) {
     this.image_loader = new ImageLoader(images);
     this.image_parts = parts;
@@ -9,6 +18,17 @@ Character.prototype.images = function(images, parts) {
  * Must be called after images have loaded.
  */
 Character.prototype.process_images = function() {
+    this.atlas_ranges = {};
+    for (var name in this.atlas_range_description_obj) {
+        var range_desc = this.atlas_range_description_obj[name];
+     
+        this.atlas_ranges[name] = this.vertex_manager.atlas_range(
+            range_desc[2], range_desc[3],
+            this.atlas_dimensions,
+            range_desc[0], range_desc[1]
+        );
+    }
+/*
     this.sheet_images = {};
     
     this.image_atlas = this.drawer.sheet(this.image_objs[0]);
@@ -23,6 +43,7 @@ Character.prototype.process_images = function() {
             part[2], part[3], part[0], part[1]
         );
     }
+    */
 }
 
 /*
@@ -35,7 +56,7 @@ Character.prototype.body_part_from_description = function(desc, state_name) {
         case String:
             // an image key only - use a constant image with no movement
             return new BodyPart(
-                new DiscreteValue(new ImageWrapper(this.sheet_images[desc]))
+                new DiscreteValue(new ImageWrapper(this.atlas_ranges[desc]))
             );
         case Object:
             if (desc.copy) {
@@ -54,9 +75,9 @@ Character.prototype.body_part_from_description = function(desc, state_name) {
                 if (desc.image == undefined) {
                     image = null;
                 } else if (desc.image.constructor == String) {
-                    image = new DiscreteValue(new ImageWrapper(this.sheet_images[desc.image]));
+                    image = new DiscreteValue(new ImageWrapper(this.atlas_ranges[desc.image]));
                 } else if (desc.image.constructor == Array) {
-                    var images = desc.image.map(function(x){return [x[0], this.sheet_images[x[1]]]}.bind(this));
+                    var images = desc.image.map(function(x){return [x[0], this.atlas_ranges[x[1]]]}.bind(this));
                     image = new DiscreteInterpolator(ImageWrapper.from_seq(images));
                 }
                 
@@ -179,7 +200,7 @@ Character.prototype.scene_graph_replace = function(o) {
             this.scene_graph_replace(current);
         } else if (current.constructor == Object) {
             if (current.with_img) {
-                current.with_img = this.sheet_images[current.with_img]
+                current.with_img = this.atlas_ranges[current.with_img]
             }
         }
     }
@@ -193,15 +214,17 @@ Character.prototype.process_composition = function() {
     this.scene_graph_replace(this.scene_graph_before_description);
     this.scene_graph_replace(this.scene_graph_after_description);
 }
-Character.prototype.set_drawer = function(drawer) {
-    this.drawer = drawer;
+Character.prototype.set_vertex_manager = function(vertex_manager) {
+    this.vertex_manager = vertex_manager;
     return this;
 }
 
 Character.prototype.run = function(then) {
+
     this.image_loader.run(function(images) {
 
-        this.image_objs = images;
+        this.images = images;
+        this.atlas_dimensions = [images[0].width, images[0].height];
 
         this.process_images();
         this.process_states();
