@@ -244,14 +244,13 @@ WebGLVertexManager.DynamicRadial = function(buffer_size, transform, vertex_manag
         indices.push(this.vertex_offset + i + 2);
     }
 
-    console.debug(indices);
     vertex_manager.index_buffer.add(indices);
 
     this.vertex_array = new Array(buffer_size);
 }
 WebGLVertexManager.DynamicRadial.inherits_from(WebGLVertexManager.Drawable);
 
-WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points) {
+WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points, n_points) {
     var vertex_manager = this.vertex_manager;
     var vertex_array = this.vertex_array;
 
@@ -259,7 +258,7 @@ WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points) {
     vertex_array[1] = centre[1];
     
     var j = 2;
-    for (var i = 0,len=points.length;i<len;i++) {
+    for (var i = 0;i<n_points;i++) {
         vertex_array[j++] = points[i][0];
         vertex_array[j++] = points[i][1];
     }
@@ -267,6 +266,6 @@ WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points) {
     vertex_array[j++] = points[0][1];
 
     vertex_manager.dynamic_vertex_buffer.bind().update(this.vertex_offset, vertex_array);
-    this.slice.set_length(points.length * 3);
+    this.slice.set_length(n_points * 3);
 //    this.slice.set_length(3);
 }

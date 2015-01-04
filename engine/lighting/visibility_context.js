@@ -152,7 +152,7 @@ VisibilityContext.prototype.connected_points_on_both_sides = function(ray, verte
     return sides[0] && sides[1];
 }
 
-VisibilityContext.prototype.visible_polygon = function(eye) {
+VisibilityContext.prototype.visible_polygon = function(eye, points) {
 
     var vertices = this.non_intersecting_vertices(eye);
 
@@ -170,7 +170,7 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
         return angles[i] - angles[j];
     });
 
-    var points = [];
+//    var points = [];
 
     var segs = this.segs;
 
@@ -191,7 +191,8 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             break;
         }
     }
-    
+  
+    var points_idx = 0;
     //console.debug(indices.map(function(i){return [eye, vertices[i].pos]}));
 
     for (var i = 0,len=indices.length;i<len;++i) {
@@ -203,9 +204,7 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
 
         var connected_sides = this.connected_sides(ray, vertex);
         if (connected_sides[0] && connected_sides[1]) {
-            points.push([ray[1][0], ray[1][1], 0]);
- //           drawer.draw_line_segment(ray);
-            //drawer.draw_point(ray[1], tc('green'), 8);
+            points[points_idx++] = [ray[1][0], ray[1][1], 0];
             last_hint = vertex;
         } else {
 
@@ -244,9 +243,6 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
                     near_first = false;
                 } else {
                     
-                    drawer.draw_point(last_hint.pos, tc('green'), 8);
-                    drawer.draw_point(ray[1], tc('red'), 8);
-                    drawer.draw_point(intersection_point, tc('blue'), 8);
                     console.debug(last_hint);
                     console.debug(ray[1]);
                     console.debug(intersection_point);
@@ -260,9 +256,6 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
                } else if (last_hint.seg_nearly_contains(intersection_point, VisibilityContext.TOLERANCE)) {
                     near_first = false;
                } else {
-                    drawer.draw_line_segment(last_hint, tc('blue'), 4);
-                    drawer.draw_point(intersection_point, tc('blue'), 8);
-                    drawer.draw_point(ray[1], tc('red'), 8);
                     console.debug(last_hint);
                     console.debug(ray[1]);
                     console.debug(intersection_point);
@@ -272,21 +265,18 @@ VisibilityContext.prototype.visible_polygon = function(eye) {
             }
 
             if (near_first) {
-                points.push([ray[1][0], ray[1][1], 1]);
-                points.push([intersection_point[0], intersection_point[1], 1]);
+                points[points_idx++] = [ray[1][0], ray[1][1], 1];
+                points[points_idx++] = [intersection_point[0], intersection_point[1], 1];
                 last_hint = hint;
             } else {
-                points.push([intersection_point[0], intersection_point[1], 1]);
-                points.push([ray[1][0], ray[1][1], 1]);
+                points[points_idx++] = [intersection_point[0], intersection_point[1], 1];
+                points[points_idx++] = [ray[1][0], ray[1][1], 1];
                 last_hint = vertex;
             }
          
-            //drawer.draw_point(ray[1], tc('grey'), 12);
-            //drawer.draw_point(intersection_point, tc('black'), 8);
-            
         }
         
     }
-
-    return points;
+    
+    return points_idx;
 }
