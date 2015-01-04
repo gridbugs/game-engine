@@ -94,7 +94,7 @@ $(function() {
 
         var tmp = mat3.create();
         mat3.translate(tmp, tmp, [100, 100]);
-        red_shader.uniformMatrix3fv('u_model_view').set(tmp);
+        var red_u_model_view = red_shader.uniformMatrix3fv('u_model_view').set(tmp);
         var red_shader_a_position = red_shader.attribute('a_position_test');
 
         
@@ -110,6 +110,7 @@ $(function() {
         texture_shader.use();
         texture_shader.uniform2fv('u_resolution').set([canvas.width, canvas.height]);
         texture_shader.uniform1i('u_texture').set(2);
+        var u_flip_y = texture_shader.uniform1f('u_flip_y').set(-1);
         var u_model_view = texture_shader.uniformMatrix3fv('u_model_view').set(mat3.create());
         var texture_shader_a_position = texture_shader.attribute('a_position')
         var texture_shader_a_tex_coord = texture_shader.attribute('a_tex_coord')
@@ -125,10 +126,10 @@ $(function() {
         var radial = vtxmgr.dynamic_radial(100);
         radial.update([200, 200], [[200, 100], [400, 200], [200, 300], [100, 200]]);
 
-
-        console.debug(radial);
-
-        vtxmgr.vertex_buffer.add([100, 100, 200, 100, 150, 200]);
+        var bg_framebuffer = glm.framebuffer();
+        var bg_framebuffer_tex = glm.texture(canvas.width, canvas.height);
+        bg_framebuffer.bind().texture(bg_framebuffer_tex);
+        bg_framebuffer.unbind();
 
         vtxmgr.sync_buffers();
 
@@ -184,6 +185,8 @@ $(function() {
 
             // drawing starts here
 
+            bg_framebuffer.bind();
+//            bg_framebuffer_tex.bind();
             
             scroll_shader.use();
             vtxmgr.select_vertex_attribute(scroll_shader_a_position);
@@ -193,7 +196,10 @@ $(function() {
             fullscreen_rect.draw();
 
             texture_shader.use();
+            character_atlas_tex.bind(2);
+            u_flip_y.set(-1);
             vtxmgr.select_vertex_attribute(texture_shader_a_position);
+            vtxmgr.select_texture_attribute(texture_shader_a_tex_coord);
             vtxmgr.save();
             vtxmgr.translate(scroll_context.translate);
             vtxmgr.translate(agent.pos).rotate(agent.facing + HALF_PI);
@@ -203,9 +209,21 @@ $(function() {
 
             vtxmgr.restore();
 
-            red_shader.use();
-            vtxmgr.select_dynamic_vertex_attribute(red_shader_a_position);
-            radial.draw();
+            bg_framebuffer.unbind();
+
+            console.debug(vtxmgr.mv_transform);
+
+            texture_shader.use();
+            u_flip_y.set(1);
+            vtxmgr.select_vertex_attribute(texture_shader_a_position);
+            vtxmgr.select_texture_attribute(texture_shader_a_tex_coord);
+            bg_framebuffer_tex.bind(2);
+            fullscreen_rect.draw_with_model_view(u_model_view);
+
+
+            //red_shader.use();
+            //vtxmgr.select_dynamic_vertex_attribute(red_shader_a_position);
+            //radial.draw();
 
             // apply the scroll
             scroll_context.proceed();
