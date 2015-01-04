@@ -123,8 +123,10 @@ $(function() {
         scroll_context = new ScrollContext([0, 0], 200, [canvas.width, canvas.height]);
         var time_manager = new TimeManager();
 
-        var radial = vtxmgr.dynamic_radial(100);
-        radial.update([200, 200], [[200, 100], [400, 200], [200, 300], [100, 200]]);
+        var visible_area = vtxmgr.dynamic_radial(128);
+
+//        var radial = vtxmgr.dynamic_radial(100);
+//        radial.update([200, 200], [[200, 100], [400, 200], [200, 300], [100, 200]]);
 
         var bg_framebuffer = glm.framebuffer();
         var bg_framebuffer_tex = glm.texture(canvas.width, canvas.height);
