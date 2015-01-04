@@ -267,5 +267,4 @@ WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points, n_p
 
     vertex_manager.dynamic_vertex_buffer.bind().update(this.vertex_offset, vertex_array);
     this.slice.set_length(n_points * 3);
-//    this.slice.set_length(3);
 }

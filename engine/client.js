@@ -55,17 +55,14 @@ $(function() {
 
     new AsyncGroup(
         new ContentManager(vtxmgr),
-        new MultiShaderLoader(glm, [
-            ['shaders/scroll_vertex_shader.glsl', 'shaders/scroll_fragment_shader.glsl'],
-            ['shaders/texture_vertex_shader.glsl', 'shaders/texture_fragment_shader.glsl'],
-            ['shaders/simple_vertex_shader.glsl', 'shaders/fullscreen_texture_fragment_shader.glsl'],
-            ['shaders/simple_vertex_shader.glsl', 'shaders/red_fragment_shader.glsl']
-        ]),
+        new FlatRenderer(vtxmgr, [canvas.width, canvas.height]),
         new ImageLoader([
             'content/maps/dungeon1/images/dungeon1.png'
         ])
-    ).run(function(content, shaders, images) {
+    ).run(function(content, renderer, images) {
         
+        scroll_context = new ScrollContext([0, 0], 200, [canvas.width, canvas.height]);
+        var time_manager = new TimeManager();
         var character = content.characters.warrior.instance('still');
 
         var map = content.maps.dungeon1;
@@ -76,6 +73,10 @@ $(function() {
         
         // initialize textures
         var bg_image = map.level_images['level1_floor'][0];
+        
+        renderer.init(bg_image, character, scroll_context, agent);
+        
+        /*
         var bg_image_tex = glm.texture(bg_image);
         bg_image_tex.bind(1);
 
@@ -84,6 +85,7 @@ $(function() {
         character_atlas_tex.bind(2);
 
         // look up shaders
+        var shaders = renderer.shaders;
         var scroll_shader = shaders[0];
         var texture_shader = shaders[1];
         var fullscreen_texture_shader = shaders[2];
@@ -124,8 +126,6 @@ $(function() {
         
         var fullscreen_rect = vtxmgr.rectangle([0, 0], [canvas.width, canvas.height]);
         
-        scroll_context = new ScrollContext([0, 0], 200, [canvas.width, canvas.height]);
-        var time_manager = new TimeManager();
 
         var visible_area = vtxmgr.dynamic_radial(128);
         var visible_area_buffer = new Array(128);
@@ -143,29 +143,30 @@ $(function() {
 
         red_shader.use();
 
-        vtxmgr.dynamic_vertex_buffer.bind();
-        vtxmgr.index_buffer.bind();
-
+        //vtxmgr.dynamic_vertex_buffer.bind();
+        //vtxmgr.index_buffer.bind();
+        */
         
         const WALK = 0;
         const STILL = 1;
         var agent_state = STILL;
 
-        const HALF_PI = Math.PI/2;
-
+/*
         scroll_shader_a_position.enable();
         texture_shader_a_position.enable();
         texture_shader_a_tex_coord.enable();
-        red_shader_a_position.enable();
+        //red_shader_a_position.enable();
         fullscreen_a_position.enable();
-    
-        vtxmgr.select_vertex_attribute(scroll_shader_a_position);
-        vtxmgr.select_dynamic_vertex_attribute(red_shader_a_position);
-        vtxmgr.select_vertex_attribute(texture_shader_a_position);
-        vtxmgr.select_texture_attribute(texture_shader_a_tex_coord);
+  */  
+        //vtxmgr.select_vertex_attribute(scroll_shader_a_position);
+       // vtxmgr.select_dynamic_vertex_attribute(red_shader_a_position);
+        //vtxmgr.select_vertex_attribute(texture_shader_a_position);
+      //  vtxmgr.select_texture_attribute(texture_shader_a_tex_coord);
+        
+         //   vtxmgr.select_texture_attribute(texture_shader_a_tex_coord);
 
 
-        glm.set_clear_colour([0,0,0,1]);
+       // glm.set_clear_colour([0,0,0,1]);
 
         function frame() {
             fps_stats.begin();
@@ -188,8 +189,6 @@ $(function() {
                 character.update('still');
             }
 
-            var n_points = agent.level.visibility_context.visible_polygon(agent.pos.v2_floor(), visible_area_buffer);
-            visible_area.update(agent.pos, visible_area_buffer, n_points);
 
             // switch current region if necessary
             agent.border_detect();
@@ -197,53 +196,8 @@ $(function() {
             // show/hide regions if necessary
             agent.level_detect();
 
-            // drawing starts here
-
-            glm.clear();
-
-            bg_framebuffer.bind();
-//            bg_framebuffer_tex.bind();
+            renderer.render_frame();           
             
-            scroll_shader.use();
-            vtxmgr.select_vertex_attribute(scroll_shader_a_position);
-            vtxmgr.vertex_buffer.bind();
-            
-            u_scroll_position.set(scroll_context.translate);
-            fullscreen_rect.draw();
-
-            texture_shader.use();
-            character_atlas_tex.bind(2);
-            u_flip_y.set(-1);
-            vtxmgr.select_vertex_attribute(texture_shader_a_position);
-            vtxmgr.select_texture_attribute(texture_shader_a_tex_coord);
-            vtxmgr.save();
-            vtxmgr.translate(scroll_context.translate);
-            vtxmgr.translate(agent.pos).rotate(agent.facing + HALF_PI);
-
-            character.draw();
-            scroll_context.set_next(vtxmgr.global_centre());
-
-            vtxmgr.restore();
-
-            bg_framebuffer.unbind();
-
-/*
-            texture_shader.use();
-            u_flip_y.set(1);
-            vtxmgr.select_vertex_attribute(texture_shader_a_position);
-            vtxmgr.select_texture_attribute(texture_shader_a_tex_coord);
-            bg_framebuffer_tex.bind(2);
-            fullscreen_rect.draw_with_model_view(u_model_view);
-*/
-
-
-            fullscreen_texture_shader.use();
-            vtxmgr.select_dynamic_vertex_attribute(fullscreen_a_position);
-            vtxmgr.save();
-            vtxmgr.translate(scroll_context.translate);
-            visible_area.draw_with_model_view(fullscreen_u_model_view);
-            vtxmgr.restore();
-
             // apply the scroll
             scroll_context.proceed();
 
