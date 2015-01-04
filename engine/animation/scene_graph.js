@@ -94,7 +94,7 @@ SceneGraph.Node.prototype.draw = function(model_view) {
         vertex_manager.translate(pt);
         vertex_manager.rotate(pr);
         vertex_manager.scale(ps);
-        i.draw_without_static_transform(model_view);
+        i.draw_with_model_view(model_view);
         vertex_manager.restore();
     }
 

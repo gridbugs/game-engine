@@ -8,16 +8,6 @@ function WebGLVertexManager(glm, stack_size) {
 
     // initialize dynamic buffers and allocate memory
     this.dynamic_vertex_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(8192);
-    this.dynamic_texture_buffer = this.glm.array_buffer(2).bind().allocate_dynamic(8192);
-    this.dynamic_index_buffer = this.glm.element_buffer();
-
-    // allocate memory for line segment
-    var line_segment_offset = 4;
-    this.dynamic_vertex_buffer.allocate(line_segment_offset);
-    this.dynamic_texture_buffer.allocate(line_segment_offset);
-
-    // small buffer used for syncing gpu
-    this.pixels = new Uint8Array(4);
 
     TransformStack.call(this, stack_size);
 }
@@ -32,29 +22,20 @@ WebGLVertexManager.prototype.init_presets = function() {
     this.point_slice = this.glm.slice(0, 1);
 }
 
-/*
- * Sync the cpu to the gpu
- */
-WebGLVertexManager.prototype.sync_gpu = function() {
-    /* read one pixel value from the screen into an array,
-     * forcing the cpu to wait until the gpu has drawn the
-     * image before proceeding
-     */
-    var gl = this.glm.gl;
-    gl.readPixels( 0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
-}
-
 WebGLVertexManager.prototype.sync_buffers = function() {
     this.vertex_buffer.bind().upload_static();
     this.texture_buffer.bind().upload_static();
     this.index_buffer.bind().upload_static();
 }
 
-WebGLVertexManager.prototype.enable_vertex_attribute = function(attr) {
-    attr.set(this.vertex_buffer.bind());
+WebGLVertexManager.prototype.select_vertex_attribute = function(attr) {
+    attr.set(this.vertex_buffer);
 }
-WebGLVertexManager.prototype.enable_texture_attribute = function(attr) {
-    attr.set(this.texture_buffer.bind());
+WebGLVertexManager.prototype.select_texture_attribute = function(attr) {
+    attr.set(this.texture_buffer);
+}
+WebGLVertexManager.prototype.select_dynamic_vertex_attribute = function(attr) {
+    attr.set(this.dynamic_vertex_buffer);
 }
 
 WebGLVertexManager.Drawable = function(transform, vertex_manager) {
@@ -96,9 +77,10 @@ WebGLVertexManager.Drawable.prototype.index_index_base = function() {
  * vertex index base.
  */
 WebGLVertexManager.Drawable.prototype.insert_indices = function(idxs) {
+    idxs = Array.array_or_arguments(idxs, arguments);
+    
     var i_offset = this.index_index_base();
     
-    idxs = Array.array_or_arguments(idxs, arguments);
     var v_offset = this.vertex_index_base();
     this.vertex_manager.index_buffer.add(
         idxs.map(function(i){return i + v_offset})
@@ -134,7 +116,7 @@ WebGLVertexManager.Drawable.prototype.draw_with_static_transform = function(u_mo
     mat3.multiply(base_mv_transform, base_mv_transform, this.mv_transform);
     u_model_view.set(base_mv_transform);
     
-    vtxmgr.index_buffer.bind();
+//    vtxmgr.index_buffer.bind();
     
     this.slice.draw_triangles();
 
@@ -145,18 +127,18 @@ WebGLVertexManager.Drawable.prototype.draw_with_static_transform = function(u_mo
  * saving some computation. Use this when the local
  * transform is the identity.
  */
-WebGLVertexManager.Drawable.prototype.draw_without_static_transform = function(u_model_view) {
+WebGLVertexManager.Drawable.prototype.draw_with_model_view = function(u_model_view) {
     var vtxmgr = this.vertex_manager;
 
     u_model_view.set(vtxmgr.mv_transform);
 
-    vtxmgr.index_buffer.bind();
+//    vtxmgr.index_buffer.bind();
 
     this.slice.draw_triangles();
 }
 
 WebGLVertexManager.Drawable.prototype.draw = function() {
-    this.vertex_manager.index_buffer.bind();
+//    this.vertex_manager.index_buffer.bind();
     this.slice.draw_triangles();
 }
 
@@ -243,4 +225,48 @@ WebGLVertexManager.AtlasRange.prototype.clone_flip_x = function() {
     );
 }
 
+WebGLVertexManager.prototype.dynamic_radial = function(buffer_size, transform) {
+    return new WebGLVertexManager.DynamicRadial(buffer_size, transform, this);
+}
+WebGLVertexManager.DynamicRadial = function(buffer_size, transform, vertex_manager) {
+    WebGLVertexManager.Drawable.call(this, transform, vertex_manager);
 
+    this.vertex_offset = this.vertex_manager.dynamic_vertex_buffer.data.length/2;
+    this.slice = vertex_manager.glm.slice(this.index_index_base(), 0);
+    
+    // allocate dedicated memory from the vertex buffer
+    vertex_manager.dynamic_vertex_buffer.allocate(buffer_size);
+
+    var indices = [];
+    for (var i = 0;i<buffer_size;i++) {
+        indices.push(this.vertex_offset);
+        indices.push(this.vertex_offset + i + 1);
+        indices.push(this.vertex_offset + i + 2);
+    }
+
+    console.debug(indices);
+    vertex_manager.index_buffer.add(indices);
+
+    this.vertex_array = new Array(buffer_size);
+}
+WebGLVertexManager.DynamicRadial.inherits_from(WebGLVertexManager.Drawable);
+
+WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points) {
+    var vertex_manager = this.vertex_manager;
+    var vertex_array = this.vertex_array;
+
+    vertex_array[0] = centre[0];
+    vertex_array[1] = centre[1];
+    
+    var j = 2;
+    for (var i = 0,len=points.length;i<len;i++) {
+        vertex_array[j++] = points[i][0];
+        vertex_array[j++] = points[i][1];
+    }
+    vertex_array[j++] = points[0][0];
+    vertex_array[j++] = points[0][1];
+
+    vertex_manager.dynamic_vertex_buffer.bind().update(this.vertex_offset, vertex_array);
+    this.slice.set_length(points.length * 3);
+//    this.slice.set_length(3);
+}

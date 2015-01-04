@@ -7,6 +7,9 @@ function WebGLManager(canvas, options) {
     this.gl = canvas.getContext('webgl', options);
     //    this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
     gl = this.gl;
+
+    // small buffer used for syncing gpu
+    this.pixels = new Uint8Array(4);
 }
 
 /*
@@ -22,6 +25,18 @@ WebGLManager.prototype.init_2d = function() {
     this.enable_blend();
     this.general_blend();
     return this;
+}
+
+/*
+ * Sync the cpu to the gpu
+ */
+WebGLManager.prototype.sync_gpu = function() {
+    /* read one pixel value from the screen into an array,
+     * forcing the cpu to wait until the gpu has drawn the
+     * image before proceeding
+     */
+    var gl = this.gl;
+    gl.readPixels( 0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
 }
 
 WebGLManager.prototype.general_blend = function() {
@@ -171,9 +186,11 @@ WebGLManager.Attribute = function(name, gl, shader_program) {
 WebGLManager.Attribute.prototype.set = function(array_buffer) {
     array_buffer.bind();
     var gl = this.gl;
-    gl.enableVertexAttribArray(this.location);
     gl.vertexAttribPointer(this.location, array_buffer.datum_size, gl.FLOAT, false, 0, 0);
     return this;
+}
+WebGLManager.Attribute.prototype.enable = function() {
+    this.gl.enableVertexAttribArray(this.location);
 }
 
 WebGLManager.AbstractBuffer = function() {}
