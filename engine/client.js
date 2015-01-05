@@ -55,13 +55,13 @@ $(function() {
 
     new AsyncGroup(
         new ContentManager(vtxmgr),
-        new FlatRenderer(vtxmgr, [canvas.width, canvas.height]),
+        new PhongRenderer(vtxmgr, [canvas.width, canvas.height]),
         new ImageLoader([
             'content/maps/dungeon1/images/dungeon1.png'
         ])
     ).run(function(content, renderer, images) {
         
-        scroll_context = new ScrollContext([0, 0], 200, [canvas.width, canvas.height]);
+        scroll_context = new ScrollContext([0, 0], 300, [canvas.width, canvas.height]);
         var time_manager = new TimeManager();
         var character = content.characters.warrior.instance('still');
 
@@ -70,11 +70,7 @@ $(function() {
         agent.enter_level(map.level_hash['level1']);
         agent.enter_region(map.region_hash['west']);
 
-        
-        // initialize textures
-        var bg_image = map.level_images['level1_floor'][0];
-        
-        renderer.init(bg_image, character, scroll_context, agent);
+        renderer.init(map.level_images['level1_floor'], character, scroll_context, agent);
         
         /*
         var bg_image_tex = glm.texture(bg_image);
