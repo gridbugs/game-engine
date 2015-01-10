@@ -158,22 +158,37 @@ PhongRenderer.prototype.init = function(map_images, character, scroll_context, a
 
 
     this.glm.set_clear_colour([0,0,0,1]);
+    
+    var rect_ref = new Reference(null);
+    var n_points = this.agent.level.visibility_context.visible_polygon2(
+                        this.agent.pos.v2_floor(), 
+                        this.visible_area_buffer,
+                        rect_ref
+                    );
+
+    this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
+ 
 }
 
 
 PhongRenderer.prototype.render_frame = function() {
+
+
     const HALF_PI = Math.PI/2;
     
     var glm = this.glm;
     var vtxmgr = this.vtxmgr;
     
-    var n_points = this.agent.level.visibility_context.visible_polygon(
+    var rect_ref = new Reference(null);
+    
+    var n_points = this.agent.level.visibility_context.visible_polygon2(
                         this.agent.pos.v2_floor(), 
-                        this.visible_area_buffer
+                        this.visible_area_buffer,
+                        rect_ref
                     );
 
     this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
-    
+   
 
     glm.clear();
 
@@ -256,6 +271,23 @@ PhongRenderer.prototype.render_frame = function() {
     vtxmgr.save();
     vtxmgr.translate(scroll_context.translate);
     this.visible_area.draw_with_model_view(this.phong_shader.model_view);
+
+    /* debugging */
+    var segments = [];
+    for (var i = 1;i<n_points;i++) {
+        var seg = [this.visible_area_buffer[i-1], this.visible_area_buffer[i]];
+        segments.push(seg);
+    }
+    segments.push([this.visible_area_buffer[n_points-1], this.visible_area_buffer[0]]);
+
+    for (var i = 0;i<segments.length;i++) {
+        debug_drawer.draw_line_segment(segments[i], [1,0,0,1], 4);
+    }
+    
+    rect_ref.value.draw();
+//    console.debug(rect_ref.value);
+    /* end debugging */
+
     vtxmgr.restore();
 
 }

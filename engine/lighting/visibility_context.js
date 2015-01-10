@@ -2,6 +2,13 @@ var test;
 function VisibilityContext(vertices, segs) {
     this.vertices = vertices;
     this.segs = segs;
+
+    /* debug */
+    var cell_size = [50, 50];
+    this.spacial_hash = new SpacialHashTable(cell_size, [4000, 4000]);
+    this.spacial_hash.loop_indices(function(i, j) {
+        this.spacial_hash.put_idx(i, j, debug_drawer.coloured_rectangle([i*cell_size[0], j*cell_size[1]], cell_size, [1,0,0,0.8]));
+    }.bind(this));
 }
 
 VisibilityContext.from_regions = function(regions, extra) {
@@ -32,12 +39,16 @@ VisibilityContext.prototype.vertex_by_position = function(pos) {
 }
 
 VisibilityContext.prototype.non_intersecting_vertices = function(eye) {
+    
     var vertices = this.vertices;
     var segs = this.segs;
     var ret = [];
+    var ret_idx = 0;
+    var ray = new Array(2);
     for (var i = 0,len=vertices.length;i<len;++i) {
         var vertex = vertices[i];
-        var ray = [eye, vertex.pos];
+        ray[0] = eye;
+        ray[1] = vertex.pos;
 
         var hits_seg = false;
         for (var j = 0,slen = segs.length;j<slen;j++) {
@@ -64,7 +75,7 @@ VisibilityContext.prototype.non_intersecting_vertices = function(eye) {
             
         }
         if (!hits_seg) {
-            ret.push(vertex);
+            ret[ret_idx++] = vertex;
         }
     }
     return ret;
@@ -152,8 +163,142 @@ VisibilityContext.prototype.connected_points_on_both_sides = function(ray, verte
     return sides[0] && sides[1];
 }
 
-VisibilityContext.prototype.visible_polygon = function(eye, points) {
+VisibilityContext.prototype.visible_polygon = function(eye, points, rect_ref) {
+    rect_ref.value = this.spacial_hash.get_v2(eye);
+    
+    // quadratic 10ms on macbook air
+    var vertices = this.non_intersecting_vertices(eye);
 
+    var indices = Array.range(0, vertices.length);
+
+    var radial_vectors = vertices.map(function(v) {
+        return v.pos.v2_sub(eye);
+    });
+    
+    var angles = radial_vectors.map(function(v) {
+        return v.v2_angle();
+    });
+
+    indices.sort(function(i, j) {
+        return angles[i] - angles[j];
+    });
+
+//    var points = [];
+
+    var segs = this.segs;
+
+    var last_hint = null;
+
+    // used to determine if there are multiple consecutive aligned vertices
+    var last_radial_vector = null; 
+
+
+    // rotate indices so indices[0] refers to a vertex connecetd on both sides
+    for (var i = 0,len=indices.length;i<len;++i) {
+        var idx = indices[i];
+        var vertex = vertices[idx];
+        var ray = [eye, vertex.pos];
+
+        if (this.connected_points_on_both_sides(ray, vertex)) {
+            indices = indices.rotate(i);
+            break;
+        }
+    }
+  
+    var points_idx = 0;
+    //console.debug(indices.map(function(i){return [eye, vertices[i].pos]}));
+
+    for (var i = 0,len=indices.length;i<len;++i) {
+        var idx = indices[i];
+        var vertex = vertices[idx];
+        var ray = [eye, vertex.pos];
+
+        var radial_vector = radial_vectors[i];
+
+        var connected_sides = this.connected_sides(ray, vertex);
+        if (connected_sides[0] && connected_sides[1]) {
+            points[points_idx++] = [ray[1][0], ray[1][1], 0];
+            last_hint = vertex;
+        } else {
+
+            /* the ray hit the side of a corner, so we continue it until
+             * it hits something more substantial (either a segment edge
+             * or the front of a corner
+             */
+            var closest_intersection = this.closest_ray_intersection(ray, connected_sides);
+            var intersection_point = closest_intersection[0];
+            
+            /* the hint is used by the next vertex when determining the order
+             * to insert points into the points array in the case where
+             * the ray hits the side of a corner (ie. this case)
+             */
+            var hint = closest_intersection[1];
+
+            /* Use the last hint to determine the order to insert points.
+             * The choice is between the "near" point, which is the vertex
+             * whose side was glanced by the ray, and the "far" point,
+             * which is the point where the extended ray hits something.
+             *
+             * If the last hint is a segment, the last ray also glanced a vertex,
+             * and was extended to collide with that segment. The first point
+             * to insert is a point on that segment.
+             *
+             * If the last hint is a vertex, either the last ray hit that
+             * vertex directly, or it glanced a different vertex and eventually
+             * hit this vertex. In either case, the first point should be a
+             * point between the hint vertex and one of its neighbours.
+             */
+            var near_first = true;
+            if (last_hint && last_hint.constructor == Vertex) {
+                if (last_hint.between_any_neighbour(ray[1], VisibilityContext.TOLERANCE)) {
+                    near_first = true;
+                } else if (last_hint.between_any_neighbour(intersection_point, VisibilityContext.TOLERANCE)) {
+                    near_first = false;
+                } else {
+                    
+                    console.debug(last_hint);
+                    console.debug(ray[1]);
+                    console.debug(intersection_point);
+                    console.debug('error vertex');
+                    console.debug(agent.pos);
+                    
+                }
+            } else if (last_hint) {
+               if (last_hint.seg_nearly_contains(ray[1], VisibilityContext.TOLERANCE)) {
+                    near_first = true;
+               } else if (last_hint.seg_nearly_contains(intersection_point, VisibilityContext.TOLERANCE)) {
+                    near_first = false;
+               } else {
+                    console.debug(last_hint);
+                    console.debug(ray[1]);
+                    console.debug(intersection_point);
+                    console.debug('error segment');
+                    console.debug('pos', agent.pos);
+               }
+            }
+
+            if (near_first) {
+                points[points_idx++] = [ray[1][0], ray[1][1], 1];
+                points[points_idx++] = [intersection_point[0], intersection_point[1], 1];
+                last_hint = hint;
+            } else {
+                points[points_idx++] = [intersection_point[0], intersection_point[1], 1];
+                points[points_idx++] = [ray[1][0], ray[1][1], 1];
+                last_hint = vertex;
+            }
+         
+        }
+        
+    }
+    
+    return points_idx;
+}
+
+
+VisibilityContext.prototype.visible_polygon2 = function(eye, points, rect_ref) {
+    rect_ref.value = this.spacial_hash.get_v2(eye);
+    
+    // quadratic
     var vertices = this.non_intersecting_vertices(eye);
 
     var indices = Array.range(0, vertices.length);

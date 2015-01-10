@@ -12,8 +12,10 @@ var canvas;
 var test_rect;
 var scroll_context;
 var vtxmgr;
+var debug_drawer;
 
 $(function() {
+
     game_console = new Console(
         document.getElementById("console-input"),
         document.getElementById("console-output"),
@@ -53,6 +55,9 @@ $(function() {
     var glm = new WebGLManager(canvas, {preserveDrawingBuffer: false}).init_2d();
     vtxmgr = new WebGLVertexManager(glm);
 
+    debug_drawer = new WebGLDebugDrawer(glm, vtxmgr);
+    
+
     new AsyncGroup(
         new ContentManager(vtxmgr),
         new PhongRenderer(vtxmgr, [canvas.width, canvas.height]),
@@ -70,8 +75,9 @@ $(function() {
         agent.enter_level(map.level_hash['level1']);
         agent.enter_region(map.region_hash['west']);
 
-        renderer.init(map.level_images['level1_floor'], character, scroll_context, agent);
         
+        renderer.init(map.level_images['level1_floor'], character, scroll_context, agent);
+
         /*
         var bg_image_tex = glm.texture(bg_image);
         bg_image_tex.bind(1);

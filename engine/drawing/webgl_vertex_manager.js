@@ -171,6 +171,8 @@ WebGLVertexManager.prototype.rectangle = function(position, size, transform) {
 WebGLVertexManager.Rectangle = function(position, size, transform, vertex_manager) {
     WebGLVertexManager.Drawable.call(this, transform, vertex_manager);
     
+    if (!vertex_manager) {return}
+
     this.insert_rectangle_indices();
     this.insert_rectangle_vertices(position, size);
     this.insert_rectangle_texture_coords([0, 0], [1, 1]);
