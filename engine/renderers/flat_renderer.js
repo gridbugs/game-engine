@@ -71,8 +71,8 @@ FlatRenderer.prototype.shader = function(shader_program) {
     return new FlatRenderer.Shader(shader_program, this);
 }
 
-FlatRenderer.prototype.init = function(floor_image, character, scroll_context, agent) {
-    this.floor = this.glm.texture(floor_image);
+FlatRenderer.prototype.init = function(floor_images, character, scroll_context, agent) {
+    this.floor = this.glm.texture(floor_images[0]);
     
     this.character = character;
     this.scroll_context = scroll_context;
@@ -82,7 +82,7 @@ FlatRenderer.prototype.init = function(floor_image, character, scroll_context, a
     this.scroll_shader = this.shader(this.shaders[0])
         .has_resolution()
         .has_texture(1)
-        .has_texture_size([floor_image.width, floor_image.height])
+        .has_texture_size([floor_images[0].width, floor_images[0].height])
         .has_model_view()
         .has_position_attribute();
     this.scroll_shader.scroll_position = 
@@ -134,9 +134,13 @@ FlatRenderer.prototype.render_frame = function() {
     var glm = this.glm;
     var vtxmgr = this.vtxmgr;
     
+
+    var rect_ref = new Reference(null);
+
     var n_points = this.agent.level.visibility_context.visible_polygon(
                         this.agent.pos.v2_floor(), 
-                        this.visible_area_buffer
+                        this.visible_area_buffer,
+                        rect_ref
                     );
 
     this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
@@ -169,5 +173,20 @@ FlatRenderer.prototype.render_frame = function() {
     vtxmgr.save();
     vtxmgr.translate(scroll_context.translate);
     this.visible_area.draw_with_model_view(this.fullscreen_shader.model_view);
+
+    /* debug */
+    var segments = [];
+    for (var i = 1;i<n_points;i++) {
+        var seg = [this.visible_area_buffer[i-1], this.visible_area_buffer[i]];
+        segments.push(seg);
+    }
+    segments.push([this.visible_area_buffer[n_points-1], this.visible_area_buffer[0]]);
+
+    for (var i = 0;i<segments.length;i++) {
+        debug_drawer.draw_line_segment(segments[i], [1,0,0,1], 4);
+    }
+
+    rect_ref.value.draw();
+
     vtxmgr.restore();
 }

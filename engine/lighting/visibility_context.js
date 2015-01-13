@@ -1,14 +1,83 @@
-var test;
 function VisibilityContext(vertices, segs) {
     this.vertices = vertices;
     this.segs = segs;
 
     /* debug */
-    var cell_size = [50, 50];
-    this.spacial_hash = new SpacialHashTable(cell_size, [4000, 4000]);
+    var cell_size = [100, 100];
+    this.spacial_hash = new SpacialHashTable(cell_size, [1000, 1000]);
     this.spacial_hash.loop_indices(function(i, j) {
-        this.spacial_hash.put_idx(i, j, debug_drawer.coloured_rectangle([i*cell_size[0], j*cell_size[1]], cell_size, [1,0,0,0.8]));
+        this.spacial_hash.put_idx(i, j, debug_drawer.coloured_rectangle([i*cell_size[0], j*cell_size[1]], cell_size, [0,0,1,0.6]));
     }.bind(this));
+
+    this.compute_visible_vertex_hash();
+    
+}
+
+VisibilityContext.prototype.compute_vertex_segment_table = function() {
+    var vertex_segment_table = new Array(this.vertices.length);
+    for (var i = 0,vlen = this.vertices.length;i<vlen;i++) {
+        vertex_segment_table[i] = new Array(this.segs.length);
+    }
+
+    for (var i = 0,vlen = this.vertices.length;i<vlen;i++) {
+        for (var j = 0,slen = this.segs.length;j<slen;j++) {
+            vertex_segment_table[i][j] = new VisibilityContext.VertexSegmentTableEntry(this.vertices[i], this.segs[j]);
+        }
+    }
+
+    this.vertex_segment_table = vertex_segment_table;
+}
+
+VisibilityContext.prototype.compute_visible_vertex_hash = function() {
+    this.compute_vertex_segment_table();
+
+    this.spacial_hash.loop_
+}
+
+VisibilityContext.VertexSegmentTableEntry = function(vertex, segment) {
+    this.vertex = vertex;
+    this.segment = segment;
+    this.obscured_area = this.create_obscured_area(vertex, segment);
+}
+
+VisibilityContext.VertexSegmentTableEntry.prototype.create_obscured_area = function(vertex, segment) {
+    if (vertex.pos.v2_equals(segment[0]) || vertex.pos.v2_equals(segment[1])) {
+        return new VisibilityContext.NothingObscured();
+    } else {
+        return new VisibilityContext.ObscuredQuad(vertex, segment);
+    }
+}
+
+VisibilityContext.ObscuredQuad = function(vertex, segment) {
+    const QUAD_LENGTH = 2000;
+    var far_points = segment.map(function(v) {
+        return v.v2_sub(vertex.pos).v2_to_length(QUAD_LENGTH).v2_add(v)
+    });
+
+    this.points = [segment[0], segment[1], far_points[1], far_points[0]];
+
+    this.segments = [
+        [segment[0], segment[1]],
+        [segment[1], far_points[1]],
+        [far_points[1], far_points[0]],
+        [far_points[0], segment[0]]
+    ];
+}
+
+VisibilityContext.ObscuredQuad.prototype.contains_point = function(p) {
+    return this.points.polygon_contains(p);
+}
+
+VisibilityContext.ObscuredQuad.prototype.draw = function() {
+    this.segments.map(function(s){debug_drawer.draw_line_segment(s, [0,1,0,1], 4)});
+}
+
+VisibilityContext.NothingObscured = function() {
+}
+
+VisibilityContext.NothingObscured.prototype.draw = function(){}
+VisibilityContext.NothingObscured.prototype.contains_point = function(p) {
+    return false;
 }
 
 VisibilityContext.from_regions = function(regions, extra) {
@@ -164,7 +233,9 @@ VisibilityContext.prototype.connected_points_on_both_sides = function(ray, verte
 }
 
 VisibilityContext.prototype.visible_polygon = function(eye, points, rect_ref) {
-    rect_ref.value = this.spacial_hash.get_v2(eye);
+    if (rect_ref) {
+        rect_ref.value = this.spacial_hash.get_v2(eye);
+    }
     
     // quadratic 10ms on macbook air
     var vertices = this.non_intersecting_vertices(eye);
@@ -206,7 +277,6 @@ VisibilityContext.prototype.visible_polygon = function(eye, points, rect_ref) {
     }
   
     var points_idx = 0;
-    //console.debug(indices.map(function(i){return [eye, vertices[i].pos]}));
 
     for (var i = 0,len=indices.length;i<len;++i) {
         var idx = indices[i];
