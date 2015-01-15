@@ -66,8 +66,12 @@ $(function() {
         var time_manager = new TimeManager();
         var character = content.characters.warrior.instance('still');
 
+        /*
+        var map = content.maps.dungeon1;
+        agent.enter_level(map.level_hash['level1']);
+        agent.enter_region(map.region_hash['west']);
+        */
         var map = content.maps.small;
-
         agent.enter_level(map.level_hash['level1']);
         agent.enter_region(map.region_hash['main']);
 

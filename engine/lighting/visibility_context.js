@@ -28,10 +28,76 @@ VisibilityContext.prototype.compute_vertex_segment_table = function() {
     this.vertex_segment_table = vertex_segment_table;
 }
 
+VisibilityContext.VertexCheckData = function(vertex, segments_to_check) {
+    this.vertex = vertex;
+    this.segments_to_check = segmentns_to_check;
+}
+VisibilityContext.VertexState = function(vertex) {
+    this.visibility = VisibilityContext.VertexState.VISIBLE;
+}
+VisibilityContext.VertexState.VISIBLE = 'visible';
+VisibilityContext.VertexState.HIDDEN = 'hidden';
+VisibilityContext.VertexState.RUNTIME = 'runtime';
+
+VisibilityContext.VertexState.prototype.toString = function() {
+    return this.visibility;
+}
+
+VisibilityContext.CellData = function(vc, spacial_hash_table_entry) {
+    this.visibility_context = vc;
+    this.vertex_states = new Array(vc.vertices.length);
+    for (var i = 0;i<vc.vertices.length;i++) {
+        this.vertex_states[i] = new VisibilityContext.VertexState(vc.vertices[i]);
+    }
+    this.spacial_hash_table_entry = spacial_hash_table_entry;
+
+    var entry = spacial_hash_table_entry;
+    var table = spacial_hash_table_entry.spacial_hash_table;
+    this.rect = debug_drawer.coloured_rectangle(
+        [entry.i_index*table.cell_size[0], entry.j_index*table.cell_size[1]], table.cell_size, [0,0,1,0.6]
+    );
+}
+
+VisibilityContext.CellData.prototype.set_vertex_state = function(idx, state) {
+    this.vertex_states[idx].visibility = state;
+}
+
+VisibilityContext.CellData.prototype.draw = function() {
+    this.rect.draw();
+}
+
 VisibilityContext.prototype.compute_visible_vertex_hash = function() {
     this.compute_vertex_segment_table();
+    var count = 0;
+    this.spacial_hash.loop_entries(function(spacial_hash_table_entry) {
+        
+        var data = new VisibilityContext.CellData(this, spacial_hash_table_entry);
 
-    this.spacial_hash.loop_
+        for (var i = 0,ilen=this.vertex_segment_table.length;i<ilen;i++) {
+            var vertex_segments = this.vertex_segment_table[i];
+            var cell_vertex_state = data.vertex_states[i];
+            for (var j = 0,jlen=vertex_segments.length;j<jlen;j++) {
+                var vertex_segment_table_entry = vertex_segments[j];
+                
+                // check if the spacial hash table cell is contained in the obscured area
+                if (vertex_segment_table_entry.obscured_area.contains_all_points(
+                        spacial_hash_table_entry.vertices)) {
+                    
+                    // the current vertex is entirely hidden by the current segment
+                    data.set_vertex_state(i, VisibilityContext.VertexState.HIDDEN);
+
+                    // there's no point looking at any more segments
+                    break;
+                    
+                }
+            }
+        }
+
+        spacial_hash_table_entry.set(data);
+
+    }.bind(this));
+
+    console.debug(count);
 }
 
 VisibilityContext.VertexSegmentTableEntry = function(vertex, segment) {
@@ -48,6 +114,17 @@ VisibilityContext.VertexSegmentTableEntry.prototype.create_obscured_area = funct
     }
 }
 
+VisibilityContext.ObscuredArea = function(){}
+
+VisibilityContext.ObscuredArea.prototype.contains_all_points = function(pts) {
+    return pts.map(function(p) {
+        return this.contains_point(p)
+    }.bind(this)).reduce(function(b, acc) {
+        return b && acc;
+    }, true);
+}
+
+
 VisibilityContext.ObscuredQuad = function(vertex, segment) {
     const QUAD_LENGTH = 2000;
     var far_points = segment.map(function(v) {
@@ -63,6 +140,9 @@ VisibilityContext.ObscuredQuad = function(vertex, segment) {
         [far_points[0], segment[0]]
     ];
 }
+VisibilityContext.ObscuredQuad.inherits_from(
+    VisibilityContext.ObscuredArea
+);
 
 VisibilityContext.ObscuredQuad.prototype.contains_point = function(p) {
     return this.points.polygon_contains(p);
@@ -74,6 +154,9 @@ VisibilityContext.ObscuredQuad.prototype.draw = function() {
 
 VisibilityContext.NothingObscured = function() {
 }
+VisibilityContext.NothingObscured.inherits_from(
+    VisibilityContext.ObscuredArea
+);
 
 VisibilityContext.NothingObscured.prototype.draw = function(){}
 VisibilityContext.NothingObscured.prototype.contains_point = function(p) {

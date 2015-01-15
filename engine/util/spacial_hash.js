@@ -43,6 +43,10 @@ SpacialHashTable.Entry = function(value, i, j, sh) {
     ];
 }
 
+SpacialHashTable.Entry.prototype.set = function(v) {
+    this.value = v;
+}
+
 SpacialHashTable.prototype.loop_indices = function(f) {
     for (var i = 0;i<this.height_cells;i++) {
         for (var j = 0;j<this.width_cells;j++) {
