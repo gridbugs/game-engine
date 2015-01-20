@@ -175,6 +175,7 @@ FlatRenderer.prototype.render_frame = function() {
     this.visible_area.draw_with_model_view(this.fullscreen_shader.model_view);
 
     /* debug */
+    /*
     var segments = [];
     for (var i = 1;i<n_points;i++) {
         var seg = [this.visible_area_buffer[i-1], this.visible_area_buffer[i]];
@@ -185,7 +186,7 @@ FlatRenderer.prototype.render_frame = function() {
     for (var i = 0;i<segments.length;i++) {
         debug_drawer.draw_line_segment(segments[i], [1,0,0,1], 4);
     }
-
+    */
     //rect_ref.value.draw();
 
     vtxmgr.restore();

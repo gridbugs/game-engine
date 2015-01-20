@@ -273,6 +273,7 @@ PhongRenderer.prototype.render_frame = function() {
     this.visible_area.draw_with_model_view(this.phong_shader.model_view);
 
     /* debugging */
+    /*
     var segments = [];
     for (var i = 1;i<n_points;i++) {
         var seg = [this.visible_area_buffer[i-1], this.visible_area_buffer[i]];
@@ -285,6 +286,7 @@ PhongRenderer.prototype.render_frame = function() {
     }
     
     rect_ref.value.draw();
+    */
 //    console.debug(rect_ref.value);
     /* end debugging */
 

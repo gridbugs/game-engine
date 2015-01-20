@@ -60,7 +60,7 @@ $(function() {
 
     new AsyncGroup(
         new ContentManager(vtxmgr),
-        new FlatRenderer(vtxmgr, [canvas.width, canvas.height])
+        new PhongRenderer(vtxmgr, [canvas.width, canvas.height])
     ).run(function(content, renderer) {
         scroll_context = new ScrollContext([0, 0], 300, [canvas.width, canvas.height]);
         var time_manager = new TimeManager();
@@ -120,7 +120,7 @@ $(function() {
             character.tick(time_delta);
             
 
-            //glm.sync_gpu();
+            glm.sync_gpu();
             requestAnimationFrame(frame);
 
             fps_stats.end();
