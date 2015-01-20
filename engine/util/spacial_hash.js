@@ -28,6 +28,7 @@ SpacialHashTable.Entry = function(value, i, j, sh) {
     this.value = value;
     this.i_index = i;
     this.j_index = j;
+    this.index = this.spacial_hash_table.get_index(i, j);
     var top_left = [i*sh.cell_width, j*sh.cell_height];
     this.vertices = [
         top_left,

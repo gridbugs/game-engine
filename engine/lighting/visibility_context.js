@@ -3,11 +3,13 @@ function VisibilityContext(vertices, segs) {
     this.segs = segs;
 
     /* debug */
-    var cell_size = [50, 50];
-    this.spacial_hash = new SpacialHashTable(cell_size, [1000, 1000]);
+    var cell_size = [500, 500];
+    this.spacial_hash = new SpacialHashTable(cell_size, [4000, 4000]);
     this.spacial_hash.loop_indices(function(i, j) {
-        this.spacial_hash.put_idx(i, j, debug_drawer.coloured_rectangle([i*cell_size[0], j*cell_size[1]], cell_size, [0,0,1,0.6]));
+        this.spacial_hash.put_idx(i, j, debug_drawer.coloured_rectangle([i*cell_size[0], j*cell_size[1]], cell_size, [0,0,1,0,0.05]));
     }.bind(this));
+
+    console.log("Number of vertices: " + vertices.length);
 
     this.compute_visible_vertex_hash();
     
@@ -48,12 +50,29 @@ VisibilityContext.VertexState.prototype.set_runtime = function() {
     }
 }
 
+VisibilityContext.VertexState.prototype.is_visible = function() {
+    return this.visibility == VisibilityContext.VertexState.VISIBLE;
+}
+
+VisibilityContext.VertexState.prototype.is_runtime = function() {
+    return this.visibility == VisibilityContext.VertexState.RUNTIME;
+}
+
+VisibilityContext.VertexState.prototype.get_runtime_checks = function() {
+    return this.segments_to_check;
+}
+
 VisibilityContext.VertexState.prototype.add_runtime_check = function(segment) {
     this.segments_to_check.push(segment);
 }
 
 VisibilityContext.VertexState.prototype.toString = function() {
     return this.visibility;
+}
+
+VisibilityContext.RuntimeVertexCheck = function(vertex, segments) {
+    this.vertex = vertex;
+    this.segments = segments;
 }
 
 VisibilityContext.CellData = function(vc, spacial_hash_table_entry) {
@@ -64,11 +83,15 @@ VisibilityContext.CellData = function(vc, spacial_hash_table_entry) {
     }
     this.spacial_hash_table_entry = spacial_hash_table_entry;
 
+    this.visible_vertices = [];
+    this.runtime_vertices = [];
+
     var entry = spacial_hash_table_entry;
     var table = spacial_hash_table_entry.spacial_hash_table;
     this.rect = debug_drawer.coloured_rectangle(
         [entry.i_index*table.cell_size[0], entry.j_index*table.cell_size[1]], table.cell_size, [0,0,1,0.6]
     );
+
 }
 
 VisibilityContext.CellData.prototype.get_vertex_state = function(idx) {
@@ -76,6 +99,19 @@ VisibilityContext.CellData.prototype.get_vertex_state = function(idx) {
 }
 VisibilityContext.CellData.prototype.set_vertex_state = function(idx, state) {
     this.vertex_states[idx].visibility = state;
+}
+
+VisibilityContext.CellData.prototype.generate_lists = function() {
+    for (var i = 0;i<this.vertex_states.length;i++) {
+        if (this.vertex_states[i].is_visible()) {
+            this.visible_vertices.push(this.visibility_context.vertices[i]);
+        } else if (this.vertex_states[i].is_runtime()) {
+            this.runtime_vertices.push(new VisibilityContext.RuntimeVertexCheck(
+                this.visibility_context.vertices[i],
+                this.vertex_states[i].get_runtime_checks()
+            ));
+        }
+    }
 }
 
 VisibilityContext.CellData.prototype.draw = function() {
@@ -121,11 +157,12 @@ VisibilityContext.prototype.compute_visible_vertex_hash = function() {
             }
         }
 
+        data.generate_lists();
         spacial_hash_table_entry.set(data);
 
+        console.log("Computing cell #" + spacial_hash_table_entry.index + "("+data.visible_vertices.length+", "+data.runtime_vertices.length+")");
     }.bind(this));
 
-    console.debug(count);
 }
 
 VisibilityContext.VertexSegmentTableEntry = function(vertex, segment) {
@@ -161,7 +198,7 @@ VisibilityContext.ObscuredArea.prototype.intersects_any_segment = function(segs)
 }
 
 VisibilityContext.ObscuredQuad = function(vertex, segment) {
-    const QUAD_LENGTH = 2000;
+    const QUAD_LENGTH = 20000;
     var far_points = segment.map(function(v) {
         return v.v2_sub(vertex.pos).v2_to_length(QUAD_LENGTH).v2_add(v)
     });
@@ -236,6 +273,56 @@ VisibilityContext.prototype.vertex_by_position = function(pos) {
         }
     }
     return null;
+}
+
+VisibilityContext.prototype.non_intersecting_vertices_ = function(eye) {
+    
+    var cell_data = this.spacial_hash.get_v2(eye);
+
+    var ret = cell_data.visible_vertices.slice();
+
+    //console.debug(cell_data.visible_vertices.length + ", " + cell_data.runtime_vertices.length);
+
+    var runtime_vertices = cell_data.runtime_vertices;
+    for (var i = 0,ilen=runtime_vertices.length;i<ilen;i++) {
+        var runtime_check = runtime_vertices[i];
+        var vertex = runtime_check.vertex;
+        
+        var segments = runtime_check.segments;
+        //var segments = this.segs;
+        
+        var eye_to_vertex_seg = [eye, vertex.pos];
+        var intersects = false;
+        for (var j = 0,jlen=segments.length;j<jlen;j++) {
+            var segment = segments[j];
+            var intersection = eye_to_vertex_seg.seg_to_line().line_intersection(segment.seg_to_line());
+
+            if (intersection == null) {
+                continue;
+            }
+
+            var seg_ratio = segment.seg_aligned_ratio(intersection);
+            if (seg_ratio < 0 || seg_ratio > 1) {
+                continue;
+            }
+
+            var ray_ratio = eye_to_vertex_seg.seg_aligned_ratio(intersection);
+
+            if (ray_ratio > 0 && ray_ratio < (1-VisibilityContext.TOLERANCE)) {
+                intersects = true;
+                break;
+            }
+        
+        }
+
+        if (!intersects) {
+            ret.push(vertex);
+        }
+    }
+
+    //console.debug(ret);
+
+    return ret;
 }
 
 VisibilityContext.prototype.non_intersecting_vertices = function(eye) {
@@ -369,7 +456,7 @@ VisibilityContext.prototype.visible_polygon = function(eye, points, rect_ref) {
     }
     
     // quadratic 10ms on macbook air
-    var vertices = this.non_intersecting_vertices(eye);
+    var vertices = this.non_intersecting_vertices_(eye);
 
     var indices = Array.range(0, vertices.length);
 

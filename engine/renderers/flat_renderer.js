@@ -186,7 +186,7 @@ FlatRenderer.prototype.render_frame = function() {
         debug_drawer.draw_line_segment(segments[i], [1,0,0,1], 4);
     }
 
-    rect_ref.value.draw();
+    //rect_ref.value.draw();
 
     vtxmgr.restore();
 }

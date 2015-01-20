@@ -66,14 +66,17 @@ $(function() {
         var time_manager = new TimeManager();
         var character = content.characters.warrior.instance('still');
 
-        /*
-        var map = content.maps.dungeon1;
-        agent.enter_level(map.level_hash['level1']);
-        agent.enter_region(map.region_hash['west']);
-        */
-        var map = content.maps.small;
-        agent.enter_level(map.level_hash['level1']);
-        agent.enter_region(map.region_hash['main']);
+        var map;
+        if (true) {
+            agent.pos = [800, 800];
+            map = content.maps.dungeon1;
+            agent.enter_level(map.level_hash['level1']);
+            agent.enter_region(map.region_hash['west']);
+        } else {
+            map = content.maps.small;
+            agent.enter_level(map.level_hash['level1']);
+            agent.enter_region(map.region_hash['main']);
+        }
 
         renderer.init(map.level_images['level1_floor'], character, scroll_context, agent);
         const WALK = 0;
@@ -118,7 +121,7 @@ $(function() {
             
 
             //glm.sync_gpu();
-            //requestAnimationFrame(frame);
+            requestAnimationFrame(frame);
 
             fps_stats.end();
             ms_stats.end();
