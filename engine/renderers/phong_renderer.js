@@ -109,6 +109,11 @@ PhongRenderer.prototype.init = function(map_images, character, scroll_context, a
         .has_model_view()
         .has_position_attribute();
 
+    this.red_shader = this.shader(this.shaders[4])
+        .has_resolution()
+        .has_model_view()
+        .has_position_attribute();
+
     this.phong_shader.image = this.phong_shader.shader_program.uniform1i('u_image');
     this.phong_shader.light_map = this.phong_shader.shader_program.uniform1i('u_light_map');
     this.phong_shader.bump_map = this.phong_shader.shader_program.uniform1i('u_bump_map');
@@ -119,8 +124,11 @@ PhongRenderer.prototype.init = function(map_images, character, scroll_context, a
 
     this.fullscreen_rect = this.vtxmgr.rectangle([0, 0], this.resolution);
 
+    this.lights = this.agent.level.lights.map(function(l) {return this.light(l)}.bind(this));
+    
     this.visible_area = this.vtxmgr.dynamic_radial(128);
     this.visible_area_buffer = new Array(128);
+
 
     this.framebuffer_image = this.glm.framebuffer();
     this.framebuffer_bump = this.glm.framebuffer();
@@ -154,22 +162,45 @@ PhongRenderer.prototype.init = function(map_images, character, scroll_context, a
 
     this.character_atlas_image.bind(2);
 
-    this.vtxmgr.sync_buffers();
 
 
     this.glm.set_clear_colour([0,0,0,1]);
     
-    var rect_ref = new Reference(null);
-    var n_points = this.agent.level.visibility_context.visible_polygon2(
+//    var rect_ref = new Reference(null);
+    
+    var n_points = this.agent.level.visibility_context.visible_polygon(
                         this.agent.pos.v2_floor(), 
-                        this.visible_area_buffer,
-                        rect_ref
+                        this.visible_area_buffer
+//                        rect_ref
                     );
+    
 
     this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
+
+    console.debug(this.lights[0].lit_area);
+    console.debug(this.lights[1].lit_area);
+    //console.debug(this.visible_area);
  
+    this.vtxmgr.sync_buffers();
 }
 
+PhongRenderer.Light = function(light, renderer) {
+    this.renderer = renderer;
+    this.light = light;
+    this.lit_area = renderer.vtxmgr.dynamic_radial(512);
+    var lit_area_buffer = [];
+    var n_points = this.light.visibility_context.visible_polygon(
+                                this.light.position,
+                                lit_area_buffer
+    );
+
+    console.debug(lit_area_buffer);
+
+    this.lit_area.update(this.light.position, lit_area_buffer, n_points);
+}
+PhongRenderer.prototype.light = function(light) {
+    return new PhongRenderer.Light(light, this);
+}
 
 PhongRenderer.prototype.render_frame = function() {
 
@@ -179,16 +210,16 @@ PhongRenderer.prototype.render_frame = function() {
     var glm = this.glm;
     var vtxmgr = this.vtxmgr;
     
-    var rect_ref = new Reference(null);
+//    var rect_ref = new Reference(null);
     
-    var n_points = this.agent.level.visibility_context.visible_polygon2(
+    var n_points = this.agent.level.visibility_context.visible_polygon(
                         this.agent.pos.v2_floor(), 
-                        this.visible_area_buffer,
-                        rect_ref
+                        this.visible_area_buffer
+ //                       rect_ref
                     );
 
     this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
-   
+    
 
     glm.clear();
 
@@ -202,6 +233,7 @@ PhongRenderer.prototype.render_frame = function() {
     this.scroll_shader.select_vertex_attribute();
     this.scroll_shader.scroll_position.set(this.scroll_context.translate);
 
+    // render background into framebuffers
     this.framebuffer_image.bind();
     this.scroll_shader.texture.set(1);
     this.fullscreen_rect.draw();
@@ -225,6 +257,7 @@ PhongRenderer.prototype.render_frame = function() {
     vtxmgr.translate(this.scroll_context.translate);
     vtxmgr.translate(this.agent.pos).rotate(this.agent.facing + HALF_PI);
 
+    // render character into framebuffers
     this.character_atlas_image.bind(1);
     this.character_atlas_bump.bind(2);
     this.character_atlas_light.bind(3);
@@ -258,6 +291,13 @@ PhongRenderer.prototype.render_frame = function() {
     this.framebuffer_light_tex.bind(3);
     this.framebuffer_misc_tex.bind(4);
 
+/*
+    this.red_shader.shader_program.use();
+    this.red_shader.select_vertex_attribute();
+    vtxmgr.select_dynamic_vertex_attribute(this.red_shader.position_attribute);
+    */
+    
+    
     this.phong_shader.shader_program.use();
     
     this.phong_shader.image.set(1);
@@ -268,11 +308,22 @@ PhongRenderer.prototype.render_frame = function() {
     this.phong_shader.light_position.set([character_screen_position[0], this.resolution[1]-character_screen_position[1]]);
     this.phong_shader.rotation_offset.set(-HALF_PI-this.agent.facing);
     vtxmgr.select_dynamic_vertex_attribute(this.phong_shader.position_attribute);
+    
     vtxmgr.save();
     vtxmgr.translate(scroll_context.translate);
+
+    
     this.visible_area.draw_with_model_view(this.phong_shader.model_view);
+//    this.red_shader.shader_program.use();
+//    this.red_shader.select_vertex_attribute();
+//    vtxmgr.select_dynamic_vertex_attribute(this.red_shader.position_attribute);
+    this.lights[0].lit_area.draw_with_model_view(this.phong_shader.model_view);
+//    this.lights[1].lit_area.slice.offset = 2280 + 144*2;
+//    this.lights[1].lit_area.slice.length = 12;
+    this.lights[1].lit_area.draw_with_model_view(this.phong_shader.model_view);
 
     /* debugging */
+    /*
     var segments = [];
     for (var i = 1;i<n_points;i++) {
         var seg = [this.visible_area_buffer[i-1], this.visible_area_buffer[i]];
@@ -283,8 +334,8 @@ PhongRenderer.prototype.render_frame = function() {
     for (var i = 0;i<segments.length;i++) {
         debug_drawer.draw_line_segment(segments[i], [1,0,0,1], 4);
     }
-    
-    rect_ref.value.draw();
+    */
+//    rect_ref.value.draw();
 //    console.debug(rect_ref.value);
     /* end debugging */
 

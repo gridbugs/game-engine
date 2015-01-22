@@ -232,18 +232,20 @@ WebGLVertexManager.prototype.dynamic_radial = function(buffer_size, transform) {
 }
 WebGLVertexManager.DynamicRadial = function(buffer_size, transform, vertex_manager) {
     WebGLVertexManager.Drawable.call(this, transform, vertex_manager);
-
-    this.vertex_offset = this.vertex_manager.dynamic_vertex_buffer.data.length/2;
-    this.slice = vertex_manager.glm.slice(this.index_index_base(), 0);
     
+    this.vertex_offset = this.vertex_manager.dynamic_vertex_buffer.data.length;
+    this.vertex_index_offset = this.vertex_offset/2;
+    this.slice = vertex_manager.glm.slice(this.index_index_base(), 0);
+        
+
     // allocate dedicated memory from the vertex buffer
     vertex_manager.dynamic_vertex_buffer.allocate(buffer_size);
 
     var indices = [];
-    for (var i = 0;i<buffer_size;i++) {
-        indices.push(this.vertex_offset);
-        indices.push(this.vertex_offset + i + 1);
-        indices.push(this.vertex_offset + i + 2);
+    for (var i = 0;i<buffer_size/2;i++) {
+        indices.push(this.vertex_index_offset);
+        indices.push(this.vertex_index_offset + i + 1);
+        indices.push(this.vertex_index_offset + i + 2);
     }
 
     vertex_manager.index_buffer.add(indices);
@@ -253,6 +255,7 @@ WebGLVertexManager.DynamicRadial = function(buffer_size, transform, vertex_manag
 WebGLVertexManager.DynamicRadial.inherits_from(WebGLVertexManager.Drawable);
 
 WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points, n_points) {
+
     var vertex_manager = this.vertex_manager;
     var vertex_array = this.vertex_array;
 
@@ -267,6 +270,10 @@ WebGLVertexManager.DynamicRadial.prototype.update = function(centre, points, n_p
     vertex_array[j++] = points[0][0];
     vertex_array[j++] = points[0][1];
 
-    vertex_manager.dynamic_vertex_buffer.bind().update(this.vertex_offset, vertex_array);
+    /* multiply the offset by 4 as this requires a byte address and the vertex buffer
+     * contains 4-byte floating point entries.
+     */
+    vertex_manager.dynamic_vertex_buffer.bind().update(this.vertex_offset*4, vertex_array);
     this.slice.set_length(n_points * 3);
+
 }

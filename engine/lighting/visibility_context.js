@@ -11,7 +11,7 @@ function VisibilityContext(vertices, segs) {
 
     console.log("Number of vertices: " + vertices.length);
 
-    this.compute_visible_vertex_hash();
+//    this.compute_visible_vertex_hash();
     
 }
 
@@ -456,7 +456,7 @@ VisibilityContext.prototype.visible_polygon = function(eye, points, rect_ref) {
     }
     
     // quadratic 10ms on macbook air
-    var vertices = this.non_intersecting_vertices_(eye);
+    var vertices = this.non_intersecting_vertices(eye);
 
     var indices = Array.range(0, vertices.length);
 

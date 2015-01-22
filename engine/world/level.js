@@ -10,7 +10,7 @@ function Level(vertex_manager, regions, visible_segs, images) {
 }
 
 Level.prototype.add_light = function(position, radius, colour) {
-    var light = this.drawer.light(this.visibility_context, position, radius, colour);
+    var light = new Light(this.visibility_context, position);
     this.lights.push(light);
 }
 

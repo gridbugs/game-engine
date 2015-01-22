@@ -247,7 +247,7 @@ Map.prototype.run = function(then) {
         this.create_vertices();
         this.load_levels();
         this.load_level_detectors();
-//        this.load_lights();
+        this.load_lights();
         this.create_collision_processors();
 
         then();
