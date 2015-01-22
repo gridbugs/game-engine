@@ -210,16 +210,13 @@ PhongRenderer.prototype.render_frame = function() {
     var glm = this.glm;
     var vtxmgr = this.vtxmgr;
     
-//    var rect_ref = new Reference(null);
     
     var n_points = this.agent.level.visibility_context.visible_polygon(
                         this.agent.pos.v2_floor(), 
                         this.visible_area_buffer
- //                       rect_ref
                     );
-
-    this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
     
+    this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
 
     glm.clear();
 
@@ -334,9 +331,6 @@ PhongRenderer.prototype.render_frame = function() {
     for (var i = 0;i<segments.length;i++) {
         debug_drawer.draw_line_segment(segments[i], [1,0,0,1], 4);
     }
-    */
-//    rect_ref.value.draw();
-//    console.debug(rect_ref.value);
     /* end debugging */
 
     vtxmgr.restore();

@@ -121,7 +121,7 @@ $(function() {
             character.tick(time_delta);
             
 
-            //glm.sync_gpu();
+            glm.sync_gpu();
             requestAnimationFrame(frame);
 
             fps_stats.end();
