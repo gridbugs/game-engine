@@ -179,6 +179,7 @@ PhongRenderer.prototype.render_frame = function() {
     var glm = this.glm;
     var vtxmgr = this.vtxmgr;
     
+    /*
     var rect_ref = new Reference(null);
     
     var n_points = this.agent.level.visibility_context.visible_polygon2(
@@ -186,9 +187,9 @@ PhongRenderer.prototype.render_frame = function() {
                         this.visible_area_buffer,
                         rect_ref
                     );
-
+    
     this.visible_area.update(this.agent.pos, this.visible_area_buffer, n_points);
-   
+   */
 
     glm.clear();
 
